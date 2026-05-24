@@ -1,7 +1,6 @@
 using Backend.Core.Controllers.interfaces;
 using Backend.Core.DTOs.Requests;
 using Backend.Core.Internal;
-using Backend.Core.Services;
 using Backend.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Core.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-[Produces("application/json")]
-[Consumes("application/json")]
+[Route("api/[controller]")]
 [EnableCors("AllowFrontend")]
 public class UserController(
     IUserService userService,
@@ -62,7 +59,7 @@ public class UserController(
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
-    [Route("/sign-up")]
+    [Route("sign-up")]
     public async Task<IActionResult> SignUp(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] SignUpRequest request
@@ -104,7 +101,7 @@ public class UserController(
     /// <param name="request">The sign in request</param>
     /// <returns></returns>
     [HttpPost]
-    [Route("/sign-in")]
+    [Route("sign-in")]
     public async Task<IActionResult> SignIn(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] SignInRequest request
@@ -149,7 +146,7 @@ public class UserController(
     /// <param name="request">The sign out request</param>
     /// <returns></returns>
     [HttpPost]
-    [Route("/sign-out")]
+    [Route("sign-out")]
     public async Task<IActionResult> SignOut(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromHeader(Name = "Authorization")] string authorization,
@@ -195,7 +192,7 @@ public class UserController(
     /// <param name="authorization">The authorization token of the user</param>
     /// <returns></returns>
     [HttpGet]
-    [Route("/status")]
+    [Route("status")]
     public async Task<IActionResult> GetUserStatus(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromHeader(Name = "Authorization")] string authorization
