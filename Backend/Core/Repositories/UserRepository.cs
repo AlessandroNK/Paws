@@ -76,6 +76,7 @@ public class UserRepository(
         if (!hashedEmailResult || hashedEmailResult.Data == null)
         {
             _log.LogError("Failed to encrypt email for user lookup: {ErrorMessage}", hashedEmailResult.Message);
+            Helpers.LogError(_log, hashedEmailResult, $"Failed to encrypt email for user lookup");
             return hashedEmailResult.ConvertTo<User?>();
         }
 
@@ -161,16 +162,39 @@ public class UserRepository(
     /// </summary>
     /// <param name="user">The user to add</param>
     /// <returns>A <see cref="Result"/> indicating whether the sign up was successful</returns>
-    public async Task<Result> AddAsync(User user)
+    public async Task<Result<User?>> AddAsync(User user)
     {
         // Encrypt user data
         var result = EncryptUser(user);
-        if (!result || result.Data is null) return result;
+        if (!result || result.Data is null) return result.ConvertTo<User?>();
 
         // Save the user
         _dbContext.EncryptedUsers.Add(result.Data);
         var saved = await _dbContext.SaveChangesAsync();
-        return saved > 0;
+        if (saved < 0)
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_CREATING_USER",
+                Status = 500,
+                Message = "An error occurred while creating the user",
+                IC = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+
+        return new Result<User?>
+        {
+            Success = true,
+            Code = "USER_CREATED",
+            Status = 201,
+            Message = "User created successfully",
+            Data = user,
+            IC = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
+
+
     }
 
     #endregion

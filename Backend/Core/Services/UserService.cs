@@ -12,6 +12,7 @@ namespace Backend.Core.Services;
 /// Provides functionality for managing user operations.
 /// </summary>
 public class UserService(
+    INotificationService notificationService,
     IUserRepository userRepo,
     ILogger<UserService> logger
 ) : IUserService
@@ -29,6 +30,14 @@ public class UserService(
     /// The logger used to log messages.
     /// </summary>
     private readonly ILogger<UserService> _logger = logger;
+
+    /// <summary>
+    /// The service to notify users. It is injected into the service to provide access to the underlying notification
+    /// system for sending notifications to users. The service uses the notification service to send relevant notifications
+    /// to users, such as verification codes, password reset instructions, and other important updates related to their
+    /// accounts. Those notifications can be sent by frontend, email or sms.
+    /// </summary>
+    private readonly INotificationService _notificationService = notificationService;
 
 
     //                                                                                                 Public Properties
@@ -49,7 +58,39 @@ public class UserService(
 
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Adds a new user to the db
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    private async Task<Result<User?>> AddAsync(User user)
+    {
+        try
+        {
+            _logger.LogInformation("Adding new user");
 
+            var addResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _userRepo.AddAsync(user),
+                operationName: "Adding new user",
+                logger: _logger
+            );
+
+            return addResult;
+        }
+        catch (Exception e)
+        {
+            Helpers.LogError(_logger, e, "Error adding new user");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_ADDING_USER",
+                Status = 500,
+                Message = "An error occurred while adding the user",
+                IC = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
@@ -175,13 +216,13 @@ public class UserService(
             if (!result) return result.ConvertTo<User?>();
 
             // Find the user to avoid duplications
+            // This is to avoid telling the uer the exact element that already
+            // exists so it is a little harder to attack our platform
             var exists = false;
             var existingEmailResult = await GetByEmailAsync(request.Email, true);
             var existingDocumentResult = await GetByDocumentAsync(request.DocumentNumber, true);
             exists = existingEmailResult || existingDocumentResult;
 
-            // This is to avoid telling the uer the exact element that already
-            // exists so it is a little harder to attack our platform
             if (exists)
                 return new Result<User?>
                 {
@@ -207,11 +248,18 @@ public class UserService(
                 VerificationCode = SecurityService.GenerateVerificationCode()
             };
 
+            // Save the user
+            var addResult = await AddAsync(user);
+            if (!addResult || addResult.Data is null) return addResult;
+            user = addResult.Data;
 
-
-
-
-
+            // Send verification code after signing up the user
+            var notificationResult = await _notificationService.SendVerificationCodeAsync(
+                user.Name,
+                user.Email,
+                user.VerificationCode
+            );
+            if (!notificationResult) return result.ConvertTo<User?>();
 
 
 
