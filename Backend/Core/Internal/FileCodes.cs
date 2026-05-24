@@ -1,12 +1,16 @@
-using Backend.Core.DTOs.Requests;
-using Backend.Core.Models;
+using System.Runtime.CompilerServices;
+using Backend.Core.Services;
 
-namespace Backend.Core.Services.Interfaces;
+namespace Backend.Core.Internal;
 
-public interface IUserService
+public class FileCodes
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+    private static readonly Dictionary<string, string> Codes = new()
+    {
+        { "UserRepository.cs", "FU01" },
+    };
 
 
     //                                                                                                 Public Properties
@@ -31,30 +35,15 @@ public interface IUserService
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Finds a user by its email.
-    /// </summary>
-    /// <param name="email">The email to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
-    /// <returns>The created user</returns>
-    public Task<Result<User?>> GetByEmailAsync(string email, bool excludeHidden);
+    public static string GetCode(string filePath)
+    {
+        var fileName = System.IO.Path.GetFileName(filePath);
+        return Codes.TryGetValue(fileName, out var code) ? code : "UNK";
+    }
 
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Finds a user by its document number.
-    /// </summary>
-    /// <param name="document">The document to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
-    /// <returns>The created user</returns>
-    public Task<Result<User?>> GetByDocumentAsync(string document, bool excludeHidden);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Signs up a new user. It takes the device id from the header and the sign up request from the body. It returns an
-    /// IActionResult with some relevant data as ok, code, and status
-    /// </summary>
-    /// <param name="deviceId">The device id of the user</param>
-    /// <param name="request">The sign up request</param>
-    /// <returns></returns>
-    public Task<Result<User?>> SignUp(string deviceId, SignUpRequest request);
+    public static string CallerIC([CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
+    {
+        return $"{GetCode(file)}:{line:D4}-{SecurityService.GenerateVerificationCode()}";
+    }
 }

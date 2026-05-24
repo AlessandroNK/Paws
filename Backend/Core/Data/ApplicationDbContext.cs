@@ -1,9 +1,12 @@
-using Backend.Core.DTOs.Requests;
-using Backend.Core.Models;
+using Backend.Core.DTOs.SensitiveData;
+using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Core.Services.Interfaces;
+namespace Backend.Core.Data;
 
-public interface IUserService
+/// <summary>
+/// provides access to the database for the application.
+/// </summary>
+public class ApplicationDbContext (DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -11,6 +14,10 @@ public interface IUserService
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// The set to handle <see cref="EncryptedUsers"/>
+    /// </summary>
+    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
 
 
     //                                                                                                         Operators
@@ -31,30 +38,4 @@ public interface IUserService
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Finds a user by its email.
-    /// </summary>
-    /// <param name="email">The email to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
-    /// <returns>The created user</returns>
-    public Task<Result<User?>> GetByEmailAsync(string email, bool excludeHidden);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Finds a user by its document number.
-    /// </summary>
-    /// <param name="document">The document to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
-    /// <returns>The created user</returns>
-    public Task<Result<User?>> GetByDocumentAsync(string document, bool excludeHidden);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Signs up a new user. It takes the device id from the header and the sign up request from the body. It returns an
-    /// IActionResult with some relevant data as ok, code, and status
-    /// </summary>
-    /// <param name="deviceId">The device id of the user</param>
-    /// <param name="request">The sign up request</param>
-    /// <returns></returns>
-    public Task<Result<User?>> SignUp(string deviceId, SignUpRequest request);
 }

@@ -1,9 +1,12 @@
 using Backend.Core.DTOs.Requests;
 using Backend.Core.Models;
 
-namespace Backend.Core.Services.Interfaces;
+namespace Backend.Core.Repositories.Interfaces;
 
-public interface IUserService
+/// <summary>
+/// This interface defines how a users repository should be structured
+/// </summary>
+public interface IUserRepository
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -34,18 +37,18 @@ public interface IUserService
     /// <summary>
     /// Finds a user by its email.
     /// </summary>
-    /// <param name="email">The email to search for</param>
+    /// <param name="email">The email of the user</param>
     /// <param name="excludeHidden">Whether to filter out hidden users</param>
-    /// <returns>The created user</returns>
+    /// <returns>The user if any</returns>
     public Task<Result<User?>> GetByEmailAsync(string email, bool excludeHidden);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Finds a user by its document number.
     /// </summary>
-    /// <param name="document">The document to search for</param>
+    /// <param name="document">The document of the user</param>
     /// <param name="excludeHidden">Whether to filter out hidden users</param>
-    /// <returns>The created user</returns>
+    /// <returns>The user if any</returns>
     public Task<Result<User?>> GetByDocumentAsync(string document, bool excludeHidden);
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -53,8 +56,7 @@ public interface IUserService
     /// Signs up a new user. It takes the device id from the header and the sign up request from the body. It returns an
     /// IActionResult with some relevant data as ok, code, and status
     /// </summary>
-    /// <param name="deviceId">The device id of the user</param>
-    /// <param name="request">The sign up request</param>
-    /// <returns></returns>
-    public Task<Result<User?>> SignUp(string deviceId, SignUpRequest request);
+    /// <param name="user">The user to add</param>
+    /// <returns>A <see cref="Result"/> indicating whether the sign up was successful</returns>
+    public Task<Result> AddAsync(User user);
 }

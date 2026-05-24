@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Backend.Core.Models;
 
 public class Result
@@ -11,12 +13,17 @@ public class Result
     /// <summary>
     /// Whether the result is ok or not. It is used to indicate whether the operation was successful or not.
     /// </summary>
-    public bool Ok { get; set; }
+    public bool Success { get; set; }
 
     /// <summary>
-    /// Alias for Ok
+    /// Alias for <see cref="Success"/>
     /// </summary>
-    public bool IsSuccess => Ok;
+    public bool Ok => Success;
+
+    /// <summary>
+    /// Alias for <see cref="Success"/>
+    /// </summary>
+    public bool IsSuccess => Success;
 
     /// <summary>
     /// A custom code in SCREAMING_SNAKE_CASE
@@ -33,9 +40,37 @@ public class Result
     /// </summary>
     public string? Message { get; set; }
 
+    /// <summary>
+    /// Any validation errors associated with the result.
+    /// </summary>
+    public Dictionary<string, string[]> Errors { get; set; }
 
+    /// <summary>
+    /// An internal code to identify the result origin easily
+    /// </summary>
+    public string IC { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the result should be returned to the frontend or not. In case it does not, it should be replaced for a
+    /// generic response before returning it to the frontend
+    /// </summary>
+    public bool Returnable { get; set; }
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
+    public static implicit operator bool(Result result) => result.Success;
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static implicit operator Result(bool result)
+    {
+        return new Result
+        {
+            Success = result,
+            Code = result ? "SUCCESS" : "FAILURE",
+            Status = result ? 200 : 400,
+            Message = result ? "Operation completed successfully" : "Operation failed",
+            Returnable = true
+        };
+    }
 
 
     //                                                                                                            Events
@@ -52,4 +87,62 @@ public class Result
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Creates a result
+    /// </summary>
+    /// <param name="success">Whether the result was success or not</param>
+    /// <param name="code">A code to identify the result. It can be used to identify the type of error or success.</param>
+    /// <param name="status">The HTTP status code for the result.</param>
+    /// <param name="returnable">Whether the result should be returned to the client.</param>
+    /// <param name="message">A message describing the result.</param>
+    /// <param name="file">The file where the result was created.</param>
+    /// <param name="line">The line number where the result was created.</param>
+    /// <returns>A <see cref="Result"/> instance.</returns>
+    public static Result Create(
+        bool success,
+        string code,
+        int status,
+        bool returnable = true,
+        string? message = null,
+        [CallerFilePath] string file = "",
+        [CallerLineNumber] int line = 0)
+    {
+        return new Result
+        {
+            Success = success,
+            Code = code,
+            Status = status,
+            Message = message,
+            IC = $"{Path.GetFileName(file)}:{line}",
+            Returnable = returnable,
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Result AddError(string error, string[] messages)
+    {
+        Errors.Add(error, messages);
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Convert this result to a result of a different type.
+    /// </summary>
+    /// <typeparam name="TU"></typeparam>
+    /// <returns>A result of type U.</returns>
+    /// <remarks>The new result will drop the data.</remarks>
+    public Result<TU> ConvertTo<TU>()
+    {
+        return new Result<TU>
+        {
+            Success = Success,
+            Code = Code,
+            Status = Status,
+            Message = Message,
+            Errors = Errors,
+            IC = IC,
+            Returnable = Returnable,
+        };
+    }
 }

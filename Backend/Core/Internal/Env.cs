@@ -35,4 +35,9 @@ public static class Env
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Returns the version of the application as a string.
+    /// </summary>
+    /// <returns></returns>
+    public static string GetVersion() => Version.ToString();
 }

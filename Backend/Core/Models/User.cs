@@ -10,38 +10,43 @@ public class User
     /// <summary>
     /// The id of the user in the database
     /// </summary>
-    public int Id { get; init; }
+    public int Id { get; set; }
 
     /// <summary>
     /// A hash of the user's password. It is used to verify the user's password when signing in.
     /// </summary>
-    public string PasswordHash { get; set; }
+    public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A hash of the user's password. It is used to verify the user's password when signing in.
+    /// </summary>
+    public string HashedPassword { get; set; } = string.Empty;
 
     /// <summary>
     /// The email in a readable string to return to the frontend
     /// </summary>
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// The tpe of the document of the user.
+    /// The type of the document of the user.
     /// </summary>
     public DocumentType DocumentType { get; init; }
 
     /// <summary>
     /// The number of identification like we are simple elements named by random numbers
     /// </summary>
-    public string DocumentNumber { get; set; }
+    public string DocumentNumber { get; set; } = string.Empty;
 
     /// <summary>
     /// The name of the user.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// The date and time when the user was created. It is used to track when the user was created and to sort users by
     /// creation date.
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; init; }
 
     /// <summary>
     /// The date and time when the user was last updated. It is used to track when the user was last updated and to sort
