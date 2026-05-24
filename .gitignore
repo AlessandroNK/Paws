@@ -1,0 +1,79 @@
+# gitignore for JetBrains Rider / ASP.NET (.NET) projects
+# Generated to cover Rider, Visual Studio, .NET, NuGet, and common OS/IDE files
+
+## Rider
+.idea/
+*.sln.iml
+
+## User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+## Visual Studio
+.vs/
+
+## Build results
+/bin/
+/obj/
+**/bin/
+**/obj/
+artifacts/
+
+## Publish output
+publish/
+**/publish/
+
+## NuGet
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+
+## Rider / ReSharper
+_ReSharper*/
+resharper-*/
+*.DotSettings
+
+## Dotnet CLI
+*.dotnet
+*.dotnet/tools
+
+## Logs
+*.log
+
+## Backup & Temp files
+*.tmp
+*.temp
+*.cache
+*.bak
+*.swp
+
+## OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## Visual Studio Code
+.vscode/
+
+## Database files
+*.db
+*.sdf
+*.sqlite
+
+## Debug / profiling
+*.pdb
+*.cachefile
+
+## Deployment
+*.publishsettings
+
+## Secret files (uncomment if you keep secrets locally)
+# appsettings.*.json
+# secrets.json
+
+# End of file
+
