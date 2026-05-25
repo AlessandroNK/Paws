@@ -1,7 +1,7 @@
-using Backend.Core.DTOs.Requests;
 using Backend.Core.Internal;
-using Backend.Core.Models;
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Result;
+using Backend.Core.Models.User;
 using Backend.Core.Policies;
 using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services.Interfaces;
@@ -79,7 +79,7 @@ public class UserService(
         }
         catch (Exception e)
         {
-            Helpers.LogError(_logger, e, "Error adding new user");
+            LogHelpers.LogError(_logger, e, "Error adding new user");
             return new Result<User?>
             {
                 Success = false,
@@ -92,8 +92,12 @@ public class UserService(
         }
     }
 
+
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+
+    #region UserRelated
+
     /// <summary>
     /// Finds a user by its email.
     /// </summary>
@@ -132,7 +136,7 @@ public class UserService(
         }
         catch (Exception e)
         {
-            Helpers.LogError(_logger, e, "Error getting user by email");
+            LogHelpers.LogError(_logger, e, "Error getting user by email");
             return new Result<User?>
             {
                 Success = false,
@@ -184,7 +188,7 @@ public class UserService(
         }
         catch (Exception e)
         {
-            Helpers.LogError(_logger, e, "Error getting user by document");
+            LogHelpers.LogError(_logger, e, "Error getting user by document");
             return new Result<User?>
             {
                 Success = false,
@@ -212,8 +216,8 @@ public class UserService(
             _logger.LogInformation("Signing up user");
 
             // Verifications
-            var result = CheckSignUpRequest(request);
-            if (!result) return result.ConvertTo<User?>();
+            var requestResult = CheckSignUpRequest(request);
+            if (!requestResult) return requestResult.ConvertTo<User?>();
 
             // Find the user to avoid duplications
             // This is to avoid telling the uer the exact element that already
@@ -259,37 +263,22 @@ public class UserService(
                 user.Email,
                 user.VerificationCode
             );
-            if (!notificationResult) return result.ConvertTo<User?>();
+            if (!notificationResult) return requestResult.ConvertTo<User?>();
 
-
-
-
-
-
-
-
-
-
-            return new Result<User>
+            // Everything went well, return the user
+            return new Result<User?>
             {
                 Success = true,
-                Code = "USER_SIGNED_UP",
-                Status = 200,
+                Code = "VERIFICATION_CODE_SENT",
+                Status = 201,
                 Message = "User signed up successfully",
-                Data = new User
-                {
-                    Id = 0,
-                    Email = request.Email,
-                    Name = request.Name,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                }
+                Data = user
             };
         }
         catch (Exception e)
         {
-            Helpers.LogError(_logger, e, "Error signing up user");
-            return new Result<User>
+            LogHelpers.LogError(_logger, e, "Error signing up user");
+            return new Result<User?>
             {
                 Success = false,
                 Code = "ERROR_SIGNING_UP_USER",
@@ -298,6 +287,10 @@ public class UserService(
             };
         }
     }
+
+    #endregion
+
+    #region Helpers
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -368,4 +361,6 @@ public class UserService(
             Status = 200,
         };
     }
+
+    #endregion
 }

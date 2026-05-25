@@ -7,14 +7,14 @@ public static class Env
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// This one is easy to guess don't mames
+    /// </summary>
+    private static Version Version { get; } = new Version(0, 0, 1);
 
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// This one is easy to guess don't mames
-    /// </summary>
-    public static Version Version { get; } = new Version(0, 0, 1);
 
 
     //                                                                                                         Operators

@@ -1,5 +1,5 @@
-using Backend.Core.DTOs.Requests;
-using Backend.Core.Models;
+using Backend.Core.Models.Result;
+using Backend.Core.Models.User;
 
 namespace Backend.Core.Services.Interfaces;
 

@@ -1,7 +1,6 @@
-using Backend.Core.Models;
 using Backend.Core.Models.Enums;
 
-namespace Backend.Core.DTOs.Responses;
+namespace Backend.Core.Models.User;
 
 /// <summary>
 /// A DTO so we can return the user data to the frontend without returning the password hash or any other unwanted data.

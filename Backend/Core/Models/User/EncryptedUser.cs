@@ -1,7 +1,6 @@
-using Backend.Core.Models;
 using Backend.Core.Models.Enums;
 
-namespace Backend.Core.DTOs.SensitiveData;
+namespace Backend.Core.Models.User;
 
 /// <summary>
 ///  This is a user but all data is encrypted so we can store it in the database without worrying about security.

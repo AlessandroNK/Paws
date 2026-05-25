@@ -1,6 +1,6 @@
 using Backend.Core.Models.Enums;
 
-namespace Backend.Core.Models;
+namespace Backend.Core.Models.User;
 
 /// <summary>
 /// Represents a user in the API

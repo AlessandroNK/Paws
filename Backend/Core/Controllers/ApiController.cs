@@ -46,8 +46,5 @@ public class ApiController : ControllerBase, IApiController
     /// <returns></returns>
     [HttpGet]
     [Route("version")]
-    public IActionResult GetVersion()
-    {
-        return Ok(Env.Version);
-    }
+    public IActionResult GetVersion() => Ok(Env.GetVersion());
 }

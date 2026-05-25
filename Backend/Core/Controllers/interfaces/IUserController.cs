@@ -1,4 +1,4 @@
-using Backend.Core.DTOs.Requests;
+using Backend.Core.Models.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Core.Controllers.interfaces;

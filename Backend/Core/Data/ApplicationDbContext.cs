@@ -1,4 +1,4 @@
-using Backend.Core.DTOs.SensitiveData;
+using Backend.Core.Models.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Core.Data;

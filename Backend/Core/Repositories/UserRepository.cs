@@ -1,8 +1,8 @@
 using Backend.Core.Data;
-using Backend.Core.DTOs.SensitiveData;
 using Backend.Core.Internal;
-using Backend.Core.Models;
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Result;
+using Backend.Core.Models.User;
 using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -74,11 +74,7 @@ public class UserRepository(
         // Encrypt user data to find it in the db
         var hashedEmailResult = SecurityService.HashWithSalt(email);
         if (!hashedEmailResult || hashedEmailResult.Data == null)
-        {
-            _log.LogError("Failed to encrypt email for user lookup: {ErrorMessage}", hashedEmailResult.Message);
-            Helpers.LogError(_log, hashedEmailResult, $"Failed to encrypt email for user lookup");
-            return hashedEmailResult.ConvertTo<User?>();
-        }
+            return hashedEmailResult.Log(_log).ConvertTo<User?>();
 
         // Find the user
         var query = _dbContext.EncryptedUsers.AsQueryable();
@@ -182,7 +178,20 @@ public class UserRepository(
                 Returnable = true
             };
 
+        // Get the user back from the db
+        var getUserResult = await GetByEmailAsync(user.Email, false);
+        if (!getUserResult || getUserResult.Data == null)
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "USER_CREATED_BUT_NOT_FOUND",
+                Status = 500,
+                Message = "User created but not found when retrieving it",
+                IC = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
 
+        user = getUserResult.Data;
         return new Result<User?>
         {
             Success = true,
@@ -193,8 +202,6 @@ public class UserRepository(
             IC = $"{FileCodes.CallerIC()}",
             Returnable = true
         };
-
-
     }
 
     #endregion
@@ -217,35 +224,22 @@ public class UserRepository(
             //---------------------------------------------------------------------- Password
             var passwordResult = SecurityService.HashWithSalt(user.Password);
             if (!passwordResult || passwordResult.Data == null)
-            {
-                _log.LogError("Failed to hash user password: {ErrorMessage}", passwordResult.Message);
-                return passwordResult.ConvertTo<EncryptedUser>();
-            }
+                return passwordResult.Log(_log).ConvertTo<EncryptedUser>();
 
             //------------------------------------------------------------------------- Email
             var emailResult = SecurityService.EncryptString(user.Email);
             if (!emailResult || emailResult.Data == null)
-            {
-                _log.LogError("Failed to encrypt user email: {ErrorMessage}", emailResult.Message);
-                return emailResult.ConvertTo<EncryptedUser>();
-            }
+                return emailResult.Log(_log).ConvertTo<EncryptedUser>();
 
             //------------------------------------------------------------------------- Document Number
             var documentNumberResult = SecurityService.EncryptString(user.DocumentNumber);
             if (!documentNumberResult || documentNumberResult.Data == null)
-            {
-                _log.LogError("Failed to encrypt user document number: {ErrorMessage}", documentNumberResult.Message);
-                return documentNumberResult.ConvertTo<EncryptedUser>();
-            }
+                return documentNumberResult.Log(_log).ConvertTo<EncryptedUser>();
 
             //------------------------------------------------------------- Verification Code
             var verificationCodeResult = SecurityService.EncryptString(user.VerificationCode);
             if (!verificationCodeResult || verificationCodeResult.Data == null)
-            {
-                _log.LogError("Failed to encrypt user verification code: {ErrorMessage}",
-                    verificationCodeResult.Message);
-                return verificationCodeResult.ConvertTo<EncryptedUser>();
-            }
+                return verificationCodeResult.Log(_log).ConvertTo<EncryptedUser>();
 
             return new EncryptedUser
             {
@@ -285,41 +279,32 @@ public class UserRepository(
     {
         try
         {
-            if (encryptedUser is null) return new Result<User?>
-            {
-                Success = false,
-                Code = "ENCRYPTED_USER_NULL",
-                Status = 500,
-                Message = "no encrypted user to decrypt",
-                IC = FileCodes.CallerIC(),
-                Returnable = false
-            };
+            if (encryptedUser is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "ENCRYPTED_USER_NULL",
+                    Status = 500,
+                    Message = "no encrypted user to decrypt",
+                    IC = FileCodes.CallerIC(),
+                    Returnable = false
+                };
 
             // Decrypt elements
             //------------------------------------------------------------------------- Email
             var emailResult = SecurityService.DecryptString(encryptedUser.EncryptedEmail);
             if (!emailResult || emailResult.Data == null)
-            {
-                _log.LogError("Failed to decrypt user email: {ErrorMessage}", emailResult.Message);
-                return emailResult.ConvertTo<User?>();
-            }
+                return emailResult.Log(_log).ConvertTo<User?>();
 
             //--------------------------------------------------------------- Document Number
             var documentNumberResult = SecurityService.DecryptString(encryptedUser.EncryptedDocumentNumber);
             if (!documentNumberResult || documentNumberResult.Data == null)
-            {
-                _log.LogError("Failed to decrypt user document number: {ErrorMessage}", documentNumberResult.Message);
-                return documentNumberResult.ConvertTo<User?>();
-            }
+                return documentNumberResult.Log(_log).ConvertTo<User?>();
 
             //------------------------------------------------------------- Verification Code
             var verificationCodeResult = SecurityService.DecryptString(encryptedUser.EncryptedVerificationCode);
             if (!verificationCodeResult || verificationCodeResult.Data == null)
-            {
-                _log.LogError("Failed to decrypt user verification code: {ErrorMessage}",
-                    verificationCodeResult.Message);
-                return verificationCodeResult.ConvertTo<User?>();
-            }
+                return verificationCodeResult.Log(_log).ConvertTo<User?>();
 
             return new User
             {

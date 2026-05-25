@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Backend.Core.Internal;
-using Backend.Core.Models;
+using Backend.Core.Models.Result;
 
 namespace Backend.Core.Services;
 
@@ -325,5 +325,36 @@ public partial class SecurityService
         var random = new Random();
         return new string(Enumerable.Repeat(chars, 6)
             .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Performs some verifications on the device Id for security purposes
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <returns></returns>
+    public static Result ValidateDeviceId(string deviceId)
+    {
+        if (string.IsNullOrWhiteSpace(deviceId))
+            return new Result
+            {
+                Success = false,
+                Code = "MISSING_DEVICE_ID",
+                Status = 400,
+                Message = "Device id is required",
+                IC = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        // Maybe I will add more validations but today, I'm tired so...
+        return new Result
+        {
+            Success = true,
+            Code = "VALID_DEVICE_ID",
+            Status = 200,
+            Message = "Device id is valid",
+            IC = FileCodes.CallerIC(),
+            Returnable = true
+        };
     }
 }

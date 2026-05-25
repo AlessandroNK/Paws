@@ -1,4 +1,4 @@
-using Backend.Core.Models;
+using Backend.Core.Models.Result;
 
 namespace Backend.Core.Services.Interfaces;
 

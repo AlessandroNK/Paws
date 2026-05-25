@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Backend.Core.Models;
+namespace Backend.Core.Models.Result;
 
 public class Result<T> : Result
 {

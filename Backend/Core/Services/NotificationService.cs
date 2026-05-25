@@ -1,6 +1,6 @@
 using System.Text;
 using Backend.Core.Internal;
-using Backend.Core.Models;
+using Backend.Core.Models.Result;
 using Backend.Core.Services.Interfaces;
 using Newtonsoft.Json;
 
@@ -62,18 +62,16 @@ public class NotificationService(
             var apiKey = Environment.GetEnvironmentVariable("MAIL_API_KEY");
             var senderEmail = Environment.GetEnvironmentVariable("MAIL_NO_REPLY_EMAIL");
             if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(senderEmail))
-            {
-                Helpers.LogError(_logger, "MAIL_API_KEY environment variable is not set.");
                 return new Result
                 {
                     Success = false,
                     Status = 500,
-                    Message = "Email service is not configured.",
+                    Message =
+                        "Email service is misscofigured configured: MAIL_API_KEY environment variable is not set.",
                     Code = "VERIFICATION_CODE_NOT_SENT",
                     IC = FileCodes.CallerIC(),
                     Returnable = false
                 };
-            }
 
             // Extract first name from full name
             var firstName = name.Split(' ').FirstOrDefault() ?? "Usuario";
@@ -102,7 +100,7 @@ public class NotificationService(
 
             if (response.IsSuccessStatusCode)
             {
-                Helpers.LogInfo(_logger, $"Verification code sent to {email}");
+                LogHelpers.LogInfo(_logger, $"Verification code sent to {email}");
                 return new Result
                 {
                     Success = true,
@@ -114,10 +112,10 @@ public class NotificationService(
                 };
             }
 
-            Helpers.LogError(
+            LogHelpers.LogError(
                 _logger,
-                $"Failed to send verification code to {email}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}");
-
+                $"Failed to send verification code to {email}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}"
+            );
             return new Result
             {
                 Success = false,

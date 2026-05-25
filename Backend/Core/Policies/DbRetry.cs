@@ -1,5 +1,5 @@
 using Backend.Core.Internal;
-using Backend.Core.Models;
+using Backend.Core.Models.Result;
 
 namespace Backend.Core.Policies;
 
@@ -53,38 +53,18 @@ public class DbRetry
         {
             try
             {
-                var result = await operation();
-                if (result || logger is null) return result;
-
-                // Log errors
-                logger.LogError(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ERROR");
-                logger.LogError(
-                    "DB operation {OperationName} failed with code {Code} and message: {Message}",
-                    operationName,
-                    result.Code,
-                    result.Message
-                );
-                logger.LogError("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-                return result;
+                return await operation();
             }
             catch (Exception ex) when (IsTransientException(ex) && attempt < maxRetries)
             {
                 var delay = TimeSpan.FromMilliseconds(baseDelayMs * Math.Pow(2, attempt));
-                logger.LogWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WARNING");
-                logger?.LogWarning(
-                    ex,
-                    "Transient DB error while {OperationName} (attempt {Attempt}/{Max}). Retrying in {DelayMs}ms...",
-                    operationName,
-                    attempt + 1,
-                    maxRetries + 1,
-                    delay.TotalMilliseconds
-                );
-                logger.LogWarning("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-
+                var message = $"Transient DB error during {operationName} (attempt {attempt + 1}/{maxRetries + 1}). Retrying in {delay.TotalMilliseconds}ms...";
+                LogHelpers.LogWarning(logger, ex, message);
                 await Task.Delay(delay);
             }
         }
 
+        LogHelpers.LogError(logger, $"{operationName} DB operation failed after {maxRetries + 1} attempts.");
         return new Result<T>
         {
             Success = false,

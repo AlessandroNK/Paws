@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
+using Backend.Core.Internal;
 
-namespace Backend.Core.Models;
+namespace Backend.Core.Models.Result;
 
 public class Result
 {
@@ -55,6 +56,7 @@ public class Result
     /// generic response before returning it to the frontend
     /// </summary>
     public bool Returnable { get; set; }
+
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
     public static implicit operator bool(Result result) => result.Success;
@@ -144,5 +146,17 @@ public class Result
             IC = IC,
             Returnable = Returnable,
         };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Logs the result using the provided logger and returns the same result for chaining.
+    /// </summary>
+    /// <param name="logger">The logger to use for logging the result.</param>
+    /// <param name="message">An optional message to include in the log.</param>
+    public Result Log(ILogger logger, string message = "")
+    {
+        LogHelpers.LogResult(logger, this, message);
+        return this;
     }
 }
