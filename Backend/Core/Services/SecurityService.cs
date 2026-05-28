@@ -19,8 +19,8 @@ public partial class SecurityService
     [GeneratedRegex(@"[A-Z]")]
     private static partial Regex UppercaseRegex();
 
-    [GeneratedRegex(@"[Kk]")]
-    private static partial Regex KLetterRegex();
+    [GeneratedRegex(@"[Pp]")]
+    private static partial Regex PLetterRegex();
 
     [GeneratedRegex(@"[0-9]")]
     private static partial Regex DigitRegex();
@@ -71,7 +71,7 @@ public partial class SecurityService
                 Code = "EMPTY_STRING",
                 Status = 400,
                 Message = "The string to encrypt cannot be empty",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
 
@@ -82,7 +82,7 @@ public partial class SecurityService
                 Code = "NO_ENCRYPTION_KEY",
                 Status = 500,
                 Message = "No encryption key found",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
 
@@ -114,7 +114,7 @@ public partial class SecurityService
                 Code = "EMPTY_STRING",
                 Status = 400,
                 Message = "The string to encrypt cannot be empty",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
 
@@ -125,7 +125,7 @@ public partial class SecurityService
                 Code = "NO_ENCRYPTION_KEY",
                 Status = 500,
                 Message = "No encryption key found",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
 
@@ -174,7 +174,7 @@ public partial class SecurityService
                 Code = "EMPTY_STRING",
                 Status = 400,
                 Message = "The string to decrypt cannot be empty",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
 
@@ -185,7 +185,7 @@ public partial class SecurityService
                 Code = "NO_ENCRYPTION_KEY",
                 Status = 500,
                 Message = "No encryption key found",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
 
@@ -223,20 +223,28 @@ public partial class SecurityService
     /// <returns>It returns a <see cref="Result"/></returns>
     public static Result IsPasswordValid(string password)
     {
-        var isValid = true;
         var result = new Result
         {
             Success = true,
             Code = "VALID_PASSWORD",
             Status = 200,
             Message = "Password is valid",
-            IC = FileCodes.CallerIC(),
+            TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };
 
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            result.Success = false;
+            result.AddError(
+                "PASSWORD_EMPTY",
+                ["Password cannot be empty"]
+            );
+        }
+
         if (password.Length < 8)
         {
-            isValid = false;
+            result.Success = false;
             result.AddError(
                 "PASSWORD_TOO_SHORT",
                 ["Password must be at least 8 characters long"]
@@ -245,7 +253,7 @@ public partial class SecurityService
 
         if (password.Contains(' '))
         {
-            isValid = false;
+            result.Success = false;
             result.AddError(
                 "PASSWORD_CONTAINS_SPACES",
                 ["Password cannot contain spaces"]
@@ -254,7 +262,7 @@ public partial class SecurityService
 
         if (!LowercaseRegex().IsMatch(password))
         {
-            isValid = false;
+            result.Success = false;
             result.AddError(
                 "PASSWORD_NO_LOWERCASE",
                 ["Password must contain at least one lowercase letter"]
@@ -263,7 +271,7 @@ public partial class SecurityService
 
         if (!UppercaseRegex().IsMatch(password))
         {
-            isValid = false;
+            result.Success = false;
             result.AddError(
                 "PASSWORD_NO_UPPERCASE",
                 ["Password must contain at least one uppercase letter"]
@@ -272,7 +280,7 @@ public partial class SecurityService
 
         if (!DigitRegex().IsMatch(password))
         {
-            isValid = false;
+            result.Success = false;
             result.AddError(
                 "PASSWORD_NO_DIGIT",
                 ["Password must contain at least one number"]
@@ -281,34 +289,29 @@ public partial class SecurityService
 
         if (!SpecialCharRegex().IsMatch(password))
         {
-            isValid = false;
+            result.Success = false;
             result.AddError(
                 "PASSWORD_NO_SPECIAL_CHAR",
                 ["Password must contain at least one special character"]
             );
         }
 
-        if (!KLetterRegex().IsMatch(password))
+        if (!PLetterRegex().IsMatch(password))
         {
-            isValid = false;
+            result.Success = false;
             result.AddError(
-                "PASSWORD_NO_K_LETTER",
-                ["Password must contain at least one 'K' letter"]
+                "PASSWORD_NO_P_LETTER",
+                ["Password must contain at least one 'P' letter"]
             );
         }
 
-        return isValid
-            ? result
-            : new Result
-            {
-                Success = false,
-                Code = "INVALID_PASSWORD",
-                Status = 400,
-                Message = "Password is invalid",
-                IC = FileCodes.CallerIC(),
-                Returnable = true,
-                Errors = result.Errors
-            };
+        Console.WriteLine(15);
+        if (result) return result;
+
+        result.Code = "INVALID_PASSWORD";
+        result.Status = 400;
+        result.Message = "Password is invalid";
+        return result;
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -342,7 +345,7 @@ public partial class SecurityService
                 Code = "MISSING_DEVICE_ID",
                 Status = 400,
                 Message = "Device id is required",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
 
@@ -353,7 +356,7 @@ public partial class SecurityService
             Code = "VALID_DEVICE_ID",
             Status = 200,
             Message = "Device id is valid",
-            IC = FileCodes.CallerIC(),
+            TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };
     }

@@ -97,7 +97,7 @@ public static class LogHelpers
     /// </summary>
     private static IEnumerable<string> FormatResultBlock(Result result, string message)
     {
-        if (!string.IsNullOrWhiteSpace(result.IC)) yield return result.IC;
+        if (!string.IsNullOrWhiteSpace(result.TraceCode)) yield return result.TraceCode;
         if (!string.IsNullOrWhiteSpace(message)) yield return message;
         if (!string.IsNullOrWhiteSpace(result.Code)) yield return result.Code;
         if (!string.IsNullOrWhiteSpace(result.Message)) yield return result.Message;

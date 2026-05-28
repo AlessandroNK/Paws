@@ -35,18 +35,28 @@ public interface IUserService
     /// Finds a user by its email.
     /// </summary>
     /// <param name="email">The email to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
     /// <returns>The created user</returns>
-    public Task<Result<User?>> GetByEmailAsync(string email, bool excludeHidden);
+    public Task<Result<User?>> GetByEmailAsync(
+        string email,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Finds a user by its document number.
     /// </summary>
     /// <param name="document">The document to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
     /// <returns>The created user</returns>
-    public Task<Result<User?>> GetByDocumentAsync(string document, bool excludeHidden);
+    public Task<Result<User?>> GetByDocumentAsync(
+        string document,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>

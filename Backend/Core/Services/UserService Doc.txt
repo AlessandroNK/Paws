@@ -1,0 +1,75 @@
+/api/user/sign-up
+
+request example:
+
+{
+    "email": "user@example.com",
+    "password": "P@ssw0rd123",
+    "documentType": 1,
+    "documentNumber": "123456789012345",
+    "name": "John Doe"
+}
+
+Parameters:
+    Email: string
+        Is required.
+        Cannot exceed 254 characters.
+
+    Password: string
+        Is required.
+        Must be at least 8 characters long.
+        Cannot exceed 100 characters.
+        Cannot contain spaces.
+        Must contain at least one lowercase letter.
+        Must contain at least one uppercase letter.
+        Must contain at least one number.
+        Must contain at least one special character.
+        Must contain at least one 'P' letter (for Paws)
+
+    DocumentType: int
+        Document type is required.
+        Document type must be between 1 and 5.
+        1. CC, 2. CE, 3. TI, 4. NIT, 5. Otro
+
+    DocumentNumber: string
+        Is required.
+        Must be between 1 and 15 characters.
+        Can only contain digits (0-9).
+
+    Name: string
+        Is required.
+        Cannot exceed 200 characters.
+        Must be at least 1 character long.
+        Can only contain letters, spaces, hyphens, and apostrophes.
+
+
+Response examples:
+{
+    "data": null,                  // No se devuelve ningún dato específico en caso de error
+    "success": false,
+    "ok": false,
+    "isSuccess": false,
+    "code": "USER_ALREADY_EXISTS", // El código de error específico para este caso
+    "status": 400,                 // El código de estado HTTP adecuado para este tipo de error (400 Bad Request)
+    "message": "A user with the same email or document already exists",
+    "errors": null,                // No se proporcionan detalles adicionales de errores en este caso
+    "traceCode": "U02:0243-CQR711",
+    "returnable": true
+}
+
+{
+    "data": null,
+    "success": false,
+    "ok": false,
+    "isSuccess": false,
+    "code": "INVALID_PASSWORD",
+    "status": 400,
+    "message": "Password is invalid",
+    "errors": {                                             // Detalles específicos de los errores relacionados con la contraseña
+        "PASSWORD_NO_P_LETTER": [                           // Cada error tiene un código específico para identificar el tipo de error
+            "Password must contain at least one 'P' letter" // El mensaje específico para este error de validación de contraseña
+        ]
+    },
+    "traceCode": "UNK:0232-T0QVV9",
+    "returnable": true
+}

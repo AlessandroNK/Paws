@@ -1,5 +1,6 @@
 using Backend.Core.Controllers.interfaces;
 using Backend.Core.Internal;
+using Backend.Core.Models.Result;
 using Backend.Core.Models.User;
 using Backend.Core.Services;
 using Backend.Core.Services.Interfaces;
@@ -8,6 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Core.Controllers;
 
+/// <summary>
+///
+/// </summary>
+/// <param name="userService"></param>
+/// <param name="logger"></param>
+/// <remarks>FU03</remarks>
 [ApiController]
 [Route("api/[controller]")]
 [EnableCors("AllowFrontend")]
@@ -85,13 +92,13 @@ public class UserController(
         catch (Exception e)
         {
             LogHelpers.LogError(_logger, e);
-            return Ok(new
+            return Ok(new Result
             {
-                Ok = false,
-                IsSuccess = false,
+                Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API"
+                Message = "Something is breaking inside the API",
+                TraceCode = FileCodes.CallerIC()
             });
         }
     }

@@ -71,7 +71,7 @@ public class DbRetry
             Code = "DB_ERROR",
             Status = 500,
             Message = $"{operationName} DB operation failed after {maxRetries + 1} attempts.",
-            IC = $"{FileCodes.CallerIC()}-{operationName}",
+            TraceCode = $"{FileCodes.CallerIC()}-{operationName}",
             Returnable = false
         };
     }

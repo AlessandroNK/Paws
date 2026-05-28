@@ -15,12 +15,12 @@ public class EncryptedUser
     /// <summary>
     /// A hash of the user's password. It is used to verify the user's password when signing in.
     /// </summary>
-    public string HashedPassword { get; set; } = string.Empty;
+    public string PasswordHashed { get; set; } = string.Empty;
 
     /// <summary>
     /// The email in a readable string to return to the frontend
     /// </summary>
-    public string EncryptedEmail { get; set; } = string.Empty;
+    public string EmailEncrypted { get; set; } = string.Empty;
 
     /// <summary>
     /// A hash of the email to find it quickly.
@@ -35,7 +35,7 @@ public class EncryptedUser
     /// <summary>
     /// The number of identification like we are simple elements named by random numbers
     /// </summary>
-    public string EncryptedDocumentNumber { get; set; } = string.Empty;
+    public string DocumentNumberEncrypted { get; set; } = string.Empty;
 
     /// <summary>
     /// A hash to quickly find the user by the document number
@@ -67,5 +67,5 @@ public class EncryptedUser
     /// <summary>
     /// Any verification code for the user.
     /// </summary>
-    public string EncryptedVerificationCode { get; set; } = string.Empty;
+    public string VerificationCodeEncrypted { get; set; } = string.Empty;
 }

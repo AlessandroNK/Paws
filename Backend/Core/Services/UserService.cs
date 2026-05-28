@@ -11,6 +11,7 @@ namespace Backend.Core.Services;
 /// <summary>
 /// Provides functionality for managing user operations.
 /// </summary>
+/// <remarks>FU02</remarks>
 public class UserService(
     INotificationService notificationService,
     IUserRepository userRepo,
@@ -86,7 +87,7 @@ public class UserService(
                 Code = "ERROR_ADDING_USER",
                 Status = 500,
                 Message = "An error occurred while adding the user",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
         }
@@ -102,9 +103,14 @@ public class UserService(
     /// Finds a user by its email.
     /// </summary>
     /// <param name="email">The email to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
     /// <returns>The created user</returns>
-    public async Task<Result<User?>> GetByEmailAsync(string email, bool excludeHidden)
+    public async Task<Result<User?>> GetByEmailAsync(
+        string email,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    )
     {
         try
         {
@@ -118,21 +124,19 @@ public class UserService(
                     Code = "INVALID_EMAIL",
                     Status = 400,
                     Message = "Email is required",
-                    IC = FileCodes.CallerIC(),
+                    TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
 
             // Search for the user
-            var userResult = await DbRetry.ExecuteWithRetry(
+            return await DbRetry.ExecuteWithRetry(
                 operation: () => _userRepo.GetByEmailAsync(
                     email,
-                    excludeHidden
+                    excludeBanned
                 ),
                 operationName: "Getting user by email",
                 logger: _logger
             );
-
-            return userResult;
         }
         catch (Exception e)
         {
@@ -143,7 +147,7 @@ public class UserService(
                 Code = "ERROR_GETTING_USER",
                 Status = 500,
                 Message = "An error occurred while getting the user",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
         }
@@ -154,9 +158,14 @@ public class UserService(
     /// Finds a user by its document number.
     /// </summary>
     /// <param name="document">The document to search for</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
     /// <returns>The created user</returns>
-    public async Task<Result<User?>> GetByDocumentAsync(string document, bool excludeHidden)
+    public async Task<Result<User?>> GetByDocumentAsync(
+        string document,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    )
     {
         try
         {
@@ -170,21 +179,20 @@ public class UserService(
                     Code = "INVALID_DOCUMENT",
                     Status = 400,
                     Message = "Document is required",
-                    IC = FileCodes.CallerIC(),
+                    TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
 
             // Search for the user
-            var userResult = await DbRetry.ExecuteWithRetry(
+            return await DbRetry.ExecuteWithRetry(
                 operation: () => _userRepo.GetByDocumentAsync(
                     document,
-                    excludeHidden
+                    excludeInactive,
+                    excludeBanned
                 ),
                 operationName: "Getting user by document",
                 logger: _logger
             );
-
-            return userResult;
         }
         catch (Exception e)
         {
@@ -195,7 +203,7 @@ public class UserService(
                 Code = "ERROR_GETTING_USER",
                 Status = 500,
                 Message = "An error occurred while getting the user",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
         }
@@ -222,19 +230,17 @@ public class UserService(
             // Find the user to avoid duplications
             // This is to avoid telling the uer the exact element that already
             // exists so it is a little harder to attack our platform
-            var exists = false;
-            var existingEmailResult = await GetByEmailAsync(request.Email, true);
-            var existingDocumentResult = await GetByDocumentAsync(request.DocumentNumber, true);
-            exists = existingEmailResult || existingDocumentResult;
+            var existingEmailResult = await GetByEmailAsync(request.Email);
+            var existingDocumentResult = await GetByDocumentAsync(request.DocumentNumber);
 
-            if (exists)
+            if (existingEmailResult.Data is not null || existingDocumentResult.Data is not null)
                 return new Result<User?>
                 {
                     Success = false,
                     Code = "USER_ALREADY_EXISTS",
                     Status = 400,
                     Message = "A user with the same email or document already exists",
-                    IC = FileCodes.CallerIC(),
+                    TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
 
@@ -248,7 +254,7 @@ public class UserService(
                 Name = request.Name,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Status = UserStatus.Inactive,
+                Status = UserStatus.Unverified,
                 VerificationCode = SecurityService.GenerateVerificationCode()
             };
 
@@ -263,7 +269,7 @@ public class UserService(
                 user.Email,
                 user.VerificationCode
             );
-            if (!notificationResult) return requestResult.ConvertTo<User?>();
+            if (!notificationResult) return notificationResult.ConvertTo<User?>();
 
             // Everything went well, return the user
             return new Result<User?>
@@ -298,9 +304,8 @@ public class UserService(
     /// </summary>
     /// <param name="request">The sign up request to check</param>
     /// <returns>A result indicating whether the request is valid or not</returns>
-    private Result CheckSignUpRequest(SignUpRequest request)
+    private static Result CheckSignUpRequest(SignUpRequest request)
     {
-        CheckSignUpRequest(request);
         // Verifications
         if (string.IsNullOrWhiteSpace(request.Email))
             return new Result
@@ -309,7 +314,7 @@ public class UserService(
                 Code = "INVALID_EMAIL",
                 Status = 400,
                 Message = "Email is required",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
 
@@ -317,14 +322,14 @@ public class UserService(
         if (!passwordResult)
             return passwordResult;
 
-        if (Enum.IsDefined(typeof(DocumentType), request.DocumentType))
+        if (!Enum.IsDefined(typeof(DocumentType), request.DocumentType))
             return new Result
             {
                 Success = false,
                 Code = "INVALID_DOCUMENT_TYPE",
                 Status = 400,
-                Message = "Document type must be between 1 and 3",
-                IC = FileCodes.CallerIC(),
+                Message = "Document type must be between 1 and 5",
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
 
@@ -335,7 +340,7 @@ public class UserService(
                 Code = "INVALID_DOCUMENT_NUMBER",
                 Status = 400,
                 Message = "Document number must be between 1 and 15 characters",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
 
@@ -350,14 +355,15 @@ public class UserService(
                 Status = 400,
                 Message =
                     "The name must be between 1 and 200 characters and can only contain letters, spaces, hyphens, and apostrophes",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
 
+        // Everything is valid
         return new Result
         {
             Success = true,
-            Code = "SUCCESS",
+            Code = "SUCCESS_REQUEST",
             Status = 200,
         };
     }

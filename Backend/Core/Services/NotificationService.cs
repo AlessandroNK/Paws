@@ -69,7 +69,7 @@ public class NotificationService(
                     Message =
                         "Email service is misscofigured configured: MAIL_API_KEY environment variable is not set.",
                     Code = "VERIFICATION_CODE_NOT_SENT",
-                    IC = FileCodes.CallerIC(),
+                    TraceCode = FileCodes.CallerIC(),
                     Returnable = false
                 };
 
@@ -107,7 +107,7 @@ public class NotificationService(
                     Status = 200,
                     Message = "Verification code sent successfully.",
                     Code = "VERIFICATION_CODE_SENT",
-                    IC = FileCodes.CallerIC(),
+                    TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
             }
@@ -122,7 +122,7 @@ public class NotificationService(
                 Status = (int)response.StatusCode,
                 Message = "Failed to send verification code.",
                 Code = "VERIFICATION_CODE_NOT_SENT",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
         }
@@ -135,7 +135,7 @@ public class NotificationService(
                 Status = 500,
                 Message = "An error occurred while sending the verification code.",
                 Code = "VERIFICATION_CODE_SEND_FAILED",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
         }

@@ -44,18 +44,19 @@ public class Result
     /// <summary>
     /// Any validation errors associated with the result.
     /// </summary>
-    public Dictionary<string, string[]> Errors { get; set; }
+    public Dictionary<string, string[]> Errors { get; set; }  = new Dictionary<string, string[]>();
 
     /// <summary>
     /// An internal code to identify the result origin easily
     /// </summary>
-    public string IC { get; set; } = string.Empty;
+    public string TraceCode { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether the result should be returned to the frontend or not. In case it does not, it should be replaced for a
     /// generic response before returning it to the frontend
     /// </summary>
     public bool Returnable { get; set; }
+
 
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
@@ -115,7 +116,7 @@ public class Result
             Code = code,
             Status = status,
             Message = message,
-            IC = $"{Path.GetFileName(file)}:{line}",
+            TraceCode = $"{Path.GetFileName(file)}:{line}",
             Returnable = returnable,
         };
     }
@@ -143,7 +144,7 @@ public class Result
             Status = Status,
             Message = Message,
             Errors = Errors,
-            IC = IC,
+            TraceCode = TraceCode,
             Returnable = Returnable,
         };
     }

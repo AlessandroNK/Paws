@@ -6,13 +6,15 @@ namespace Backend.Core.Internal;
 /// <summary>
 /// Provides short internal codes for source files and builds trace identifiers that include the file code.
 /// </summary>
-public class FileCodes
+public static class FileCodes
 {
         //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
     private static readonly Dictionary<string, string> Codes = new()
     {
-        { "UserRepository.cs", "FU01" },
+        { "UserRepository.cs", "U01" },
+        { "UserService.cs", "U02" },
+        { "UserController.cs", "U03" },
     };
 
 
@@ -34,21 +36,19 @@ public class FileCodes
 
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
-
-
-    //                                                                                                    Public Methods
-    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Gets the internal code associated with a source file name.
     /// </summary>
     /// <param name="filePath">The full or relative path to the source file.</param>
     /// <returns>The configured file code, or <c>UNK</c> when no mapping exists.</returns>
-    public static string GetCode(string filePath)
+    private static string GetCode(string filePath)
     {
         var fileName = System.IO.Path.GetFileName(filePath);
         return Codes.TryGetValue(fileName, out var code) ? code : "UNK";
     }
 
+
+    //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Builds an internal trace code using the caller file mapping, caller line number, and a generated verification code

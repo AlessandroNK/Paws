@@ -90,7 +90,7 @@ public class Result<T> : Result
             Code = code,
             Status = status,
             Message = message,
-            IC = $"{Path.GetFileName(file)}:{line}",
+            TraceCode = $"{Path.GetFileName(file)}:{line}",
             Returnable = returnable,
             Data = data,
         };
@@ -114,7 +114,7 @@ public class Result<T> : Result
                 Message = Message,
                 Data = data,
                 Errors = Errors,
-                IC = IC,
+                TraceCode = TraceCode,
                 Returnable = Returnable,
             }
             : new Result<TU>
@@ -125,7 +125,7 @@ public class Result<T> : Result
                 Message = Message,
                 Data = default(TU),
                 Errors = Errors,
-                IC = IC,
+                TraceCode = TraceCode,
                 Returnable = Returnable,
             };
     }

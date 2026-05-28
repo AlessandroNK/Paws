@@ -20,12 +20,14 @@ public struct SignUpRequest
     /// User's password
     /// </summary>
     [Required(ErrorMessage = "Password is required.")]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
+    [MaxLength(100, ErrorMessage = "Password cannot exceed 100 characters.")]
     public string Password { get; set; }
 
     /// <summary>
     /// User's document type
     /// </summary>
-    [Range(1, 3, ErrorMessage = "Document type must be between 1 and 3.")]
+    [Range(1, 5, ErrorMessage = "Document type must be between 1 and 5.")]
     public int DocumentType { get; set; }
 
     /// <summary>

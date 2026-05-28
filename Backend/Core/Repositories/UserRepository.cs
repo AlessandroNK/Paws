@@ -16,6 +16,7 @@ namespace Backend.Core.Repositories;
 /// The implementation of this interface should handle the data access logic, such as interacting with a database
 /// or any other data source.
 /// </summary>
+/// <remarks>FU01</remarks>
 public class UserRepository(
     ApplicationDbContext dbContext,
     ILogger<UserRepository> logger
@@ -66,10 +67,15 @@ public class UserRepository(
     /// <summary>
     /// Finds a user by its email.
     /// </summary>
-    /// <param name="email">The email of the user</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
-    /// <returns>The user if any</returns>
-    public async Task<Result<User?>> GetByEmailAsync(string email, bool excludeHidden)
+    /// <param name="email">The email to search for</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <returns>The created user</returns>
+    public async Task<Result<User?>> GetByEmailAsync(
+        string email,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    )
     {
         // Encrypt user data to find it in the db
         var hashedEmailResult = SecurityService.HashWithSalt(email);
@@ -77,14 +83,15 @@ public class UserRepository(
             return hashedEmailResult.Log(_log).ConvertTo<User?>();
 
         // Find the user
-        var query = _dbContext.EncryptedUsers.AsQueryable();
+        var query = _dbContext.EncryptedUsers
+            .Where(u => u.EmailHash == hashedEmailResult.Data);
 
-        query = excludeHidden
-            ? query.Where(u => u.EmailHash == hashedEmailResult.Data && u.Status != UserStatus.Inactive)
-            : query.Where(u => u.EmailHash == hashedEmailResult.Data);
+        if (excludeInactive) query = query.Where(u => u.Status != UserStatus.Inactive);
+
+        if (excludeBanned) query = query.Where(u => u.Status != UserStatus.Banned);
 
         query = query
-            .Include(u => u.DocumentType)
+            // .Include(u => u.DocumentType)
             // .Include(u => u.Tokens)
             .AsSplitQuery();
 
@@ -97,7 +104,7 @@ public class UserRepository(
                 Code = "USER_NOT_FOUND",
                 Status = 404,
                 Message = "No user found with the provided email",
-                IC = $"{FileCodes.CallerIC()}",
+                TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
@@ -110,9 +117,14 @@ public class UserRepository(
     /// Finds a user by its document number.
     /// </summary>
     /// <param name="document">The document of the user</param>
-    /// <param name="excludeHidden">Whether to filter out hidden users</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
     /// <returns>The user if any</returns>
-    public async Task<Result<User?>> GetByDocumentAsync(string document, bool excludeHidden)
+    public async Task<Result<User?>> GetByDocumentAsync(
+        string document,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    )
     {
         // Encrypt user data to find it in the db
         var hashedDocumentResult = SecurityService.HashWithSalt(document);
@@ -123,14 +135,14 @@ public class UserRepository(
         }
 
         // Find the user
-        var query = _dbContext.EncryptedUsers.AsQueryable();
+        var query = _dbContext.EncryptedUsers.AsQueryable()
+            .Where(u => u.DocumentHash == hashedDocumentResult.Data);
 
-        query = excludeHidden
-            ? query.Where(u => u.DocumentHash == hashedDocumentResult.Data && u.Status != UserStatus.Inactive)
-            : query.Where(u => u.DocumentHash == hashedDocumentResult.Data);
+        if (excludeInactive) query = query.Where(u => u.Status != UserStatus.Inactive);
+        if (excludeBanned) query = query.Where(u => u.Status != UserStatus.Banned);
 
         query = query
-            .Include(u => u.DocumentType)
+            // .Include(u => u.DocumentType)
             // .Include(u => u.Tokens)
             .AsSplitQuery();
 
@@ -143,7 +155,7 @@ public class UserRepository(
                 Code = "USER_NOT_FOUND",
                 Status = 404,
                 Message = "No user found with the provided document",
-                IC = $"{FileCodes.CallerIC()}",
+                TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
@@ -174,7 +186,7 @@ public class UserRepository(
                 Code = "ERROR_CREATING_USER",
                 Status = 500,
                 Message = "An error occurred while creating the user",
-                IC = $"{FileCodes.CallerIC()}",
+                TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
@@ -187,7 +199,7 @@ public class UserRepository(
                 Code = "USER_CREATED_BUT_NOT_FOUND",
                 Status = 500,
                 Message = "User created but not found when retrieving it",
-                IC = $"{FileCodes.CallerIC()}",
+                TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
@@ -199,7 +211,7 @@ public class UserRepository(
             Status = 201,
             Message = "User created successfully",
             Data = user,
-            IC = $"{FileCodes.CallerIC()}",
+            TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
         };
     }
@@ -231,10 +243,18 @@ public class UserRepository(
             if (!emailResult || emailResult.Data == null)
                 return emailResult.Log(_log).ConvertTo<EncryptedUser>();
 
+            var emailHashResult = SecurityService.HashWithSalt(user.Email);
+            if (!emailHashResult || emailHashResult.Data == null)
+                return emailHashResult.Log(_log).ConvertTo<EncryptedUser>();
+
             //------------------------------------------------------------------------- Document Number
             var documentNumberResult = SecurityService.EncryptString(user.DocumentNumber);
             if (!documentNumberResult || documentNumberResult.Data == null)
                 return documentNumberResult.Log(_log).ConvertTo<EncryptedUser>();
+
+            var documentHashResult = SecurityService.HashWithSalt(user.DocumentNumber);
+            if (!documentHashResult || documentHashResult.Data == null)
+                return documentHashResult.Log(_log).ConvertTo<EncryptedUser>();
 
             //------------------------------------------------------------- Verification Code
             var verificationCodeResult = SecurityService.EncryptString(user.VerificationCode);
@@ -243,15 +263,17 @@ public class UserRepository(
 
             return new EncryptedUser
             {
-                Id = user.Id,
-                EncryptedEmail = emailResult.Data,
-                HashedPassword = passwordResult.Data,
+                PasswordHashed = passwordResult.Data,
+                EmailEncrypted = emailResult.Data,
+                EmailHash = emailHashResult.Data,
                 DocumentType = user.DocumentType,
-                EncryptedDocumentNumber = documentNumberResult.Data,
+                DocumentNumberEncrypted = documentNumberResult.Data,
+                DocumentHash = documentHashResult.Data,
                 Name = user.Name,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                EncryptedVerificationCode = verificationCodeResult.Data,
+                Status = user.Status,
+                VerificationCodeEncrypted = verificationCodeResult.Data,
             };
         }
         catch (Exception e)
@@ -263,7 +285,7 @@ public class UserRepository(
                 Code = "USER_ENCRYPTION_FAILED",
                 Status = 500,
                 Message = "Failed to encrypt user data",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
         }
@@ -286,23 +308,23 @@ public class UserRepository(
                     Code = "ENCRYPTED_USER_NULL",
                     Status = 500,
                     Message = "no encrypted user to decrypt",
-                    IC = FileCodes.CallerIC(),
+                    TraceCode = FileCodes.CallerIC(),
                     Returnable = false
                 };
 
             // Decrypt elements
             //------------------------------------------------------------------------- Email
-            var emailResult = SecurityService.DecryptString(encryptedUser.EncryptedEmail);
+            var emailResult = SecurityService.DecryptString(encryptedUser.EmailEncrypted);
             if (!emailResult || emailResult.Data == null)
                 return emailResult.Log(_log).ConvertTo<User?>();
 
             //--------------------------------------------------------------- Document Number
-            var documentNumberResult = SecurityService.DecryptString(encryptedUser.EncryptedDocumentNumber);
+            var documentNumberResult = SecurityService.DecryptString(encryptedUser.DocumentNumberEncrypted);
             if (!documentNumberResult || documentNumberResult.Data == null)
                 return documentNumberResult.Log(_log).ConvertTo<User?>();
 
             //------------------------------------------------------------- Verification Code
-            var verificationCodeResult = SecurityService.DecryptString(encryptedUser.EncryptedVerificationCode);
+            var verificationCodeResult = SecurityService.DecryptString(encryptedUser.VerificationCodeEncrypted);
             if (!verificationCodeResult || verificationCodeResult.Data == null)
                 return verificationCodeResult.Log(_log).ConvertTo<User?>();
 
@@ -310,7 +332,7 @@ public class UserRepository(
             {
                 Id = encryptedUser.Id,
                 Email = emailResult.Data,
-                HashedPassword = encryptedUser.HashedPassword,
+                HashedPassword = encryptedUser.PasswordHashed,
                 DocumentType = encryptedUser.DocumentType,
                 DocumentNumber = documentNumberResult.Data,
                 Name = encryptedUser.Name,
@@ -328,7 +350,7 @@ public class UserRepository(
                 Code = "USER_DECRYPTION_FAILED",
                 Status = 500,
                 Message = "Failed to decrypt user data",
-                IC = FileCodes.CallerIC(),
+                TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
         }
