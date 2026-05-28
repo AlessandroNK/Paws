@@ -1,10 +1,40 @@
-using Backend.Core.Models;
 using Backend.Core.Models.Result;
 
 namespace Backend.Core.Internal;
 
 public static class LogHelpers
 {
+    //                                                                                                Private Properties
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                 Public Properties
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                         Operators
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                            Events
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                      Constructors
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                   Private Methods
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                    Public Methods
+    // -----------------------------------------------------------------------------------------------------------------
+    private static ILogger ResolveLogger(ILogger? logger)
+    {
+        return logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
     public static void LogResult(ILogger logger, Result result, string message = "")
     {
@@ -13,32 +43,53 @@ public static class LogHelpers
         else LogError(logger, result, message);
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    public static void LogError(Exception e, string message = "")
+    {
+        LogError(null, e, message);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static void LogInfo(Exception e, string message = "")
+    {
+        LogInfo(null, e, message);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static void LogWarning(Exception e, string message = "")
+    {
+        LogWarning(null, e, message);
+    }
+
     #region Error
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static void LogError(ILogger logger, Result result, string message = "")
+    public static void LogError(ILogger? logger, Result result, string message = "")
     {
-        logger.LogError("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ERROR");
+        var log = ResolveLogger(logger);
+        log.LogError("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ERROR");
         foreach (var line in FormatResultBlock(result, message))
-            logger.LogError(line);
-        logger.LogError("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+            log.LogError(line);
+        log.LogError("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static void LogError(ILogger logger, Exception e, string message = "")
+    public static void LogError(ILogger? logger, Exception e, string message = "")
     {
-        logger.LogError(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ERROR");
-        if (!string.IsNullOrWhiteSpace(message)) logger.LogError(message);
-        logger.LogError(e.Message);
-        logger.LogError("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        var log = ResolveLogger(logger);
+        log.LogError(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ERROR");
+        if (!string.IsNullOrWhiteSpace(message)) log.LogError(message);
+        log.LogError(e.Message);
+        log.LogError("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static void LogError(ILogger logger, string message)
+    public static void LogError(ILogger? logger, string message)
     {
-        logger.LogError(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ERROR");
-        logger.LogError(message);
-        logger.LogError("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        var log = ResolveLogger(logger);
+        log.LogError(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ERROR");
+        log.LogError(message);
+        log.LogError("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     #endregion
@@ -48,29 +99,32 @@ public static class LogHelpers
     #region Info
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static void LogInfo(ILogger logger, Result result, string message = "")
+    public static void LogInfo(ILogger? logger, Result result, string message = "")
     {
-        logger.LogInformation("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SUCCESS");
+        var log = ResolveLogger(logger);
+        log.LogInformation("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SUCCESS");
         foreach (var line in FormatResultBlock(result, message))
-            logger.LogInformation(line);
-        logger.LogInformation("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+            log.LogInformation(line);
+        log.LogInformation("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static void LogInfo(ILogger logger, string message)
+    public static void LogInfo(ILogger? logger, string message)
     {
-        logger.LogInformation(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INFO");
-        logger.LogInformation(message);
-        logger.LogInformation("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        var log = ResolveLogger(logger);
+        log.LogInformation(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INFO");
+        log.LogInformation(message);
+        log.LogInformation("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static void LogInfo(ILogger logger, Exception e, string message = "")
+    public static void LogInfo(ILogger? logger, Exception e, string message = "")
     {
-        logger.LogInformation(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INFO");
-        if (!string.IsNullOrWhiteSpace(message)) logger.LogInformation(message);
-        logger.LogInformation(e.Message);
-        logger.LogInformation("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        var log = ResolveLogger(logger);
+        log.LogInformation(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INFO");
+        if (!string.IsNullOrWhiteSpace(message)) log.LogInformation(message);
+        log.LogInformation(e.Message);
+        log.LogInformation("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     #endregion
@@ -80,12 +134,13 @@ public static class LogHelpers
     #region Warning
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static void LogWarning(ILogger logger, Exception e, string message = "")
+    public static void LogWarning(ILogger? logger, Exception e, string message = "")
     {
-        logger.LogWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>> WARNING");
-        if (!string.IsNullOrWhiteSpace(message)) logger.LogWarning(message);
-        logger.LogWarning(e.Message);
-        logger.LogWarning("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        var log = ResolveLogger(logger);
+        log.LogWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>> WARNING");
+        if (!string.IsNullOrWhiteSpace(message)) log.LogWarning(message);
+        log.LogWarning(e.Message);
+        log.LogWarning("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     #endregion
@@ -102,7 +157,7 @@ public static class LogHelpers
         if (!string.IsNullOrWhiteSpace(result.Code)) yield return result.Code;
         if (!string.IsNullOrWhiteSpace(result.Message)) yield return result.Message;
 
-        if (result.Errors?.Count > 0)
+        if (result.Errors.Count > 0)
         {
             yield return "Errors:";
             foreach (var error in result.Errors)

@@ -69,4 +69,14 @@ public interface IUserRepository
     /// <param name="user">The user to add</param>
     /// <returns>A <see cref="Result"/> indicating whether the sign up was successful</returns>
     public Task<Result<User?>> AddAsync(User user);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Updates an existing user. It takes the device id from the header and the sign up request from the body. It returns
+    /// an instance of the updated user
+    ///
+    /// </summary>
+    /// <param name="user">the <see cref="User"/> to update</param>
+    /// <returns>The <see cref="User"/></returns>
+    public Task<Result<User?>> UpdateAsync(User user);
 }

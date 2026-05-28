@@ -66,8 +66,8 @@ public class UserController(
     /// Signs up a new user. It takes the device id from the header and the sign up request from the body. It returns an
     /// IActionResult with some relevant data as ok, code, and status
     /// </summary>
-    /// <param name="deviceId"></param>
-    /// <param name="request"></param>
+    /// <param name="deviceId">The device id of the user</param>
+    /// <param name="request">The sign up request</param>
     /// <returns></returns>
     [HttpPost]
     [Route("sign-up")]
@@ -86,7 +86,95 @@ public class UserController(
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the user up
-            var result = await _userService.SignUp(deviceId, request);
+            var result = await _userService.SignUp(request);
+
+            // Clean the response and convert it and its data to Dto
+            return result ? Ok(result.ToDto<UserResponse>()) : BadRequest(result.ToDto<UserResponse>());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return Ok(new Result
+            {
+                Success = false,
+                Code = "BAD_OPERATION",
+                Status = 500,
+                Message = "Something is breaking inside the API",
+                TraceCode = FileCodes.CallerIC()
+            });
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Verifies the account by checking if the provided code matches the database's verification code for the specified
+    /// user.
+    /// </summary>
+    /// <param name="deviceId">The device id of the user</param>
+    /// <param name="request">The <see cref="AccountVerificationRequest"/> containing the email and the verification
+    /// code</param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("verify-account")]
+    public async Task<IActionResult> VerifyAccountAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] AccountVerificationRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Verifying account for user with device id: {DeviceId} and email: {@Email}",
+                deviceId,
+                request.Email);
+
+            // Validations
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Sign the user up
+            var result = await _userService.VerifyAccountAsync(request);
+
+            // Clean the response and convert it and its data to Dto
+            return result ? Ok(result.ToDto<UserResponse>()) : BadRequest(result.ToDto<UserResponse>());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return Ok(new Result
+            {
+                Success = false,
+                Code = "BAD_OPERATION",
+                Status = 500,
+                Message = "Something is breaking inside the API",
+                TraceCode = FileCodes.CallerIC()
+            });
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Resends the verification code tot he user
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> ResendVerificationEmailAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] ResendVerificationCodeRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Resending verification email for user with device id: {DeviceId} and email: {@Email}",
+                deviceId,
+                request.Email);
+
+            // Validations
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Sign the user up
+            var result = await _userService.ResendVerificationEmailAsync(request);
             return result ? Ok(result) : BadRequest(result);
         }
         catch (Exception e)

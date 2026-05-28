@@ -81,17 +81,17 @@ public class NotificationService(
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "Koodi app" },
+                sender = new { email = senderEmail, name = "Paws app" },
                 to = new[] { new { email = email, name = email } },
-                subject = "Sign in to Koodi",
+                subject = $"Tu código para Registro en Paws es {code}",
                 htmlContent = $@"
                             <h2>¡Hola!</h2>
-                            <p>{firstName}, aquí tienes tu <b>código de un solo uso</b> para verificar tu cuenta en <strong>Koodi</strong>:</p>
-                            <p style='font-size: 20px; font-weight: 500; color: #29abf1;'>{code}</p>
+                            <p>{firstName}, aquí tienes tu <b>código de un solo uso</b> para verificar tu cuenta en <strong>Paws</strong>:</p>
+                            <p style='font-size: 20px; font-weight: 500; color: #f05a22;'>{code}</p>
                             <p>Si no solicitaste este código, simplemente ignora este mensaje. No pasa nada 🙂</p>
                             <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
-                            <p><em>Koodi es un proyecto académico, hecho con fines de aprendizaje.</em></p>
-                            <p><a href='https://koodi.page/' style='color:#1a73e8; text-decoration:none;'>Visítanos en koodi.page</a></p>>"
+                            <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
+                            <p><a href='https://' style='color:#f05a22; text-decoration:none;'>no tengo web para Paws aún</a></p>>"
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8,

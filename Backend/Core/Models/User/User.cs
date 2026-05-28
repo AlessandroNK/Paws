@@ -1,11 +1,12 @@
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Interfaces;
 
 namespace Backend.Core.Models.User;
 
 /// <summary>
 /// Represents a user in the API
 /// </summary>
-public class User
+public class User : IDtoConvertible<UserResponse>
 {
     /// <summary>
     /// The id of the user in the database
@@ -63,4 +64,23 @@ public class User
     /// Any verification code for the user.
     /// </summary>
     public string VerificationCode { get; set; }
+
+    /// <summary>
+    /// A timestamp indication the time when the code was created. This is useful to invalidate the code after a certain
+    /// time has passed and to prevent sending codes to the user until the previous code has expired.
+    /// </summary>
+    public DateTime VerificationCodeDate { get; set; }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public UserResponse ToDto()
+    {
+        return new UserResponse
+        {
+            Id = Id,
+            Email = Email,
+            DocumentType = DocumentType,
+            DocumentNumber = DocumentNumber,
+            Name = Name
+        };
+    }
 }

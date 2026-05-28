@@ -93,6 +93,116 @@ public class UserService(
         }
     }
 
+    #region Helpers
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Checks a sign up request
+    /// </summary>
+    /// <param name="request">The sign up request to check</param>
+    /// <returns>A result indicating whether the request is valid or not</returns>
+    private static Result CheckSignUpRequest(SignUpRequest request)
+    {
+        // Verifications
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_EMAIL",
+                Status = 400,
+                Message = "Email is required",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        var passwordResult = SecurityService.IsPasswordValid(request.Password);
+        if (!passwordResult)
+            return passwordResult;
+
+        if (!Enum.IsDefined(typeof(DocumentType), request.DocumentType))
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_DOCUMENT_TYPE",
+                Status = 400,
+                Message = "Document type must be between 1 and 5",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (request.DocumentNumber is { Length: < 1 or > 15 })
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_DOCUMENT_NUMBER",
+                Status = 400,
+                Message = "Document number must be between 1 and 15 characters",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (
+            request.Name is { Length: < 1 or > 200 } ||
+            !System.Text.RegularExpressions.Regex.IsMatch(request.Name, @"^[\p{L}\p{M}\s'\-]+$")
+        )
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_NAME",
+                Status = 400,
+                Message =
+                    "The name must be between 1 and 200 characters and can only contain letters, spaces, hyphens, and apostrophes",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        // Everything is valid
+        return new Result
+        {
+            Success = true,
+            Code = "SUCCESS_REQUEST",
+            Status = 200,
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    private Result AccountVerificationRequestValidations(AccountVerificationRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_EMAIL",
+                Status = 400,
+                Message = "Email is required",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (request.VerificationCode.Contains(" ") || request.VerificationCode.Length != 6)
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_VERIFICATION_CODE",
+                Status = 400,
+                Message = "Verification code must be 6 characters and cannot contain spaces",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        return new Result
+        {
+            Success = true,
+            Code = "SUCCESS_REQUEST",
+            Status = 200,
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
+    }
+
+    #endregion
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
@@ -214,10 +324,9 @@ public class UserService(
     /// Signs up a new user. It takes the device id from the header and the sign up request from the body. It returns an
     /// IActionResult with some relevant data as ok, code, and status
     /// </summary>
-    /// <param name="deviceId">The device id of the user</param>
     /// <param name="request">The sign up request</param>
     /// <returns></returns>
-    public async Task<Result<User?>> SignUp(string deviceId, SignUpRequest request)
+    public async Task<Result<User?>> SignUp(SignUpRequest request)
     {
         try
         {
@@ -255,7 +364,8 @@ public class UserService(
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 Status = UserStatus.Unverified,
-                VerificationCode = SecurityService.GenerateVerificationCode()
+                VerificationCode = SecurityService.GenerateVerificationCode(),
+                VerificationCodeDate = DateTime.UtcNow
             };
 
             // Save the user
@@ -278,7 +388,9 @@ public class UserService(
                 Code = "VERIFICATION_CODE_SENT",
                 Status = 201,
                 Message = "User signed up successfully",
-                Data = user
+                Data = user,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
             };
         }
         catch (Exception e)
@@ -294,78 +406,223 @@ public class UserService(
         }
     }
 
-    #endregion
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Verifies the account by checking if the provided code matches the database's verification code for the specified
+    /// user.
+    /// </summary>
+    /// <param name="request">The <see cref="AccountVerificationRequest"/> containing the email and the verification
+    /// code</param>
+    /// <returns></returns>
+    public async Task<Result<User?>> VerifyAccountAsync(AccountVerificationRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Verifying account for user with email: {@Email}", request.Email);
 
-    #region Helpers
+            // Verifications
+            var verificationResult = AccountVerificationRequestValidations(request);
+            if (!verificationResult.Success) return verificationResult.ConvertTo<User?>();
+
+            // Find the user to get the code
+            var existingEmailResult = await GetByEmailAsync(request.Email);
+            if (existingEmailResult.Data is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_NOT_FOUND",
+                    Status = 404,
+                    Message = "User not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var user = existingEmailResult.Data;
+
+            // Check if the user needs to be verified
+            if (user.Status == UserStatus.Banned)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_BANNED",
+                    Status = 403,
+                    Message = "User is banned",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (user.Status != UserStatus.Unverified)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_ALREADY_VERIFIED",
+                    Status = 400,
+                    Message = "User is already verified",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Check if the code is correct
+            if (user.VerificationCode != request.VerificationCode)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_VERIFICATION_CODE",
+                    Status = 400,
+                    Message = "Invalid verification code",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Update the user
+            user.VerificationCode = string.Empty;
+            user.Status = UserStatus.Active;
+            user.UpdatedAt = DateTime.UtcNow;
+            var updateResult = await _userRepo.UpdateAsync(user);
+
+            updateResult.Code = !updateResult || updateResult.Data is null
+                ? "ERROR_VERIFYING_ACCOUNT"
+                : "ACCOUNT_VERIFIED";
+
+            return updateResult;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error signing up user");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_VERIFYING_ACCOUNT",
+                Status = 500,
+                Message = "An error occurred while verifying the account"
+            };
+        }
+    }
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Checks a sign up request
+    /// Resends the verification code to the user
     /// </summary>
-    /// <param name="request">The sign up request to check</param>
-    /// <returns>A result indicating whether the request is valid or not</returns>
-    private static Result CheckSignUpRequest(SignUpRequest request)
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<Result<User?>> ResendVerificationEmailAsync(ResendVerificationCodeRequest request)
     {
-        // Verifications
-        if (string.IsNullOrWhiteSpace(request.Email))
-            return new Result
-            {
-                Success = false,
-                Code = "INVALID_EMAIL",
-                Status = 400,
-                Message = "Email is required",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            };
-
-        var passwordResult = SecurityService.IsPasswordValid(request.Password);
-        if (!passwordResult)
-            return passwordResult;
-
-        if (!Enum.IsDefined(typeof(DocumentType), request.DocumentType))
-            return new Result
-            {
-                Success = false,
-                Code = "INVALID_DOCUMENT_TYPE",
-                Status = 400,
-                Message = "Document type must be between 1 and 5",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            };
-
-        if (request.DocumentNumber is { Length: < 1 or > 15 })
-            return new Result
-            {
-                Success = false,
-                Code = "INVALID_DOCUMENT_NUMBER",
-                Status = 400,
-                Message = "Document number must be between 1 and 15 characters",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            };
-
-        if (
-            request.Name is { Length: < 1 or > 200 } ||
-            !System.Text.RegularExpressions.Regex.IsMatch(request.Name, @"^[\p{L}\p{M}\s'\-]+$")
-        )
-            return new Result
-            {
-                Success = false,
-                Code = "INVALID_NAME",
-                Status = 400,
-                Message =
-                    "The name must be between 1 and 200 characters and can only contain letters, spaces, hyphens, and apostrophes",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            };
-
-        // Everything is valid
-        return new Result
+        try
         {
-            Success = true,
-            Code = "SUCCESS_REQUEST",
-            Status = 200,
-        };
+            _logger.LogInformation("Resending verification email for user with email: {@Email}", request.Email);
+
+            // Verifications
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_EMAIL",
+                    Status = 400,
+                    Message = "Email is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Find the user to get the code
+            var existingEmailResult = await GetByEmailAsync(request.Email);
+            if (existingEmailResult.Data is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_NOT_FOUND",
+                    Status = 404,
+                    Message = "User not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var user = existingEmailResult.Data;
+
+            // Check if the user needs to be verified
+            if (user.Status == UserStatus.Banned)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_BANNED",
+                    Status = 403,
+                    Message = "User is banned",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (user.Status != UserStatus.Unverified)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_ALREADY_VERIFIED",
+                    Status = 400,
+                    Message = "User is already verified",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Verify if at least 1 minute has passed since the last code send ask
+            // to avoid flooding my API because I have to pay for those
+            // misused resources
+            if (user.VerificationCodeDate.AddMinutes(1) > DateTime.UtcNow)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "TOO_MANY_REQUESTS",
+                    Status = 429,
+                    Message = "You can only request a new verification code every 1 minute",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Verify if the code is expired or not
+            if (user.VerificationCodeDate.AddMinutes(15) < DateTime.UtcNow)
+            {
+                user.VerificationCode = SecurityService.GenerateVerificationCode();
+                user.VerificationCodeDate = DateTime.UtcNow;
+                var updateResult = await _userRepo.UpdateAsync(user);
+                if (!updateResult || updateResult.Data is null)
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "ERROR_UPDATING_VERIFICATION_CODE",
+                        Status = 500,
+                        Message = "An error occurred while updating the verification code",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                user = updateResult.Data;
+            }
+
+            // Send the code
+            var notificationResult = await _notificationService.SendVerificationCodeAsync(
+                user.Name,
+                user.Email,
+                user.VerificationCode
+            );
+            if (!notificationResult) return notificationResult.ConvertTo<User?>();
+
+            // Everything went well, return the user
+            return new Result<User?>
+            {
+                Success = true,
+                Code = "VERIFICATION_CODE_SENT",
+                Status = 201,
+                Message = "User signed up successfully",
+                Data = user,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error signing up user");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_VERIFYING_ACCOUNT",
+                Status = 500,
+                Message = "An error occurred while verifying the account"
+            };
+        }
     }
 
     #endregion

@@ -57,23 +57,35 @@ public partial class SecurityService
     /// Creates a Hash from a string.
     /// </summary>
     /// <param name="toEncrypt">The string to encrypt</param>
+    /// <param name="allowNull">Whether to allow null values</param>
     /// <returns></returns>
-    public static Result<string> HashWithSalt(string toEncrypt)
+    public static Result<string> HashWithSalt(string toEncrypt, bool allowNull = false)
     {
         // Global key
         var key = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
 
         // Validations
         if (string.IsNullOrWhiteSpace(toEncrypt))
-            return new Result<string>
-            {
-                Success = false,
-                Code = "EMPTY_STRING",
-                Status = 400,
-                Message = "The string to encrypt cannot be empty",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = false
-            };
+            return allowNull
+                ? new Result<string>
+                {
+                    Success = true,
+                    Code = "NULL_STRING",
+                    Status = 200,
+                    Message = "The string to encrypt is null or whitespace, returning null",
+                    Data = string.Empty,
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : new Result<string>
+                {
+                    Success = false,
+                    Code = "EMPTY_STRING",
+                    Status = 400,
+                    Message = "The string to hash cannot be empty",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = false
+                };
 
         if (string.IsNullOrEmpty(key))
             return new Result<string>
@@ -100,23 +112,35 @@ public partial class SecurityService
     /// Pues eso, encripta un string.
     /// </summary>
     /// <param name="toEncrypt">The string to encrypt</param>
+    /// <param name="allowNull">Whether to allow null values</param>
     /// <returns></returns>
-    public static Result<string> EncryptString(string toEncrypt)
+    public static Result<string> EncryptString(string toEncrypt, bool allowNull = false)
     {
         // Global key
         var key = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
 
         // Validations
         if (string.IsNullOrWhiteSpace(toEncrypt))
-            return new Result<string>
-            {
-                Success = false,
-                Code = "EMPTY_STRING",
-                Status = 400,
-                Message = "The string to encrypt cannot be empty",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = false
-            };
+            return allowNull
+                ? new Result<string>
+                {
+                    Success = true,
+                    Code = "NULL_STRING",
+                    Status = 200,
+                    Message = "The string to encrypt is null or whitespace, returning null",
+                    Data = string.Empty,
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : new Result<string>
+                {
+                    Success = false,
+                    Code = "EMPTY_STRING",
+                    Status = 400,
+                    Message = "The string to encrypt cannot be empty",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = false
+                };
 
         if (string.IsNullOrEmpty(key))
             return new Result<string>
@@ -305,7 +329,6 @@ public partial class SecurityService
             );
         }
 
-        Console.WriteLine(15);
         if (result) return result;
 
         result.Code = "INVALID_PASSWORD";

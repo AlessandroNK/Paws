@@ -30,7 +30,7 @@ public class EncryptedUser
     /// <summary>
     /// The tpe of the document of the user.
     /// </summary>
-    public DocumentType DocumentType { get; init; }
+    public DocumentType DocumentType { get; set; }
 
     /// <summary>
     /// The number of identification like we are simple elements named by random numbers
@@ -68,4 +68,10 @@ public class EncryptedUser
     /// Any verification code for the user.
     /// </summary>
     public string VerificationCodeEncrypted { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A timestamp indication the time when the code was created. This is useful to invalidate the code after a certain
+    /// time has passed and to prevent sending codes to the user until the previous code has expired.
+    /// </summary>
+    public DateTime VerificationCodeDate { get; set; }
 }

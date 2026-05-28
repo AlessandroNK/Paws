@@ -1,4 +1,6 @@
 using System.Runtime.CompilerServices;
+using Backend.Core.Internal;
+using Backend.Core.Models.Interfaces;
 
 namespace Backend.Core.Models.Result;
 
@@ -101,9 +103,9 @@ public class Result<T> : Result
     /// Convert this result to a result of a different type.
     /// </summary>
     /// <typeparam name="TU"></typeparam>
-    /// <returns>A result of type U.</returns>
+    /// <returns>A result of type TU.</returns>
     /// <remarks>In case the data is not compatible, the new result will drop the data.</remarks>
-    public Result<TU> ConvertTo<TU>()
+    public new Result<TU> ConvertTo<TU>()
     {
         return Data is TU data
             ? new Result<TU>
@@ -128,5 +130,47 @@ public class Result<T> : Result
                 TraceCode = TraceCode,
                 Returnable = Returnable,
             };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Cleans and hides internal information when the result is not retornable to keep intern info secure
+    /// </summary>
+    /// <returns></returns>
+    public ResultDtoT<TU> ToDto<TU>()
+    {
+        // We will filter info as we need so we can
+        // return this result to the frontend securely
+        var result = new ResultDtoT<TU>
+        {
+            Success = Success,
+            Code = Returnable ? Code : "INTERNAL_ERROR",
+            Status = Status,
+            Message = Returnable ? Message : "An error occurred in the API",
+            Data = default(TU),
+            Errors = Returnable ? Errors : new Dictionary<string, string[]>(),
+            TraceCode = TraceCode
+        };
+
+        if (Data is not IDtoConvertible<TU> convertibleData) return result;
+
+        // We will try to convert the data to a Dto,
+        // if it fails we will return the original data
+        // as null and log the error
+        try
+        {
+            result.Data = convertibleData.ToDto();
+        }
+        catch (Exception e)
+        {
+            // We will log the error and return the original data as null
+            LogHelpers.LogError(e, "Error converting the data to a DTO");
+            result.Data = default(TU);
+            result.Code = "DATA_CONVERSION_ERROR";
+            result.Message = "An error occurred while converting the data";
+            result.Status = 500;
+        }
+
+        return result;
     }
 }
