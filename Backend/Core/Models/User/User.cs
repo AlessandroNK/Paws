@@ -21,7 +21,7 @@ public class User : IDtoConvertible<UserResponse>
     /// <summary>
     /// A hash of the user's password. It is used to verify the user's password when signing in.
     /// </summary>
-    public string HashedPassword { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>
     /// The email in a readable string to return to the frontend
@@ -70,6 +70,7 @@ public class User : IDtoConvertible<UserResponse>
     /// time has passed and to prevent sending codes to the user until the previous code has expired.
     /// </summary>
     public DateTime VerificationCodeDate { get; set; }
+
 
     // -----------------------------------------------------------------------------------------------------------------
     public UserResponse ToDto()

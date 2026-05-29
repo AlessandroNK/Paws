@@ -1,29 +1,40 @@
 using Backend.Core.Models.Pet;
 using Backend.Core.Models.User;
-using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Core.Data;
+namespace Backend.Core.Models.Relationships;
 
-/// <summary>
-/// provides access to the database for the application.
-/// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class EncryptedUserEncryptedPet
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// The id of the user-pet relationship in the database
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// The id of the user in the relationship.
+    /// </summary>
+    public int UserId { get; set; }
+
+    /// <summary>
+    /// The user of the relationship
+    /// </summary>
+    public EncryptedUser User { get; set; }
+
+    /// <summary>
+    /// The id of the pet in the relationship.
+    /// </summary>
+    public int PetId { get; set; }
+
+    /// <summary>
+    /// The pet of the relationship
+    /// </summary>
+    public EncryptedPet Pet { get; set; }
 
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
-    /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
-    /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
 
 
     //                                                                                                         Operators
@@ -44,4 +55,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+
 }

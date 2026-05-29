@@ -69,7 +69,7 @@ public class UserRepository(
                 ? new Result<string>
                 {
                     Success = true,
-                    Data = user.HashedPassword,
+                    Data = user.PasswordHash,
                     Code = "PASSWORD_NULL_OR_WHITESPACE",
                     Status = 200,
                     Message = "Password is null or whitespace, using existing hashed password",
@@ -105,16 +105,16 @@ public class UserRepository(
 
 
             // Update the tracked entity
-            trackedEntity.PasswordHashed = passwordResult.Data;
-            trackedEntity.EmailEncrypted = emailResult.Data;
+            trackedEntity.PasswordHash = passwordResult.Data;
+            trackedEntity.EncryptedEmail = emailResult.Data;
             trackedEntity.EmailHash = emailHashResult.Data;
             trackedEntity.DocumentType = user.DocumentType;
-            trackedEntity.DocumentNumberEncrypted = documentNumberResult.Data;
+            trackedEntity.EncryptedDocumentNumber = documentNumberResult.Data;
             trackedEntity.DocumentHash = documentHashResult.Data;
             trackedEntity.Name = user.Name;
             trackedEntity.UpdatedAt = user.UpdatedAt;
             trackedEntity.Status = user.Status;
-            trackedEntity.VerificationCodeEncrypted = verificationCodeResult.Data;
+            trackedEntity.EncryptedVerificationCode = verificationCodeResult.Data;
 
             return new Result
             {
@@ -160,7 +160,7 @@ public class UserRepository(
                 ? new Result<string>
                 {
                     Success = true,
-                    Data = user.HashedPassword,
+                    Data = user.PasswordHash,
                     Code = "PASSWORD_NULL_OR_WHITESPACE",
                     Status = 200,
                     Message = "Password is null or whitespace, using existing hashed password",
@@ -197,17 +197,17 @@ public class UserRepository(
             return new EncryptedUser
             {
                 Id = user.Id,
-                PasswordHashed = passwordResult.Data,
-                EmailEncrypted = emailResult.Data,
+                PasswordHash = passwordResult.Data,
+                EncryptedEmail = emailResult.Data,
                 EmailHash = emailHashResult.Data,
                 DocumentType = user.DocumentType,
-                DocumentNumberEncrypted = documentNumberResult.Data,
+                EncryptedDocumentNumber = documentNumberResult.Data,
                 DocumentHash = documentHashResult.Data,
                 Name = user.Name,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
                 Status = user.Status,
-                VerificationCodeEncrypted = verificationCodeResult.Data,
+                EncryptedVerificationCode = verificationCodeResult.Data,
             };
         }
         catch (Exception e)
@@ -248,17 +248,17 @@ public class UserRepository(
 
             // Decrypt elements
             //------------------------------------------------------------------------- Email
-            var emailResult = SecurityService.DecryptString(encryptedUser.EmailEncrypted);
+            var emailResult = SecurityService.DecryptString(encryptedUser.EncryptedEmail);
             if (!emailResult || emailResult.Data == null)
                 return emailResult.Log(_log).ConvertTo<User?>();
 
             //--------------------------------------------------------------- Document Number
-            var documentNumberResult = SecurityService.DecryptString(encryptedUser.DocumentNumberEncrypted);
+            var documentNumberResult = SecurityService.DecryptString(encryptedUser.EncryptedDocumentNumber);
             if (!documentNumberResult || documentNumberResult.Data == null)
                 return documentNumberResult.Log(_log).ConvertTo<User?>();
 
             //------------------------------------------------------------- Verification Code
-            var verificationCodeResult = string.IsNullOrWhiteSpace(encryptedUser.VerificationCodeEncrypted)
+            var verificationCodeResult = string.IsNullOrWhiteSpace(encryptedUser.EncryptedVerificationCode)
                 ? new Result<string>
                 {
                     Success = true,
@@ -269,7 +269,7 @@ public class UserRepository(
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 }
-                : SecurityService.DecryptString(encryptedUser.VerificationCodeEncrypted);
+                : SecurityService.DecryptString(encryptedUser.EncryptedVerificationCode);
             if (!verificationCodeResult || verificationCodeResult.Data == null)
                 return verificationCodeResult.Log(_log).ConvertTo<User?>();
 
@@ -278,7 +278,7 @@ public class UserRepository(
                 Id = encryptedUser.Id,
                 Email = emailResult.Data,
                 Status = encryptedUser.Status,
-                HashedPassword = encryptedUser.PasswordHashed,
+                PasswordHash = encryptedUser.PasswordHash,
                 DocumentType = encryptedUser.DocumentType,
                 DocumentNumber = documentNumberResult.Data,
                 Name = encryptedUser.Name,
