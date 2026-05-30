@@ -24,7 +24,12 @@ builder.Services.AddControllers();
 
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPetRepository, PetRepository>();
 
 // Endpoints
 builder.Services.AddEndpointsApiExplorer();
@@ -32,9 +37,6 @@ builder.Services.AddOpenApi();
 
 // Swagger
 builder.Services.AddSwaggerGen();
-
-// Repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Environment
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");

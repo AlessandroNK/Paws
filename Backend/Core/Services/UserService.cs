@@ -16,7 +16,7 @@ namespace Backend.Core.Services;
 public class UserService(
     INotificationService notificationService,
     IUserRepository userRepo,
-    IPetsService petService,
+    IPetService petService,
     ILogger<UserService> logger
 ) : IUserService
 {
@@ -37,7 +37,7 @@ public class UserService(
     /// concerns and promotes modularity in the application, as the user service can focus on user-related operations
     /// while delegating pet-related operations to the pets service.
     /// </summary>
-    private readonly IPetsService _petService = petService;
+    private readonly IPetService _petService = petService;
 
     /// <summary>
     /// The logger used to log messages.
@@ -695,7 +695,7 @@ public class UserService(
                     Returnable = true
                 };
 
-            if (user.Status != UserStatus.Unverified)
+            if (user.Status == UserStatus.Unverified)
                 return new Result<User?>
                 {
                     Success = false,
@@ -708,16 +708,7 @@ public class UserService(
 
             // Create the pet
             var petResult = await _petService.CreatePetAsync(request.Pet);
-            if (!petResult || petResult.Data is null)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "ERROR_CREATING_PET",
-                    Status = 500,
-                    Message = "An error occurred while creating the pet",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
+            if (!petResult || petResult.Data is null) return petResult.ConvertTo<User?>();
             var pet = petResult.Data;
 
             // Add the pet to the user

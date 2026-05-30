@@ -115,7 +115,11 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
                 DocumentType = DocumentType,
                 DocumentNumber = DocumentNumber,
                 Name = Name,
-                UserPets = UserPets.Select(userPet => userPet.Pet).ToList()
+                Pets = UserPets.Select(userPet =>
+                {
+                    IDtoConvertible<PetResponse> petResponse = userPet.Pet;
+                    return petResponse.ToDto();
+                }).ToList()
             };
         }
         catch (Exception e)

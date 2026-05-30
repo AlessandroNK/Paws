@@ -1,6 +1,6 @@
 namespace Backend.Core.Models.Interfaces;
 
-public interface IDtoConvertible<T>
+public interface IDtoConvertible<out T>
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -28,5 +28,5 @@ public interface IDtoConvertible<T>
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    public T ToDto();
+    public T? ToDto();
 }

@@ -27,9 +27,9 @@ public class EncryptedPet
     public PetSpecies Species { get; set; } = PetSpecies.Other;
 
     /// <summary>
-    /// The breed of the pet. it will depend on
+    /// The breed of the pet. it will depend on...
     /// </summary>
-    public string EncryptedBreed { get; set; } = string.Empty;
+    public string? EncryptedBreed { get; set; } = string.Empty;
 
     /// <summary>
     /// The date and time when the pet was created. It is used to track when the pet was created and to sort pets by

@@ -66,7 +66,7 @@ public static class PetEncryption
                 }
                 : SecurityService.EncryptString(pet.Breed);
 
-            if (!breedResult || breedResult.Data == null) return breedResult.Log(logger).ConvertTo<EncryptedPet>();
+            if (!breedResult) return breedResult.Log(logger).ConvertTo<EncryptedPet>();
 
             return new EncryptedPet
             {
@@ -94,28 +94,17 @@ public static class PetEncryption
         }
     }
     
-        // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Decrypts sensitive data so we can use it and return it to the frontend
     /// </summary>
     /// <param name="encryptedPet"></param>
     /// <param name="logger">A logger so this function can logg information</param>
     /// <returns></returns>
-    public static Result<Pet?> DecryptPet(EncryptedPet? encryptedPet, ILogger logger)
+    public static Result<Pet?> DecryptPet(EncryptedPet encryptedPet, ILogger logger)
     {
         try
         {
-            if (encryptedPet is null)
-                return new Result<Pet?>
-                {
-                    Success = false,
-                    Code = "ENCRYPTED_PET_NULL",
-                    Status = 500,
-                    Message = "no encrypted pet to decrypt",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = false
-                };
-
             // Decrypt elements
             //------------------------------------------------------------------------- Name
             var nameResult = SecurityService.DecryptString(encryptedPet.EncryptedName);

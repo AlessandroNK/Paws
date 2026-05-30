@@ -9,10 +9,10 @@ using Backend.Core.Services.Interfaces;
 
 namespace Backend.Core.Services;
 
-public class PetsService(
+public class PetService(
     IPetRepository petRepo,
-    ILogger<PetsService> logger
-) : IPetsService
+    ILogger<PetService> logger
+) : IPetService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ public class PetsService(
     /// <summary>
     /// The logger used to log messages.
     /// </summary>
-    private readonly ILogger<PetsService> _logger = logger;
+    private readonly ILogger<PetService> _logger = logger;
 
 
     //                                                                                                 Public Properties

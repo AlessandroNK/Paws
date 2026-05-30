@@ -337,8 +337,8 @@ public static class UserEncryption
             return new UserPet
             {
                 Id = encryptedUserPet.Id,
-                UserId = encryptedUserPet.UserId,
-                PetId = encryptedUserPet.PetId,
+                UserId = encryptedUserPet.EncryptedUserId,
+                PetId = encryptedUserPet.EncryptedPetId,
                 CreatedAt = encryptedUserPet.CreatedAt,
                 UpdatedAt = encryptedUserPet.UpdatedAt,
                 Status = encryptedUserPet.Status,

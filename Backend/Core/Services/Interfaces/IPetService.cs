@@ -3,7 +3,7 @@ using Backend.Core.Models.Results;
 
 namespace Backend.Core.Services.Interfaces;
 
-public interface IPetsService
+public interface IPetService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------

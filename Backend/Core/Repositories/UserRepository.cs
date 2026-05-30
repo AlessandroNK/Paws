@@ -21,8 +21,7 @@ namespace Backend.Core.Repositories;
 /// <remarks>FU01</remarks>
 public class UserRepository(
     ApplicationDbContext dbContext,
-    ILogger<UserRepository> logger,
-    PetRepository petRepo
+    ILogger<UserRepository> logger
 ) : IUserRepository
 {
     //                                                                                                Private Properties
@@ -39,11 +38,6 @@ public class UserRepository(
     /// The logger used to log messages.
     /// </summary>
     private readonly ILogger<UserRepository> _logger = logger;
-
-    /// <summary>
-    /// The repo to handle
-    /// </summary>
-    private readonly PetRepository _petRepo = petRepo;
 
 
     //                                                                                                 Public Properties
@@ -202,6 +196,7 @@ public class UserRepository(
 
         query = query
             .Include(u => u.UserPets)
+            .ThenInclude(p => p.EncryptedPet)
             .AsSplitQuery();
 
         // Execute query
@@ -352,6 +347,11 @@ public class UserRepository(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="userPet"></param>
+    /// <returns></returns>
     public async Task<Result<User?>> AddUserPet(UserPet userPet)
     {
         // Verifications
@@ -382,8 +382,8 @@ public class UserRepository(
         // user and pet when retrieving them from the DB)
         var encrypted = new EncryptedUserPet
         {
-            UserId = userPet.UserId,
-            PetId = userPet.PetId,
+            EncryptedUserId = userPet.UserId,
+            EncryptedPetId = userPet.PetId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Status = GenericStatus.Active

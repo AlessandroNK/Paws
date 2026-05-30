@@ -162,6 +162,8 @@ public class UserController(
     /// <param name="deviceId"></param>
     /// <param name="request"></param>
     /// <returns></returns>
+    [HttpPost]
+    [Route("resend-verification-email")]
     public async Task<IActionResult> ResendVerificationEmailAsync(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] ResendVerificationCodeRequest request

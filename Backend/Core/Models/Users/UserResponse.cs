@@ -36,5 +36,5 @@ public struct UserResponse
     /// <summary>
     /// All user's pets
     /// </summary>
-    public List<Pet> UserPets { get; set; }
+    public List<PetResponse?> Pets { get; set; }
 }

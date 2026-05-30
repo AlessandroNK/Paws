@@ -1,8 +1,9 @@
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Interfaces;
 
 namespace Backend.Core.Models.Pets;
 
-public class Pet
+public class Pet : IDtoConvertible<PetResponse>
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -66,5 +67,16 @@ public class Pet
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-
+    PetResponse IDtoConvertible<PetResponse>.ToDto()
+    {
+        return new PetResponse
+        {
+            Id = Id,
+            Name = Name,
+            Species = Species,
+            Breed = Breed,
+            CreatedAt = CreatedAt,
+            UpdatedAt = UpdatedAt,
+        };
+    }
 }

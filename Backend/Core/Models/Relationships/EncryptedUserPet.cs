@@ -16,7 +16,7 @@ public class EncryptedUserPet
     /// <summary>
     /// The id of the user in the relationship.
     /// </summary>
-    public int UserId { get; set; }
+    public int EncryptedUserId { get; set; }
 
     /// <summary>
     /// The user of the relationship
@@ -26,7 +26,7 @@ public class EncryptedUserPet
     /// <summary>
     /// The id of the pet in the relationship.
     /// </summary>
-    public int PetId { get; set; }
+    public int EncryptedPetId { get; set; }
 
     /// <summary>
     /// The pet of the relationship
