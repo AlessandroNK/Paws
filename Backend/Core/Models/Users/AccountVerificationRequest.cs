@@ -1,6 +1,6 @@
-namespace Backend.Core.Models.Result;
+namespace Backend.Core.Models.Users;
 
-public class ResultDtoT<T> : ResultDto
+public class AccountVerificationRequest
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -9,13 +9,16 @@ public class ResultDtoT<T> : ResultDto
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The data of the result. It can be of any type, depending on the operation. For example, it can be a user object,
-    /// a list of products, etc.
+    /// The email of the user sending the request
     /// </summary>
-    public T? Data { get; set; }
+    public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The verification code
+    /// </summary>
+    public string VerificationCode { get; set; } = string.Empty;
 
 
-    //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
 
 

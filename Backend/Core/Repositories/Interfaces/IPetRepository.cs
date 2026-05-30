@@ -1,14 +1,9 @@
 using Backend.Core.Models.Pets;
-using Backend.Core.Models.Relationships;
-using Backend.Core.Models.Users;
-using Microsoft.EntityFrameworkCore;
+using Backend.Core.Models.Results;
 
-namespace Backend.Core.Data;
+namespace Backend.Core.Repositories.Interfaces;
 
-/// <summary>
-/// provides access to the database for the application.
-/// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public interface IPetRepository
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -16,20 +11,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
-    /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
-    /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedUserPet"/>
-    /// </summary>
-    public DbSet<EncryptedUserPet> EncryptedUserPets { get; set; }
 
 
     //                                                                                                         Operators
@@ -50,4 +31,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Signs up a new pet. It returns an <see cref="Result{Pet}"/> indicating the result of the operation and including
+    /// the pet if it was success.
+    /// </summary>
+    /// <param name="pet">The pet to add</param>
+    /// <returns>A <see cref="Result"/> indicating whether the creation was successful</returns>
+    public Task<Result<Pet?>> AddAsync(Pet pet);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets a pet by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the pet to retrieve</param>
+    /// <param name="excludeInactive">Whether to exclude inactive pets</param>
+    /// <param name="excludeBanned">Whether to exclude banned pets</param>
+    /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
+    public Task<Result<Pet?>> GetByIdAsync(int id, bool excludeInactive = true, bool excludeBanned = true);
 }

@@ -1,6 +1,7 @@
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Pets;
 
-namespace Backend.Core.Models.User;
+namespace Backend.Core.Models.Users;
 
 /// <summary>
 /// A DTO so we can return the user data to the frontend without returning the password hash or any other unwanted data.
@@ -31,4 +32,9 @@ public struct UserResponse
     /// The name of the user.
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    /// All user's pets
+    /// </summary>
+    public List<Pet> UserPets { get; set; }
 }

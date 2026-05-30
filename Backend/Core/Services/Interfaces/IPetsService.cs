@@ -1,48 +1,12 @@
-namespace Backend.Core.Models.Result;
+using Backend.Core.Models.Pets;
+using Backend.Core.Models.Results;
 
-public class ResultDto
+namespace Backend.Core.Services.Interfaces;
+
+public interface IPetsService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Whether the result is ok or not. It is used to indicate whether the operation was successful or not.
-    /// </summary>
-    public bool Success { get; set; }
-
-    /// <summary>
-    /// Alias for <see cref="Success"/>
-    /// </summary>
-    public bool Ok => Success;
-
-    /// <summary>
-    /// Alias for <see cref="Success"/>
-    /// </summary>
-    public bool IsSuccess => Success;
-
-    /// <summary>
-    /// A custom code in SCREAMING_SNAKE_CASE
-    /// </summary>
-    public required string Code { get; set; }
-
-    /// <summary>
-    /// The int number that represents the current status of the system.
-    /// </summary>
-    public required int Status { get; set; }
-
-    /// <summary>
-    /// A custom message to show to the user
-    /// </summary>
-    public string? Message { get; set; }
-
-    /// <summary>
-    /// Any validation errors associated with the result.
-    /// </summary>
-    public Dictionary<string, string[]> Errors { get; set; }  = new Dictionary<string, string[]>();
-
-    /// <summary>
-    /// An internal code to identify the result origin easily
-    /// </summary>
-    public string TraceCode { get; set; } = string.Empty;
 
 
     //                                                                                                 Public Properties
@@ -67,4 +31,19 @@ public class ResultDto
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Creates a new pet in the system. It takes the pet data and the user id of the owner. It returns a result with
+    /// the created pet or an error if something went wrong.
+    /// </summary>
+    /// <param name="request">The data of the pet to create</param>
+    /// <returns>The created pet or an error if something went wrong</returns>
+    public Task<Result<Pet?>> CreatePetAsync(CreatePetRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Checks a create pet request
+    /// </summary>
+    /// <param name="request">The crate pet request to check</param>
+    /// <returns>A result indicating whether the request is valid or not</returns>
+    public Result CheckCreatePetRequest(CreatePetRequest request);
 }

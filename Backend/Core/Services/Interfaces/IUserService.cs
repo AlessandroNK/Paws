@@ -1,5 +1,5 @@
-using Backend.Core.Models.Result;
-using Backend.Core.Models.User;
+using Backend.Core.Models.Results;
+using Backend.Core.Models.Users;
 
 namespace Backend.Core.Services.Interfaces;
 
@@ -84,4 +84,15 @@ public interface IUserService
     /// <param name="request"></param>
     /// <returns></returns>
     public Task<Result<User?>> ResendVerificationEmailAsync(ResendVerificationCodeRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Creates and adds a pet to the user. It takes the device id from the header and the add pet to user request from
+    /// the body. It returns an IActionResult with some relevant data as ok, code, and the created pet data. It also
+    /// checks if the user is verified before adding the pet to the user. If the user is not verified, it returns a bad
+    /// request with a message indicating that the user is not verified.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<Result<User?>> AddNewPetAsync(AddNewPetRequest request);
 }

@@ -1,7 +1,7 @@
 using Backend.Core.Controllers.interfaces;
 using Backend.Core.Internal;
-using Backend.Core.Models.Result;
-using Backend.Core.Models.User;
+using Backend.Core.Models.Results;
+using Backend.Core.Models.Users;
 using Backend.Core.Services;
 using Backend.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Cors;
@@ -89,7 +89,9 @@ public class UserController(
             var result = await _userService.SignUp(request);
 
             // Clean the response and convert it and its data to Dto
-            return result ? Ok(result.ToDto<UserResponse>()) : BadRequest(result.ToDto<UserResponse>());
+            return result
+                ? Ok(result.ToDto<BasicUserResponse>())
+                : BadRequest(result.ToDto<BasicUserResponse>());
         }
         catch (Exception e)
         {
@@ -135,7 +137,9 @@ public class UserController(
             var result = await _userService.VerifyAccountAsync(request);
 
             // Clean the response and convert it and its data to Dto
-            return result ? Ok(result.ToDto<UserResponse>()) : BadRequest(result.ToDto<UserResponse>());
+            return result
+                ? Ok(result.ToDto<BasicUserResponse>())
+                : BadRequest(result.ToDto<BasicUserResponse>());
         }
         catch (Exception e)
         {
@@ -165,7 +169,8 @@ public class UserController(
     {
         try
         {
-            _logger.LogInformation("Resending verification email for user with device id: {DeviceId} and email: {@Email}",
+            _logger.LogInformation(
+                "Resending verification email for user with device id: {DeviceId} and email: {@Email}",
                 deviceId,
                 request.Email);
 
@@ -173,9 +178,62 @@ public class UserController(
             var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
-            // Sign the user up
+            // Resend the verification code
             var result = await _userService.ResendVerificationEmailAsync(request);
-            return result ? Ok(result) : BadRequest(result);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToDto<BasicUserResponse>())
+                : BadRequest(result.ToDto<BasicUserResponse>());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return Ok(new Result
+            {
+                Success = false,
+                Code = "BAD_OPERATION",
+                Status = 500,
+                Message = "Something is breaking inside the API",
+                TraceCode = FileCodes.CallerIC()
+            });
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Creates and adds a pet to the user. It takes the device id from the header and the add pet to user request from
+    /// the body. It returns an IActionResult with some relevant data as ok, code, and the created pet data. It also
+    /// checks if the user is verified before adding the pet to the user. If the user is not verified, it returns a bad
+    /// request with a message indicating that the user is not verified.
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("add-new-pet")]
+    public async Task<IActionResult> AddNewPetAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] AddNewPetRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Adding new pet to user with device id: {DeviceId} and pet name: {@PetName}",
+                deviceId,
+                request.Pet.Name);
+
+            // Validations
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Sign the pet up
+            var result = await _userService.AddNewPetAsync(request);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToDto<UserResponse>())
+                : BadRequest(result.ToDto<UserResponse>());
         }
         catch (Exception e)
         {

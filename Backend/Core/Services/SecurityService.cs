@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Backend.Core.Internal;
-using Backend.Core.Models.Result;
+using Backend.Core.Models.Results;
 
 namespace Backend.Core.Services;
 

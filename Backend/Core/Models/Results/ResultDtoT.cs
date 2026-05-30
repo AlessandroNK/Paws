@@ -1,6 +1,6 @@
-namespace Backend.Core.Models.User;
+namespace Backend.Core.Models.Results;
 
-public class ResendVerificationCodeRequest
+public class ResultDtoT<T> : ResultDto
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -9,9 +9,10 @@ public class ResendVerificationCodeRequest
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The email of the user asking to resend the notification code.
+    /// The data of the result. It can be of any type, depending on the operation. For example, it can be a user object,
+    /// a list of products, etc.
     /// </summary>
-    public string Email { get; set; }
+    public T? Data { get; set; }
 
 
     //                                                                                                         Operators

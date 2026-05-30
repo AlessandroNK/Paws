@@ -1,36 +1,48 @@
-using Backend.Core.Models.Pet;
-using Backend.Core.Models.User;
+namespace Backend.Core.Models.Results;
 
-namespace Backend.Core.Models.Relationships;
-
-public class EncryptedUserEncryptedPet
+public class ResultDto
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The id of the user-pet relationship in the database
+    /// Whether the result is ok or not. It is used to indicate whether the operation was successful or not.
     /// </summary>
-    public int Id { get; set; }
+    public bool Success { get; set; }
 
     /// <summary>
-    /// The id of the user in the relationship.
+    /// Alias for <see cref="Success"/>
     /// </summary>
-    public int UserId { get; set; }
+    public bool Ok => Success;
 
     /// <summary>
-    /// The user of the relationship
+    /// Alias for <see cref="Success"/>
     /// </summary>
-    public EncryptedUser User { get; set; }
+    public bool IsSuccess => Success;
 
     /// <summary>
-    /// The id of the pet in the relationship.
+    /// A custom code in SCREAMING_SNAKE_CASE
     /// </summary>
-    public int PetId { get; set; }
+    public required string Code { get; set; }
 
     /// <summary>
-    /// The pet of the relationship
+    /// The int number that represents the current status of the system.
     /// </summary>
-    public EncryptedPet Pet { get; set; }
+    public required int Status { get; set; }
+
+    /// <summary>
+    /// A custom message to show to the user
+    /// </summary>
+    public string? Message { get; set; }
+
+    /// <summary>
+    /// Any validation errors associated with the result.
+    /// </summary>
+    public Dictionary<string, string[]> Errors { get; set; }  = new Dictionary<string, string[]>();
+
+    /// <summary>
+    /// An internal code to identify the result origin easily
+    /// </summary>
+    public string TraceCode { get; set; } = string.Empty;
 
 
     //                                                                                                 Public Properties
@@ -55,5 +67,4 @@ public class EncryptedUserEncryptedPet
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-
 }

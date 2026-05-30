@@ -1,7 +1,8 @@
 using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
-using Backend.Core.Models.Result;
-using Backend.Core.Models.User;
+using Backend.Core.Models.Relationships;
+using Backend.Core.Models.Results;
+using Backend.Core.Models.Users;
 using Backend.Core.Policies;
 using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services.Interfaces;
@@ -15,6 +16,7 @@ namespace Backend.Core.Services;
 public class UserService(
     INotificationService notificationService,
     IUserRepository userRepo,
+    IPetsService petService,
     ILogger<UserService> logger
 ) : IUserService
 {
@@ -26,6 +28,16 @@ public class UserService(
     /// retrieving users. The service uses the repository to perform the necessary data access logic for user management.
     /// </summary>
     private readonly IUserRepository _userRepo = userRepo;
+
+    /// <summary>
+    /// The pets service used to manage pets in the application. It is injected into the service to provide access to the
+    /// underlying pet management functionality for operations that involve both users and pets, such as adding a pet to
+    /// a user. The service uses the pets service to perform the necessary logic for managing pets in relation to users,
+    /// such as creating, updating, deleting, and retrieving pets associated with users. This allows for a separation of
+    /// concerns and promotes modularity in the application, as the user service can focus on user-related operations
+    /// while delegating pet-related operations to the pets service.
+    /// </summary>
+    private readonly IPetsService _petService = petService;
 
     /// <summary>
     /// The logger used to log messages.
@@ -621,6 +633,114 @@ public class UserService(
                 Code = "ERROR_VERIFYING_ACCOUNT",
                 Status = 500,
                 Message = "An error occurred while verifying the account"
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Creates and adds a pet to the user. It takes the device id from the header and the add pet to user request from
+    /// the body. It returns an IActionResult with some relevant data as ok, code, and the created pet data. It also
+    /// checks if the user is verified before adding the pet to the user. If the user is not verified, it returns a bad
+    /// request with a message indicating that the user is not verified.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<Result<User?>> AddNewPetAsync(AddNewPetRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Adding pet with name {@Name} to user with id: {@Id}", request.Pet.Name,
+                request.UserId);
+
+            // Verifications
+            if (request.UserId <= 0)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_USER_ID",
+                    Status = 400,
+                    Message = "User id must be greater than 0",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var petCheckResult = _petService.CheckCreatePetRequest(request.Pet);
+            if (!petCheckResult) return petCheckResult.ConvertTo<User?>();
+
+            // Find the user to add the pet to
+            var userResult = await _userRepo.GetByIdAsync(request.UserId);
+            if (userResult.Data is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_NOT_FOUND",
+                    Status = 404,
+                    Message = "User not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var user = userResult.Data;
+
+            // Check if the user is verified
+            if (user.Status == UserStatus.Banned)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_BANNED",
+                    Status = 400,
+                    Message = "User is banned",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (user.Status != UserStatus.Unverified)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_NOT_VERIFIED",
+                    Status = 400,
+                    Message = "User is not verified",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Create the pet
+            var petResult = await _petService.CreatePetAsync(request.Pet);
+            if (!petResult || petResult.Data is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "ERROR_CREATING_PET",
+                    Status = 500,
+                    Message = "An error occurred while creating the pet",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var pet = petResult.Data;
+
+            // Add the pet to the user
+            var userPet = new UserPet
+            {
+                UserId = request.UserId,
+                PetId = pet.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Status = GenericStatus.Active
+            };
+
+            return await _userRepo.AddUserPet(userPet);
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error adding pet to user");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_ADDING_PET_TO_USER",
+                Status = 500,
+                Message = "An error occurred while adding pet to user"
             };
         }
     }

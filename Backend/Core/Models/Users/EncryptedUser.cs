@@ -1,13 +1,20 @@
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Relationships;
 
-namespace Backend.Core.Models.User;
+namespace Backend.Core.Models.Users;
 
 /// <summary>
 ///  This is a user but all data is encrypted so we can store it in the database without worrying about security.
 /// </summary>
 public class EncryptedUser
 {
-    /// <summary>
+    //                                                                                                Private Properties
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                 Public Properties
+    // -----------------------------------------------------------------------------------------------------------------
+/// <summary>
     /// The id of the user in the database
     /// </summary>
     public int Id { get; init; }
@@ -74,4 +81,30 @@ public class EncryptedUser
     /// time has passed and to prevent sending codes to the user until the previous code has expired.
     /// </summary>
     public DateTime VerificationCodeDate { get; set; }
+
+    /// <summary>
+    /// All user's pets
+    /// </summary>
+    public List<EncryptedUserPet> UserPets { get; set; } = new List<EncryptedUserPet>();
+
+
+    //                                                                                                         Operators
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                            Events
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                      Constructors
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                   Private Methods
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                    Public Methods
+    // -----------------------------------------------------------------------------------------------------------------
+
 }

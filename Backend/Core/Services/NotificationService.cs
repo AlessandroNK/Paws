@@ -1,6 +1,6 @@
 using System.Text;
 using Backend.Core.Internal;
-using Backend.Core.Models.Result;
+using Backend.Core.Models.Results;
 using Backend.Core.Services.Interfaces;
 using Newtonsoft.Json;
 

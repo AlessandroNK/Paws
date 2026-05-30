@@ -1,3 +1,6 @@
+using Backend.Core.Models.Enums;
+using Backend.Core.Models.Pets;
+
 namespace Backend.Core.Models.Relationships;
 
 public class UserPet
@@ -17,7 +20,7 @@ public class UserPet
     /// <summary>
     /// The user of the relationship
     /// </summary>
-    public User.User User { get; set; }
+    public Users.User User { get; set; }
 
     /// <summary>
     /// The id of the pet in the relationship.
@@ -27,7 +30,24 @@ public class UserPet
     /// <summary>
     /// The pet of the relationship
     /// </summary>
-    public Pet.Pet Pet { get; set; }
+    public Pet Pet { get; set; }
+
+    /// <summary>
+    /// The date and time when the relationship was created. It is used to track when the relationship was created and to sort relationships by
+    /// creation date.
+    /// </summary>
+    public DateTime CreatedAt { get; init; }
+
+    /// <summary>
+    /// The date and time when the relationship was last updated. It is used to track when the relationship was last updated and to sort
+    /// relationships
+    /// </summary>
+    public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// A flag to track relationship status in the system.
+    /// </summary>
+    public GenericStatus Status { get; set; }
 
 
     //                                                                                                 Public Properties

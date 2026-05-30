@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Backend.Core.Models.User;
+namespace Backend.Core.Models.Users;
 
 /// <summary>
 /// Represents a sign up request. It contains the user's email and password. It is used to sign in an existing user.

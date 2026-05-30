@@ -1,5 +1,5 @@
 using Backend.Core.Internal;
-using Backend.Core.Models.Result;
+using Backend.Core.Models.Results;
 
 namespace Backend.Core.Policies;
 

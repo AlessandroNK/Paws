@@ -1,4 +1,4 @@
-namespace Backend.Core.Models.User;
+namespace Backend.Core.Models.Users;
 
 /// <summary>
 /// Represents a sign out request. It contains the user's id. It is used to sign out an existing user. It is used in the

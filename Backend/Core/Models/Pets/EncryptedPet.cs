@@ -1,6 +1,6 @@
 using Backend.Core.Models.Enums;
 
-namespace Backend.Core.Models.Pet;
+namespace Backend.Core.Models.Pets;
 
 public class EncryptedPet
 {
@@ -15,6 +15,11 @@ public class EncryptedPet
     /// The name of the pet.
     /// </summary>
     public string EncryptedName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A name to quickly find this pet
+    /// </summary>
+    public string NameHash { get; set; }  = string.Empty;
 
     /// <summary>
     /// The species of the pet
@@ -66,5 +71,4 @@ public class EncryptedPet
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-
 }

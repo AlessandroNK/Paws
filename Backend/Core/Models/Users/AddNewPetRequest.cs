@@ -1,6 +1,8 @@
-namespace Backend.Core.Models.User;
+using Backend.Core.Models.Pets;
 
-public class AccountVerificationRequest
+namespace Backend.Core.Models.Users;
+
+public class AddNewPetRequest
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -9,16 +11,17 @@ public class AccountVerificationRequest
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The email of the user sending the request
+    /// The id of the user asking to append the pet.
     /// </summary>
-    public string Email { get; set; } = string.Empty;
+    public int UserId { get; set; }
 
     /// <summary>
-    /// The verification code
+    /// The request to create a pet
     /// </summary>
-    public string VerificationCode { get; set; } = string.Empty;
+    public CreatePetRequest Pet { get; set; }
 
 
+    //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
 
 

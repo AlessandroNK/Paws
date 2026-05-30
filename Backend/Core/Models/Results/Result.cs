@@ -1,10 +1,9 @@
 using System.Runtime.CompilerServices;
 using Backend.Core.Internal;
-using Backend.Core.Models.Interfaces;
 
-namespace Backend.Core.Models.Result;
+namespace Backend.Core.Models.Results;
 
-public class Result<T> : Result
+public class Result
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -13,42 +12,69 @@ public class Result<T> : Result
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The data of the result. It can be of any type, depending on the operation. For example, it can be a user object,
-    /// a list of products, etc.
+    /// Whether the result is ok or not. It is used to indicate whether the operation was successful or not.
     /// </summary>
-    public T? Data { get; set; }
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// Alias for <see cref="Success"/>
+    /// </summary>
+    public bool Ok => Success;
+
+    /// <summary>
+    /// Alias for <see cref="Success"/>
+    /// </summary>
+    public bool IsSuccess => Success;
+
+    /// <summary>
+    /// A custom code in SCREAMING_SNAKE_CASE
+    /// </summary>
+    public required string Code { get; set; }
+
+    /// <summary>
+    /// The int number that represents the current status of the system.
+    /// </summary>
+    public required int Status { get; set; }
+
+    /// <summary>
+    /// A custom message to show to the user
+    /// </summary>
+    public string? Message { get; set; }
+
+    /// <summary>
+    /// Any validation errors associated with the result.
+    /// </summary>
+    public Dictionary<string, string[]> Errors { get; set; }  = new Dictionary<string, string[]>();
+
+    /// <summary>
+    /// An internal code to identify the result origin easily
+    /// </summary>
+    public string TraceCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the result should be returned to the frontend or not. In case it does not, it should be replaced for a
+    /// generic response before returning it to the frontend
+    /// </summary>
+    public bool Returnable { get; set; }
 
 
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
-    public static implicit operator bool(Result<T> result) => result.Success;
+    public static implicit operator bool(Result result) => result.Success;
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static implicit operator Result<T>(T data)
+    public static implicit operator Result(bool result)
     {
-        return new Result<T>
-        {
-            Success = true,
-            Code = "SUCCESS",
-            Status = 200,
-            Message = "Operation completed successfully",
-            Data = data
-        };
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    public static implicit operator Result<T>(bool result)
-    {
-        return new Result<T>
+        return new Result
         {
             Success = result,
             Code = result ? "SUCCESS" : "FAILURE",
             Status = result ? 200 : 400,
             Message = result ? "Operation completed successfully" : "Operation failed",
-            Data = default(T),
             Returnable = true
         };
     }
+
 
     //                                                                                                            Events
     // -----------------------------------------------------------------------------------------------------------------
@@ -72,21 +98,19 @@ public class Result<T> : Result
     /// <param name="status">The HTTP status code for the result.</param>
     /// <param name="returnable">Whether the result should be returned to the client.</param>
     /// <param name="message">A message describing the result.</param>
-    /// <param name="data">The data associated with the result.</param>
     /// <param name="file">The file where the result was created.</param>
     /// <param name="line">The line number where the result was created.</param>
-    /// <returns>A <see cref="Result{T}"/> instance.</returns>
-    public static Result<T> Create(
+    /// <returns>A <see cref="Result"/> instance.</returns>
+    public static Result Create(
         bool success,
         string code,
         int status,
         bool returnable = true,
         string? message = null,
-        T? data = default,
         [CallerFilePath] string file = "",
         [CallerLineNumber] int line = 0)
     {
-        return new Result<T>
+        return new Result
         {
             Success = success,
             Code = code,
@@ -94,8 +118,14 @@ public class Result<T> : Result
             Message = message,
             TraceCode = $"{Path.GetFileName(file)}:{line}",
             Returnable = returnable,
-            Data = data,
         };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Result AddError(string error, string[] messages)
+    {
+        Errors.Add(error, messages);
+        return this;
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -103,74 +133,51 @@ public class Result<T> : Result
     /// Convert this result to a result of a different type.
     /// </summary>
     /// <typeparam name="TU"></typeparam>
-    /// <returns>A result of type TU.</returns>
-    /// <remarks>In case the data is not compatible, the new result will drop the data.</remarks>
-    public new Result<TU> ConvertTo<TU>()
+    /// <returns>A result of type U.</returns>
+    /// <remarks>The new result will drop the data.</remarks>
+    public Result<TU> ConvertTo<TU>()
     {
-        return Data is TU data
-            ? new Result<TU>
-            {
-                Success = Success,
-                Code = Code,
-                Status = Status,
-                Message = Message,
-                Data = data,
-                Errors = Errors,
-                TraceCode = TraceCode,
-                Returnable = Returnable,
-            }
-            : new Result<TU>
-            {
-                Success = Success,
-                Code = Code,
-                Status = Status,
-                Message = Message,
-                Data = default(TU),
-                Errors = Errors,
-                TraceCode = TraceCode,
-                Returnable = Returnable,
-            };
+        return new Result<TU>
+        {
+            Success = Success,
+            Code = Code,
+            Status = Status,
+            Message = Message,
+            Errors = Errors,
+            TraceCode = TraceCode,
+            Returnable = Returnable,
+        };
     }
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Cleans and hides internal information when the result is not retornable to keep intern info secure
+    /// Logs the result using the provided logger and returns the same result for chaining.
+    /// </summary>
+    /// <param name="logger">The logger to use for logging the result.</param>
+    /// <param name="message">An optional message to include in the log.</param>
+    public Result Log(ILogger logger, string message = "")
+    {
+        LogHelpers.LogResult(logger, this, message);
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Cleans and hides internal information when the result is not retorneable to keep intern info secure
     /// </summary>
     /// <returns></returns>
-    public ResultDtoT<TU> ToDto<TU>()
+    public ResultDto CleanToReturn()
     {
         // We will filter info as we need so we can
         // return this result to the frontend securely
-        var result = new ResultDtoT<TU>
+        return new ResultDto
         {
             Success = Success,
             Code = Returnable ? Code : "INTERNAL_ERROR",
             Status = Status,
             Message = Returnable ? Message : "An error occurred in the API",
-            Data = default(TU),
             Errors = Returnable ? Errors : new Dictionary<string, string[]>(),
             TraceCode = TraceCode
         };
-
-        if (Data is not IDtoConvertible<TU> convertibleData) return result;
-
-        // We will try to convert the data to a Dto,
-        // if it fails we will return the original data
-        // as null and log the error
-        try
-        {
-            result.Data = convertibleData.ToDto();
-        }
-        catch (Exception e)
-        {
-            // We will log the error and return the original data as null
-            LogHelpers.LogError(e, "Error converting the data to a DTO");
-            result.Data = default(TU);
-            result.Code = "DATA_CONVERSION_ERROR";
-            result.Message = "An error occurred while converting the data";
-            result.Status = 500;
-        }
-
-        return result;
     }
 }

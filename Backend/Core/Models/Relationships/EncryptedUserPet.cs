@@ -1,35 +1,58 @@
+using Backend.Core.Models.Enums;
 using Backend.Core.Models.Pets;
-using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Users;
-using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Core.Data;
+namespace Backend.Core.Models.Relationships;
 
-/// <summary>
-/// provides access to the database for the application.
-/// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class EncryptedUserPet
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// The id of the user-pet relationship in the database
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// The id of the user in the relationship.
+    /// </summary>
+    public int UserId { get; set; }
+
+    /// <summary>
+    /// The user of the relationship
+    /// </summary>
+    public EncryptedUser EncryptedUser { get; set; }
+
+    /// <summary>
+    /// The id of the pet in the relationship.
+    /// </summary>
+    public int PetId { get; set; }
+
+    /// <summary>
+    /// The pet of the relationship
+    /// </summary>
+    public EncryptedPet EncryptedPet { get; set; }
+
+    /// <summary>
+    /// The date and time when the relationship was created. It is used to track when the relationship was created and to sort relationships by
+    /// creation date.
+    /// </summary>
+    public DateTime CreatedAt { get; init; }
+
+    /// <summary>
+    /// The date and time when the relationship was last updated. It is used to track when the relationship was last updated and to sort
+    /// relationships
+    /// </summary>
+    public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// A flag to track relationship status in the system.
+    /// </summary>
+    public GenericStatus Status { get; set; }
 
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
-    /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
-    /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedUserPet"/>
-    /// </summary>
-    public DbSet<EncryptedUserPet> EncryptedUserPets { get; set; }
 
 
     //                                                                                                         Operators
@@ -50,4 +73,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+
 }
