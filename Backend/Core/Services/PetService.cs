@@ -11,6 +11,7 @@ namespace Backend.Core.Services;
 
 public class PetService(
     IPetRepository petRepo,
+    INotificationService notificationService,
     ILogger<PetService> logger
 ) : IPetService
 {
@@ -22,6 +23,14 @@ public class PetService(
     /// retrieving pets. The service uses the repository to perform the necessary data access logic for pet management.
     /// </summary>
     private readonly IPetRepository _petRepo = petRepo;
+
+    /// <summary>
+    /// The service to notify users. It is injected into the service to provide access to the underlying notification
+    /// system for sending notifications to users. The service uses the notification service to send relevant notifications
+    /// to users, such as verification codes, password reset instructions, and other important updates related to their
+    /// accounts. Those notifications can be sent by frontend, email or sms.
+    /// </summary>
+    private readonly INotificationService _notificationService = notificationService;
 
     /// <summary>
     /// We wanna log!!!
@@ -71,7 +80,7 @@ public class PetService(
                 Returnable = true
             };
 
-        if (string.IsNullOrEmpty(request.Email))
+        if (string.IsNullOrEmpty(request.NewOwnerEmail))
             return new Result
             {
                 Success = false,
@@ -82,7 +91,7 @@ public class PetService(
                 Returnable = true
             };
 
-        if (request.Email.Length > 100)
+        if (request.NewOwnerEmail.Length > 100)
             return new Result
             {
                 Success = false,
@@ -93,7 +102,7 @@ public class PetService(
                 Returnable = true
             };
 
-        var emailResult = SecurityService.ValidateEmailAddress(request.Email);
+        var emailResult = SecurityService.ValidateEmailAddress(request.NewOwnerEmail);
         if (!emailResult) return emailResult;
 
         return new Result
@@ -305,11 +314,19 @@ public class PetService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result> SharePetOwnershipAsync(SharePetOwnershipRequest request)
+    /// <summary>
+    /// Shares the ownership of a pet with another user by sending an invitation email with a code to the new owner. The
+    /// new owner can then use the code to accept the invitation and become a co-owner of the pet. This method checks if
+    /// the user is the owner of the pet, generates a share code, saves it in the database, and sends it to the new owner's
+    /// email address. The share code is valid for 24 hours.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<Result> SendOwnershipInvitationAsync(SharePetOwnershipRequest request)
     {
         try
         {
-            _logger.LogInformation("Sharing ownership of pet {PetId} with user {Email}", request.PetId, request.Email);
+            _logger.LogInformation("Sharing ownership of pet {PetId} with user {Email}", request.PetId, request.NewOwnerEmail);
 
             // Verifications
             var requestResult = CheckSharePetOwnershipRequest(request);
@@ -319,10 +336,11 @@ public class PetService(
             var existenceResult = await GetByIdAsync(request.PetId);
             if (!existenceResult || existenceResult.Data is null) return existenceResult;
             var pet = existenceResult.Data;
+
             // Check for the pet, it has to be
             // owned by this specific owner
-            var isTheOwner = pet.UserPets.FirstOrDefault(u => u.User?.Id == request.UserId);
-            if (isTheOwner is null)
+            var userPet = pet.UserPets.FirstOrDefault(u => u.User?.Id == request.UserId);
+            if (userPet?.User is null)
                 return new Result
                 {
                     Success = false,
@@ -332,6 +350,7 @@ public class PetService(
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
+            var owner = userPet.User;
 
             // Generate the code and store it
             pet.ShareCode = SecurityService.GenerateVerificationCode();
@@ -339,7 +358,27 @@ public class PetService(
             var resultUpdate = await UpdateAsync(pet);
             if (!resultUpdate || resultUpdate.Data is null) return resultUpdate;
 
+            // Send the code through Email to the invited owner
+            var notificationResult = await _notificationService.SendOwnershipShareCode(
+                pet.Name,
+                owner.Name,
+                request.NewOwnerName,
+                request.NewOwnerEmail,
+                pet.ShareCode
+            );
+            if (!notificationResult) return notificationResult;
 
+            _logger.LogInformation("Ownership code of pet {PetId} shared successfully with user {Email}", request.PetId,
+                request.NewOwnerEmail);
+            return new Result
+            {
+                Success = true,
+                Code = "PET_OWNERSHIP_CODE_SENT",
+                Status = 200,
+                Message = "Pet ownership code sent successfully",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
         }
         catch (Exception e)
         {

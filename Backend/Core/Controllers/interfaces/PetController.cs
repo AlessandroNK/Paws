@@ -49,9 +49,16 @@ public class PetController(
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Shares the ownership of a pet with another user. It sends an invitation to the user to accept the ownership of
+    /// the pet.
+    /// </summary>
+    /// <param name="deviceId">The id of the device sending the request</param>
+    /// <param name="request">The <see cref="SharePetOwnershipRequest"/> request</param>
+    /// <returns></returns>
     [HttpPost]
     [Route("share-ownership")]
-    public async Task<IActionResult> SharePetOwnership(
+    public async Task<IActionResult> SendOwnershipInvitationAsync(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] SharePetOwnershipRequest request
     )
@@ -66,7 +73,7 @@ public class PetController(
         if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
         // Share the ownership
-        var result = await _petService.SharePetOwnershipAsync(request);
+        var result = await _petService.SendOwnershipInvitationAsync(request);
 
         // Clean the response and convert it and its data to Dto
         return result

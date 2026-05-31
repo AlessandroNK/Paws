@@ -1,8 +1,9 @@
-using Backend.Core.Models.Results;
+namespace Backend.Core.Models.Security;
 
-namespace Backend.Core.Services.Interfaces;
-
-public interface INotificationService
+/// <summary>
+/// Represents the environment variables required to configure notification delivery.
+/// </summary>
+public class NotificationEnvironmentVariables
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -10,6 +11,15 @@ public interface INotificationService
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets or sets the API key used to authenticate with the notification provider.
+    /// </summary>
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the sender email address used for outgoing notifications.
+    /// </summary>
+    public string SenderEmail { get; set; } = string.Empty;
 
 
     //                                                                                                         Operators
@@ -30,30 +40,5 @@ public interface INotificationService
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Sends a verification code to the given email address.
-    /// </summary>
-    /// <param name="name">The name of the user</param>
-    /// <param name="email">The email to send the code to</param>
-    /// <param name="code">The code to send</param>
-    /// <returns></returns>
-    public Task<Result> SendVerificationCodeAsync(string name, string email, string code);
 
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Sends an ownership share code to the given email address.
-    /// </summary>
-    /// <param name="petName">The name of the pet</param>
-    /// <param name="ownerName">The name of the current owner</param>
-    /// <param name="newOwnerName">The name of the new owner</param>
-    /// <param name="newOwnerEmail">The email to send the code to</param>
-    /// <param name="code">The code to send</param>
-    /// <returns></returns>
-    public Task<Result> SendOwnershipShareCode(
-        string petName,
-        string ownerName,
-        string newOwnerName,
-        string newOwnerEmail,
-        string code
-    );
 }

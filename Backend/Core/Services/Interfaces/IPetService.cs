@@ -59,7 +59,15 @@ public interface IPetService
     public Task<Result<Pet?>> UpdateAsync(Pet pet);
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<Result> SharePetOwnershipAsync(SharePetOwnershipRequest request);
+    /// <summary>
+    /// Shares the ownership of a pet with another user by sending an invitation email with a code to the new owner. The
+    /// new owner can then use the code to accept the invitation and become a co-owner of the pet. This method checks if
+    /// the user is the owner of the pet, generates a share code, saves it in the database, and sends it to the new owner's
+    /// email address. The share code is valid for 24 hours.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<Result> SendOwnershipInvitationAsync(SharePetOwnershipRequest request);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
