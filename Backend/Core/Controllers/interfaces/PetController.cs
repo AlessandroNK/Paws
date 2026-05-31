@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Core.Controllers.interfaces;
 
 [ApiController]
-[Microsoft.AspNetCore.Components.Route("api/[controller]")]
+[Route("api/[controller]")]
 [EnableCors("AllowFrontend")]
 public class PetController(
     IPetService petService,
@@ -49,6 +49,9 @@ public class PetController(
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+
+    #region HttpMethods
+
     /// <summary>
     /// Shares the ownership of a pet with another user. It sends an invitation to the user to accept the ownership of
     /// the pet.
@@ -80,4 +83,6 @@ public class PetController(
             ? Ok(result)
             : BadRequest(result);
     }
+
+    #endregion
 }

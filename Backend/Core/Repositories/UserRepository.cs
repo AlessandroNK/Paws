@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Backend.Core.Repositories;
 
 /// <summary>
-/// provides functionality to access and manage users in the application.
+/// Provides functionality to access and manage users in the application.
 /// This interface is responsible for managing users in the application.
 /// It provides methods for creating, updating, deleting, and retrieving users.
 /// The implementation of this interface should handle the data access logic, such as interacting with a database

@@ -335,6 +335,62 @@ public class UserService(
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
+    /// Finds a user by its ID.
+    /// </summary>
+    /// <param name="id">The ID to search for</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <returns>The created user</returns>
+    public async Task<Result<User?>> GetByIdAsync(
+        int id,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting user by ID");
+
+            // Validations
+            if (id <= 0)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_ID",
+                    Status = 400,
+                    Message = "ID is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Search for the user
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _userRepo.GetByIdAsync(
+                    id,
+                    excludeInactive,
+                    excludeBanned
+                ),
+                operationName: "Getting user by ID",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error getting user by ID");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_USER",
+                Status = 500,
+                Message = "An error occurred while getting the user",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
     /// Signs up a new user. It takes the device id from the header and the sign up request from the body. It returns an
     /// IActionResult with some relevant data as ok, code, and status
     /// </summary>

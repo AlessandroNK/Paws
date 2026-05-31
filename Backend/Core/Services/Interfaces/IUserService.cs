@@ -60,6 +60,20 @@ public interface IUserService
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
+    /// Finds a user by its ID.
+    /// </summary>
+    /// <param name="id">The ID to search for</param>
+    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <returns>The created user</returns>
+    public Task<Result<User?>> GetByIdAsync(
+       int id,
+        bool excludeInactive = true,
+        bool excludeBanned = true
+    );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
     /// Signs up a new user. It takes the device id from the header and the sign up request from the body. It returns an
     /// IActionResult with some relevant data as ok, code, and status
     /// </summary>

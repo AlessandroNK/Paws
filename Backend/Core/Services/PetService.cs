@@ -2,6 +2,7 @@ using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
+using Backend.Core.Models.Users;
 using Backend.Core.Policies;
 using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services.Interfaces;
@@ -11,6 +12,7 @@ namespace Backend.Core.Services;
 public class PetService(
     IPetRepository petRepo,
     INotificationService notificationService,
+    IUserRepository userRepo,
     ILogger<PetService> logger
 ) : IPetService
 {
@@ -22,6 +24,15 @@ public class PetService(
     /// retrieving pets. The service uses the repository to perform the necessary data access logic for pet management.
     /// </summary>
     private readonly IPetRepository _petRepo = petRepo;
+
+    /// <summary>
+    /// Provides functionality to access and manage users in the application.
+    /// This interface is responsible for managing users in the application.
+    /// It provides methods for creating, updating, deleting, and retrieving users.
+    /// The implementation of this interface should handle the data access logic, such as interacting with a database
+    /// or any other data source.
+    /// </summary>
+    private readonly IUserRepository _userRepo = userRepo;
 
     /// <summary>
     /// The service to notify users. It is injected into the service to provide access to the underlying notification
@@ -325,7 +336,8 @@ public class PetService(
     {
         try
         {
-            _logger.LogInformation("Sharing ownership of pet {PetId} with user {Email}", request.PetId, request.NewOwnerEmail);
+            _logger.LogInformation("Sharing ownership of pet {PetId} with user {Email}", request.PetId,
+                request.NewOwnerEmail);
 
             // Verifications
             var requestResult = CheckSharePetOwnershipRequest(request);
@@ -351,18 +363,35 @@ public class PetService(
                 };
             var owner = userPet.User;
 
-            // Generate the code and store it
-            pet.ShareCode = SecurityService.GenerateVerificationCode();
-            pet.ShareCodeExpiration = DateTime.UtcNow.AddHours(24);
-            var resultUpdate = await UpdateAsync(pet);
-            if (!resultUpdate || resultUpdate.Data is null) return resultUpdate;
+            // Check if the new owner is a user already or not
+            // here, I will send a link for already registered
+            // users so they can login and accept in only one
+            // operation, improving UX. For new users, I will
+            // send a link to signUp in the page easily, with
+            // their email and name already wrote in the form
+            var newOwnerResult = await _userRepo.GetByEmailAsync(request.NewOwnerEmail);
+            var newOwner = newOwnerResult.Data ?? new User
+            {
+                Name = request.NewOwnerName,
+                Email = request.NewOwnerEmail
+            };
+
+            // Check if there is another code that has not expired
+            // yet, if not, then generate a new code and store it
+            if (string.IsNullOrWhiteSpace(pet.ShareCode) || pet.ShareCodeExpiration <= DateTime.UtcNow)
+            {
+                pet.ShareCode = SecurityService.GenerateVerificationCode();
+                pet.ShareCodeExpiration = DateTime.UtcNow.AddHours(24);
+                var resultUpdate = await UpdateAsync(pet);
+                if (!resultUpdate || resultUpdate.Data is null) return resultUpdate;
+            }
 
             // Send the code through Email to the invited owner
             var notificationResult = await _notificationService.SendOwnershipShareCode(
                 pet.Name,
                 owner.Name,
-                request.NewOwnerName,
-                request.NewOwnerEmail,
+                newOwner.Name,
+                newOwner.Email,
                 pet.ShareCode
             );
             if (!notificationResult) return notificationResult;

@@ -43,7 +43,7 @@ public static class PetEncryption
         try
         {
             // Encrypt elements
-            //------------------------------------------------------------------------- Name
+            // ------------------------------------------------------------------------- Name
             var nameResult = SecurityService.EncryptString(pet.Name);
             if (!nameResult || nameResult.Data == null)
                 return nameResult.Log(logger).ConvertTo<EncryptedPet>();
@@ -52,7 +52,7 @@ public static class PetEncryption
             if (!nameHashResult || nameHashResult.Data == null)
                 return nameHashResult.Log(logger).ConvertTo<EncryptedPet>();
 
-            //------------------------------------------------------------------------- Breed
+            // ------------------------------------------------------------------------- Breed
             var breedResult = string.IsNullOrWhiteSpace(pet.Breed)
                 ? new Result<string>
                 {
@@ -66,6 +66,20 @@ public static class PetEncryption
                 : SecurityService.EncryptString(pet.Breed);
             if (!breedResult) return breedResult.Log(logger).ConvertTo<EncryptedPet>();
 
+            // ------------------------------------------------------------------------- ShareCode
+            var shareCodeResult = string.IsNullOrWhiteSpace(pet.ShareCode)
+                ? new Result<string>
+                {
+                    Success = true,
+                    Code = "SHARE_CODE",
+                    Status = 200,
+                    Message = "No share provided",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : SecurityService.EncryptString(pet.ShareCode);
+            if (!shareCodeResult) return shareCodeResult.Log(logger).ConvertTo<EncryptedPet>();
+
             // Update the tracked entity
             trackedEntity.EncryptedName = nameResult.Data;
             trackedEntity.NameHash = nameHashResult.Data;
@@ -73,7 +87,7 @@ public static class PetEncryption
             trackedEntity.EncryptedBreed = breedResult.Data;
             trackedEntity.UpdatedAt = DateTime.UtcNow;
             trackedEntity.Status = pet.Status;
-            trackedEntity.EncryptedShareCode = pet.ShareCode;
+            trackedEntity.EncryptedShareCode = shareCodeResult.Data;
             trackedEntity.ShareCodeExpiration = pet.ShareCodeExpiration;
 
             return new Result
@@ -113,7 +127,7 @@ public static class PetEncryption
         try
         {
             // Encrypt elements
-            //------------------------------------------------------------------------- Name
+            // ------------------------------------------------------------------------- Name
             var nameResult = SecurityService.EncryptString(pet.Name);
             if (!nameResult || nameResult.Data == null)
                 return nameResult.Log(logger).ConvertTo<EncryptedPet>();
@@ -122,7 +136,7 @@ public static class PetEncryption
             if (!nameHashResult || nameHashResult.Data == null)
                 return nameHashResult.Log(logger).ConvertTo<EncryptedPet>();
 
-            //------------------------------------------------------------------------- Breed
+            // ------------------------------------------------------------------------- Breed
             var breedResult = string.IsNullOrWhiteSpace(pet.Breed)
                 ? new Result<string>
                 {
@@ -136,6 +150,21 @@ public static class PetEncryption
                 : SecurityService.EncryptString(pet.Breed);
             if (!breedResult) return breedResult.Log(logger).ConvertTo<EncryptedPet>();
 
+
+            // ------------------------------------------------------------------------- ShareCode
+            var shareCodeResult = string.IsNullOrWhiteSpace(pet.ShareCode)
+                ? new Result<string>
+                {
+                    Success = true,
+                    Code = "SHARE_CODE",
+                    Status = 200,
+                    Message = "No share provided",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : SecurityService.EncryptString(pet.ShareCode);
+            if (!shareCodeResult) return shareCodeResult.Log(logger).ConvertTo<EncryptedPet>();
+
             return new EncryptedPet
             {
                 Id = pet.Id,
@@ -146,6 +175,8 @@ public static class PetEncryption
                 CreatedAt = pet.CreatedAt,
                 UpdatedAt = pet.UpdatedAt,
                 Status = pet.Status,
+                EncryptedShareCode = shareCodeResult.Data,
+                ShareCodeExpiration = pet.ShareCodeExpiration
             };
         }
         catch (Exception e)
@@ -190,12 +221,12 @@ public static class PetEncryption
                 Data = new List<UserPet>()
             };
 
-            //------------------------------------------------------------------------- Name
+            // ------------------------------------------------------------------------- Name
             var nameResult = SecurityService.DecryptString(encryptedPet.EncryptedName);
             if (!nameResult || nameResult.Data == null)
                 return nameResult.Log(logger).ConvertTo<Pet?>();
 
-            //--------------------------------------------------------------- Breed
+            // ------------------------------------------------------------------------- Breed
             var breedResult = string.IsNullOrWhiteSpace(encryptedPet.EncryptedBreed)
                 ? new Result<string>
                 {
@@ -211,6 +242,22 @@ public static class PetEncryption
             if (!breedResult || breedResult.Data == null)
                 return breedResult.Log(logger).ConvertTo<Pet?>();
 
+            // ------------------------------------------------------------------------- ShareCode
+            var shareCodeResult = string.IsNullOrWhiteSpace(encryptedPet.EncryptedShareCode)
+                ? new Result<string>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Share code is null or whitespace, returning empty string",
+                    Code = "SHARE_CODE_NULL_OR_WHITESPACE",
+                    Data = string.Empty,
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : SecurityService.DecryptString(encryptedPet.EncryptedShareCode);
+            if (!shareCodeResult || shareCodeResult.Data == null)
+                return shareCodeResult.Log(logger).ConvertTo<Pet?>();
+
             return new Pet
             {
                 Id = encryptedPet.Id,
@@ -220,7 +267,9 @@ public static class PetEncryption
                 UpdatedAt = encryptedPet.UpdatedAt,
                 Status = encryptedPet.Status,
                 Species = encryptedPet.Species,
-                UserPets = userPets.Data ?? new List<UserPet>()
+                UserPets = userPets.Data ?? new List<UserPet>(),
+                ShareCode = shareCodeResult.Data,
+                ShareCodeExpiration = encryptedPet.ShareCodeExpiration
             };
         }
         catch (Exception e)
