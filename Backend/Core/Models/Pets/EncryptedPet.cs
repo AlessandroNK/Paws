@@ -50,14 +50,9 @@ public class EncryptedPet
     public PetStatus Status { get; set; }
 
     /// <summary>
-    /// A temporary code to share this pet
+    /// Temporary invitations to share this pet.
     /// </summary>
-    public string? EncryptedShareCode { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The timestamp when this shared code will expire
-    /// </summary>
-    public DateTime ShareCodeExpiration { get; set; }
+    public List<EncryptedShareInvitation> ShareInvitation { get; set; } = new List<EncryptedShareInvitation>();
 
     /// <summary>
     /// All pet's owners

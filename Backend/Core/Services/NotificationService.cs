@@ -178,13 +178,17 @@ public class NotificationService(
     /// <param name="newOwnerName">The name of the new owner</param>
     /// <param name="newOwnerEmail">The email to send the code to</param>
     /// <param name="code">The code to send</param>
+    /// <param name="link">The link to the app or website where the new owner can enter the code</param>
+    /// <param name="newOwnerAlreadyUser">Whether the new owner is already a user of the app</param>
     /// <returns></returns>
     public async Task<Result> SendOwnershipShareCode(
         string petName,
         string ownerName,
         string newOwnerName,
         string newOwnerEmail,
-        string code
+        string code,
+        string link,
+        bool newOwnerAlreadyUser = false
     )
     {
         try
@@ -201,6 +205,10 @@ public class NotificationService(
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("api-key", apiKey);
 
+            var accountP = newOwnerAlreadyUser
+                ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{link}' style='color:#f05a22; text-decoration:none;'>ingresa a este enlace</a> para continuar."
+                : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{link}' style='color:#f05a22; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
+
             // Prepare the email content
             var requestBody = new
             {
@@ -213,9 +221,10 @@ public class NotificationService(
                     <p>Para aceptar la invitación y convertirte en co‑propietario, utiliza el siguiente <b>código de un solo uso</b>:</p>
                     <p style='font-size: 20px; font-weight: 600; color: #f05a22;'>{code}</p>
                     <p>Este código es válido por 24 horas. Ingresa el código en <a href='https://paws.com' style='color:#f05a22; text-decoration:none;'>Paws</a> para confirmar tu participación.</p>
+                    {accountP}
                     <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
                     <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
-                    <p><a href=' style='color:#f05a22; text-decoration:none;'>Pronto tendremos sitio web oficial</a></p>"
+                    <p><a href='' style='color:#f05a22; text-decoration:none;'>Pronto tendremos sitio web oficial</a></p>"
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8,

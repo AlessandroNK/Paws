@@ -1,8 +1,6 @@
-using Backend.Core.Models.Results;
+namespace Backend.Core.Models.Pets;
 
-namespace Backend.Core.Services.Interfaces;
-
-public interface INotificationService
+public class EncryptedShareInvitation
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -10,6 +8,42 @@ public interface INotificationService
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// The ID of the shared invitation
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// The ID of the user sharing ownership of the pet.
+    /// </summary>
+    public int UserId { get; set; }
+
+    /// <summary>
+    /// The ID of the pet to share ownership of.
+    /// </summary>
+    public int PetId { get; set; }
+
+    /// <summary>
+    /// A temporary link to share this pet. This lik includes some important information like the id of the pet, the id
+    /// of the user who shared it, and new owner's email. It is used to share the pet with other users without giving
+    /// them access to the pet's data. It is encrypted to prevent unauthorized access.
+    /// </summary>
+    public string? EncryptedShareLink { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The email of the user to share ownership with.
+    /// </summary>
+    public string EncryptedNewOwnerEmail { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The name of the user to share ownership with.
+    /// </summary>
+    public string EncryptedNewOwnerName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The timestamp when this shared code will expire
+    /// </summary>
+    public DateTime ShareCodeExpiration { get; set; }
 
 
     //                                                                                                         Operators
@@ -30,34 +64,4 @@ public interface INotificationService
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Sends a verification code to the given email address.
-    /// </summary>
-    /// <param name="name">The name of the user</param>
-    /// <param name="email">The email to send the code to</param>
-    /// <param name="code">The code to send</param>
-    /// <returns></returns>
-    public Task<Result> SendVerificationCodeAsync(string name, string email, string code);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Sends an ownership share code to the given email address.
-    /// </summary>
-    /// <param name="petName">The name of the pet</param>
-    /// <param name="ownerName">The name of the current owner</param>
-    /// <param name="newOwnerName">The name of the new owner</param>
-    /// <param name="newOwnerEmail">The email to send the code to</param>
-    /// <param name="code">The code to send</param>
-    /// <param name="link">The link to the app or website where the new owner can enter the code</param>
-    /// <param name="newOwnerAlreadyUser">Whether the new owner is already a user of the app</param>
-    /// <returns></returns>
-    public Task<Result> SendOwnershipShareCode(
-        string petName,
-        string ownerName,
-        string newOwnerName,
-        string newOwnerEmail,
-        string code,
-        string link,
-        bool newOwnerAlreadyUser = false
-    );
 }

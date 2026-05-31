@@ -46,14 +46,9 @@ public class Pet : IDtoConvertible<PetResponse>
     public PetStatus Status { get; set; }
 
     /// <summary>
-    /// A temporary code to share this pet
+    /// Temporary invitations to share this pet.
     /// </summary>
-    public string? ShareCode { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The timestamp when this shared code will expire
-    /// </summary>
-    public DateTime ShareCodeExpiration { get; set; }
+    public List<ShareInvitation> ShareInvitation { get; set; } = new List<ShareInvitation>();
 
     /// <summary>
     /// All pet's owners

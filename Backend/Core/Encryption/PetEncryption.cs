@@ -67,7 +67,7 @@ public static class PetEncryption
             if (!breedResult) return breedResult.Log(logger).ConvertTo<EncryptedPet>();
 
             // ------------------------------------------------------------------------- ShareCode
-            var shareCodeResult = string.IsNullOrWhiteSpace(pet.ShareCode)
+            var shareCodeResult = string.IsNullOrWhiteSpace(pet.ShareLink)
                 ? new Result<string>
                 {
                     Success = true,
@@ -77,7 +77,7 @@ public static class PetEncryption
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 }
-                : SecurityService.EncryptString(pet.ShareCode);
+                : SecurityService.EncryptString(pet.ShareLink);
             if (!shareCodeResult) return shareCodeResult.Log(logger).ConvertTo<EncryptedPet>();
 
             // Update the tracked entity
@@ -152,7 +152,7 @@ public static class PetEncryption
 
 
             // ------------------------------------------------------------------------- ShareCode
-            var shareCodeResult = string.IsNullOrWhiteSpace(pet.ShareCode)
+            var shareCodeResult = string.IsNullOrWhiteSpace(pet.ShareLink)
                 ? new Result<string>
                 {
                     Success = true,
@@ -162,7 +162,7 @@ public static class PetEncryption
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 }
-                : SecurityService.EncryptString(pet.ShareCode);
+                : SecurityService.EncryptString(pet.ShareLink);
             if (!shareCodeResult) return shareCodeResult.Log(logger).ConvertTo<EncryptedPet>();
 
             return new EncryptedPet
@@ -268,7 +268,7 @@ public static class PetEncryption
                 Status = encryptedPet.Status,
                 Species = encryptedPet.Species,
                 UserPets = userPets.Data ?? new List<UserPet>(),
-                ShareCode = shareCodeResult.Data,
+                ShareLink = shareCodeResult.Data,
                 ShareCodeExpiration = encryptedPet.ShareCodeExpiration
             };
         }

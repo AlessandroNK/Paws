@@ -348,6 +348,31 @@ public class PetService(
             if (!existenceResult || existenceResult.Data is null) return existenceResult;
             var pet = existenceResult.Data;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             // Check for the pet, it has to be
             // owned by this specific owner
             var userPet = pet.UserPets.FirstOrDefault(u => u.User?.Id == request.UserId);
@@ -370,6 +395,7 @@ public class PetService(
             // send a link to signUp in the page easily, with
             // their email and name already wrote in the form
             var newOwnerResult = await _userRepo.GetByEmailAsync(request.NewOwnerEmail);
+            var newOwnerAlreadyExists = newOwnerResult && newOwnerResult.Data is not null;
             var newOwner = newOwnerResult.Data ?? new User
             {
                 Name = request.NewOwnerName,
@@ -378,9 +404,15 @@ public class PetService(
 
             // Check if there is another code that has not expired
             // yet, if not, then generate a new code and store it
-            if (string.IsNullOrWhiteSpace(pet.ShareCode) || pet.ShareCodeExpiration <= DateTime.UtcNow)
+            if (string.IsNullOrWhiteSpace(pet.ShareLink) || pet.ShareCodeExpiration <= DateTime.UtcNow)
             {
-                pet.ShareCode = SecurityService.GenerateVerificationCode();
+                var linkResult = CreateShareLink(
+                    pet.Id,
+                    owner.Id,
+                    newOwner.Email
+                );
+                if (!linkResult || linkResult.Data is null) return linkResult;
+                pet.ShareLink = linkResult.Data;
                 pet.ShareCodeExpiration = DateTime.UtcNow.AddHours(24);
                 var resultUpdate = await UpdateAsync(pet);
                 if (!resultUpdate || resultUpdate.Data is null) return resultUpdate;
@@ -392,7 +424,7 @@ public class PetService(
                 owner.Name,
                 newOwner.Name,
                 newOwner.Email,
-                pet.ShareCode
+                pet.ShareLink
             );
             if (!notificationResult) return notificationResult;
 
