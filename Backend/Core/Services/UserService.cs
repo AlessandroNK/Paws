@@ -40,7 +40,7 @@ public class UserService(
     private readonly IPetService _petService = petService;
 
     /// <summary>
-    /// The logger used to log messages.
+    /// We wanna log!!!
     /// </summary>
     private readonly ILogger<UserService> _logger = logger;
 
@@ -128,8 +128,7 @@ public class UserService(
             };
 
         var passwordResult = SecurityService.IsPasswordValid(request.Password);
-        if (!passwordResult)
-            return passwordResult;
+        if (!passwordResult) return passwordResult;
 
         if (!Enum.IsDefined(typeof(DocumentType), request.DocumentType))
             return new Result
@@ -167,6 +166,9 @@ public class UserService(
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
+
+        var emailResult = SecurityService.ValidateEmailAddress(request.Email);
+        if (!emailResult) return emailResult;
 
         // Everything is valid
         return new Result

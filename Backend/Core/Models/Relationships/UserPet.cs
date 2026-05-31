@@ -1,5 +1,6 @@
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Pets;
+using Backend.Core.Models.Users;
 
 namespace Backend.Core.Models.Relationships;
 
@@ -20,7 +21,7 @@ public class UserPet
     /// <summary>
     /// The user of the relationship
     /// </summary>
-    public Users.User User { get; set; }
+    public User? User { get; set; }
 
     /// <summary>
     /// The id of the pet in the relationship.
@@ -30,7 +31,7 @@ public class UserPet
     /// <summary>
     /// The pet of the relationship
     /// </summary>
-    public Pet Pet { get; set; }
+    public Pet? Pet { get; set; }
 
     /// <summary>
     /// The date and time when the relationship was created. It is used to track when the relationship was created and to sort relationships by

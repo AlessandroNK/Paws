@@ -26,7 +26,7 @@ public class UserController(
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// We wanna do logs!!!
+    /// We wanna log!!!
     /// </summary>
     private readonly ILogger<UserController> _logger = logger;
 

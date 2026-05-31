@@ -1,54 +1,30 @@
-using Backend.Core.Models.Enums;
 using Backend.Core.Models.Pets;
-using Backend.Core.Models.Users;
+using Backend.Core.Services;
+using Backend.Core.Services.Interfaces;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Core.Models.Relationships;
+namespace Backend.Core.Controllers.interfaces;
 
-public class EncryptedUserPet
+[ApiController]
+[Microsoft.AspNetCore.Components.Route("api/[controller]")]
+[EnableCors("AllowFrontend")]
+public class PetController(
+    IPetService petService,
+    ILogger<UserController> logger
+) : ControllerBase, IPetController
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The id of the user-pet relationship in the database
+    /// A service to handle pet related operations. It is used to manage the pet operations, such as sharing pet ownership.
     /// </summary>
-    public int Id { get; set; }
+    private readonly IPetService _petService = petService;
 
     /// <summary>
-    /// The id of the user in the relationship.
+    /// We wanna log!!!
     /// </summary>
-    public int EncryptedUserId { get; set; }
-
-    /// <summary>
-    /// The user of the relationship
-    /// </summary>
-    public EncryptedUser? EncryptedUser { get; set; }
-
-    /// <summary>
-    /// The id of the pet in the relationship.
-    /// </summary>
-    public int EncryptedPetId { get; set; }
-
-    /// <summary>
-    /// The pet of the relationship
-    /// </summary>
-    public EncryptedPet? EncryptedPet { get; set; }
-
-    /// <summary>
-    /// The date and time when the relationship was created. It is used to track when the relationship was created and to sort relationships by
-    /// creation date.
-    /// </summary>
-    public DateTime CreatedAt { get; init; }
-
-    /// <summary>
-    /// The date and time when the relationship was last updated. It is used to track when the relationship was last updated and to sort
-    /// relationships
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
-
-    /// <summary>
-    /// A flag to track relationship status in the system.
-    /// </summary>
-    public GenericStatus Status { get; set; }
+    private readonly ILogger<UserController> _logger = logger;
 
 
     //                                                                                                 Public Properties
@@ -73,5 +49,28 @@ public class EncryptedUserPet
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    [HttpPost]
+    [Route("share-ownership")]
+    public async Task<IActionResult> SharePetOwnership(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] SharePetOwnershipRequest request
+    )
+    {
+        _logger.LogInformation(
+            "Received request to share pet ownership: {@PetId} with user {@UserId} and device ID: {DeviceId}",
+            request.PetId, request.UserId, deviceId
+        );
 
+        // Validations
+        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+        if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+        // Share the ownership
+        var result = await _petService.SharePetOwnershipAsync(request);
+
+        // Clean the response and convert it and its data to Dto
+        return result
+            ? Ok(result)
+            : BadRequest(result);
+    }
 }

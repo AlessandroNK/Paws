@@ -10,7 +10,6 @@ public partial class SecurityService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
-
     #region Regex
 
     [GeneratedRegex(@"[a-z]")]
@@ -27,6 +26,9 @@ public partial class SecurityService
 
     [GeneratedRegex(@"[!@#$%^&*(),.?"":{}|<>\/ _-]")]
     private static partial Regex SpecialCharRegex();
+
+    [GeneratedRegex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$")]
+    private static partial Regex EmailAddressRegex();
 
     #endregion
 
@@ -379,6 +381,46 @@ public partial class SecurityService
             Code = "VALID_DEVICE_ID",
             Status = 200,
             Message = "Device id is valid",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
+    }
+
+    /// <summary>
+    /// Performs a basic validation on an email address.
+    /// </summary>
+    /// <param name="email">The email address to validate</param>
+    /// <returns>A result indicating whether the email is valid</returns>
+    public static Result ValidateEmailAddress(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return new Result
+            {
+                Success = false,
+                Code = "MISSING_EMAIL_ADDRESS",
+                Status = 400,
+                Message = "Email address is required",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (!EmailAddressRegex().IsMatch(email))
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_EMAIL_ADDRESS",
+                Status = 400,
+                Message = "Email address is invalid",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        return new Result
+        {
+            Success = true,
+            Code = "VALID_EMAIL_ADDRESS",
+            Status = 200,
+            Message = "Email address is valid",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };

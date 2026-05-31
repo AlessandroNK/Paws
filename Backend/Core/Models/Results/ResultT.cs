@@ -4,7 +4,7 @@ using Backend.Core.Models.Interfaces;
 
 namespace Backend.Core.Models.Results;
 
-public class Result<T> : Results.Result
+public class Result<T> : Result
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -95,6 +95,23 @@ public class Result<T> : Results.Result
             TraceCode = $"{Path.GetFileName(file)}:{line}",
             Returnable = returnable,
             Data = data,
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Returns a default success result with no important data
+    /// </summary>
+    /// <returns></returns>
+    public new static Result<T> GetDefaultSuccess()
+    {
+        return new Result<T>
+        {
+            Success = true,
+            Code = "DEFAULT_SUCCESS_RESULT",
+            Status = 500,
+            Message = "This is a default result with no data",
+            Data = default(T),
         };
     }
 

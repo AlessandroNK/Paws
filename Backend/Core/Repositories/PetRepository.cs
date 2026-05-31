@@ -27,7 +27,7 @@ public class PetRepository(
     private readonly ApplicationDbContext _dbContext = dbContext;
 
     /// <summary>
-    /// The logger used to log messages.
+    /// We wanna log!!!
     /// </summary>
     private readonly ILogger<PetRepository> _logger = logger;
 
@@ -134,6 +134,8 @@ public class PetRepository(
         if (excludeBanned) query = query.Where(p => p.Status != PetStatus.Banned);
 
         query = query
+            .Include(p => p.UserPets)
+            .ThenInclude(up => up.EncryptedUser)
             .AsSplitQuery();
 
         // Execute query
@@ -153,4 +155,78 @@ public class PetRepository(
         return PetEncryption.DecryptPet(encryptedPet, _logger);
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Updates a pet in the system. It takes the pet data and returns a result with the updated pet or an error if
+    /// something went wrong.
+    /// </summary>
+    /// <param name="pet"></param>
+    /// <returns></returns>
+    public async Task<Result<Pet?>> UpdateAsync(Pet pet)
+    {
+        if (pet.Id <= 0)
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "PET_ID_NOT_PROVIDED",
+                Status = 400,
+                Message = "Pet id not provided for update",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // First get the existing encrypted pet from the database
+        var existingEncryptedPet = await _dbContext.EncryptedPets
+            .FirstOrDefaultAsync(ep => ep.Id == pet.Id);
+
+        if (existingEncryptedPet == null)
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "PET_NOT_FOUND",
+                Status = 404,
+                Message = "pet not found",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // Update the tracked entity with new encrypted values
+        var updateResult = PetEncryption.EncryptPetAndUpdateTrackedEntity(pet, existingEncryptedPet, _logger);
+        if (!updateResult) return updateResult.ConvertTo<Pet?>();
+
+        var saved = await _dbContext.SaveChangesAsync();
+        if (saved <= 0)
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_UPDATING_PET",
+                Status = 500,
+                Message = "An error occurred while updating the pet",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        var getPetResult = await GetByIdAsync(pet.Id, excludeInactive: false, excludeBanned: false);
+        if (!getPetResult || getPetResult.Data == null)
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "PET_UPDATED_BUT_NOT_FOUND",
+                Status = 500,
+                Message = "Pet updated but not found when retrieving it",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        return new Result<Pet?>
+        {
+            Success = true,
+            Code = "PET_UPDATED",
+            Status = 200,
+            Message = "Pet updated successfully",
+            Data = getPetResult.Data,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+         };
+    }
 }

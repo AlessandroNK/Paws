@@ -24,7 +24,7 @@ public class PetService(
     private readonly IPetRepository _petRepo = petRepo;
 
     /// <summary>
-    /// The logger used to log messages.
+    /// We wanna log!!!
     /// </summary>
     private readonly ILogger<PetService> _logger = logger;
 
@@ -47,6 +47,67 @@ public class PetService(
 
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
+    private static Result CheckSharePetOwnershipRequest(SharePetOwnershipRequest request)
+    {
+        if (request.UserId <= 0)
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_USER_ID",
+                Status = 400,
+                Message = "The user ID is invalid",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (request.PetId <= 0)
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_PET_ID",
+                Status = 400,
+                Message = "The pet ID is invalid",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (string.IsNullOrEmpty(request.Email))
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_EMAIL",
+                Status = 400,
+                Message = "The email is required",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (request.Email.Length > 100)
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_EMAIL",
+                Status = 400,
+                Message = "The email must be less than 100 characters",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        var emailResult = SecurityService.ValidateEmailAddress(request.Email);
+        if (!emailResult) return emailResult;
+
+        return new Result
+        {
+            Success = true,
+            Code = "SUCCESS",
+            Status = 200,
+            Message = "Share pet ownership request is valid",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = false
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Adds a new pet to the db
     /// </summary>
@@ -58,13 +119,11 @@ public class PetService(
         {
             _logger.LogInformation("Adding new pet");
 
-            var addResult = await DbRetry.ExecuteWithRetry(
+            return await DbRetry.ExecuteWithRetry(
                 operation: () => _petRepo.AddAsync(pet),
                 operationName: "Adding new pet",
                 logger: _logger
             );
-
-            return addResult;
         }
         catch (Exception e)
         {
@@ -139,6 +198,160 @@ public class PetService(
                 Code = "ERROR_ADDING_PET",
                 Status = 500,
                 Message = "An error occurred while adding the pet. Please try again later."
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets a pet by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the pet to retrieve</param>
+    /// <param name="excludeInactive">Whether to exclude inactive pets</param>
+    /// <param name="excludeBanned">Whether to exclude banned pets</param>
+    /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
+    public async Task<Result<Pet?>> GetByIdAsync(int id, bool excludeInactive = true, bool excludeBanned = true)
+    {
+        try
+        {
+            _logger.LogInformation("Getting pet by id {PetId}", id);
+
+            if (id <= 0)
+                return new Result<Pet?>
+                {
+                    Success = false,
+                    Code = "INVALID_PET_ID",
+                    Status = 400,
+                    Message = "The pet ID is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var getResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.GetByIdAsync(id, excludeInactive, excludeBanned),
+                operationName: $"Getting pet by id {id}",
+                logger: _logger
+            );
+
+            if (!getResult) return getResult;
+            if (getResult.Data is null)
+                return new Result<Pet?>
+                {
+                    Success = false,
+                    Code = "PET_NOT_FOUND",
+                    Status = 404,
+                    Message = "Pet not found"
+                };
+
+            _logger.LogInformation("Pet with id {PetId} retrieved successfully", id);
+            return getResult;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error getting pet by id {id}");
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_PET",
+                Status = 500,
+                Message = "An error occurred while getting the pet. Please try again later."
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Updates a pet in the system. It takes the pet data and returns a result with the updated pet or an error if
+    /// something went wrong.
+    /// </summary>
+    /// <param name="pet"></param>
+    /// <returns></returns>
+    public async Task<Result<Pet?>> UpdateAsync(Pet pet)
+    {
+        try
+        {
+            _logger.LogInformation("Updating pet with id {PetId}", pet.Id);
+
+            if (pet.Id <= 0)
+                return new Result<Pet?>
+                {
+                    Success = false,
+                    Code = "INVALID_PET_ID",
+                    Status = 400,
+                    Message = "The pet ID is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var updateResult = await _petRepo.UpdateAsync(pet);
+            if (!updateResult || updateResult.Data is null) return updateResult;
+
+            _logger.LogInformation("Pet with id {PetId} updated successfully", pet.Id);
+            return updateResult;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error adding new pet");
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_ADDING_PET",
+                Status = 500,
+                Message = "An error occurred while adding the pet",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result> SharePetOwnershipAsync(SharePetOwnershipRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Sharing ownership of pet {PetId} with user {Email}", request.PetId, request.Email);
+
+            // Verifications
+            var requestResult = CheckSharePetOwnershipRequest(request);
+            if (!requestResult) return requestResult;
+
+            // Check for pet existence
+            var existenceResult = await GetByIdAsync(request.PetId);
+            if (!existenceResult || existenceResult.Data is null) return existenceResult;
+            var pet = existenceResult.Data;
+            // Check for the pet, it has to be
+            // owned by this specific owner
+            var isTheOwner = pet.UserPets.FirstOrDefault(u => u.User?.Id == request.UserId);
+            if (isTheOwner is null)
+                return new Result
+                {
+                    Success = false,
+                    Code = "USER_NOT_OWNER",
+                    Status = 403,
+                    Message = "The user is not the owner of the pet",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Generate the code and store it
+            pet.ShareCode = SecurityService.GenerateVerificationCode();
+            pet.ShareCodeExpiration = DateTime.UtcNow.AddHours(24);
+            var resultUpdate = await UpdateAsync(pet);
+            if (!resultUpdate || resultUpdate.Data is null) return resultUpdate;
+
+
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error sharing pet ownership");
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_SHARING_PET_OWNERSHIP",
+                Status = 500,
+                Message = "An error occurred while sharing pet ownership",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
             };
         }
     }

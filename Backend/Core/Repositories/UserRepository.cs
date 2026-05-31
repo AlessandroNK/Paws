@@ -35,7 +35,7 @@ public class UserRepository(
     private readonly ApplicationDbContext _dbContext = dbContext;
 
     /// <summary>
-    /// The logger used to log messages.
+    /// We wanna log!!!
     /// </summary>
     private readonly ILogger<UserRepository> _logger = logger;
 
@@ -307,11 +307,10 @@ public class UserRepository(
 
         // Update the tracked entity with new encrypted values
         var updateResult = UserEncryption.EncryptUserAndUpdateTrackedEntity(user, existingEncryptedUser, _logger);
-        if (!updateResult)
-            return updateResult.ConvertTo<User?>();
+        if (!updateResult) return updateResult.ConvertTo<User?>();
 
         var saved = await _dbContext.SaveChangesAsync();
-        if (saved <= 0) // Note: changed from < 0 to <= 0
+        if (saved <= 0)
             return new Result<User?>
             {
                 Success = false,

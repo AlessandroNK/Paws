@@ -48,4 +48,13 @@ public interface IPetRepository
     /// <param name="excludeBanned">Whether to exclude banned pets</param>
     /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
     public Task<Result<Pet?>> GetByIdAsync(int id, bool excludeInactive = true, bool excludeBanned = true);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Updates a pet in the system. It takes the pet data and returns a result with the updated pet or an error if
+    /// something went wrong.
+    /// </summary>
+    /// <param name="pet"></param>
+    /// <returns></returns>
+    public Task<Result<Pet?>> UpdateAsync(Pet pet);
 }

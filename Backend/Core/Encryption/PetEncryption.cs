@@ -1,5 +1,6 @@
 using Backend.Core.Internal;
 using Backend.Core.Models.Pets;
+using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
 using Backend.Core.Services;
 
@@ -33,6 +34,74 @@ public static class PetEncryption
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    public static Result EncryptPetAndUpdateTrackedEntity(
+        Pet pet,
+        EncryptedPet trackedEntity,
+        ILogger logger
+    )
+    {
+        try
+        {
+            // Encrypt elements
+            //------------------------------------------------------------------------- Name
+            var nameResult = SecurityService.EncryptString(pet.Name);
+            if (!nameResult || nameResult.Data == null)
+                return nameResult.Log(logger).ConvertTo<EncryptedPet>();
+
+            var nameHashResult = SecurityService.HashWithSalt(pet.Name);
+            if (!nameHashResult || nameHashResult.Data == null)
+                return nameHashResult.Log(logger).ConvertTo<EncryptedPet>();
+
+            //------------------------------------------------------------------------- Breed
+            var breedResult = string.IsNullOrWhiteSpace(pet.Breed)
+                ? new Result<string>
+                {
+                    Success = true,
+                    Code = "BREED",
+                    Status = 200,
+                    Message = "No breed provided",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : SecurityService.EncryptString(pet.Breed);
+            if (!breedResult) return breedResult.Log(logger).ConvertTo<EncryptedPet>();
+
+            // Update the tracked entity
+            trackedEntity.EncryptedName = nameResult.Data;
+            trackedEntity.NameHash = nameHashResult.Data;
+            trackedEntity.Species = pet.Species;
+            trackedEntity.EncryptedBreed = breedResult.Data;
+            trackedEntity.UpdatedAt = DateTime.UtcNow;
+            trackedEntity.Status = pet.Status;
+            trackedEntity.EncryptedShareCode = pet.ShareCode;
+            trackedEntity.ShareCodeExpiration = pet.ShareCodeExpiration;
+
+            return new Result
+            {
+                Success = true,
+                Code = "USER_ENCRYPTED_AND_TRACKED_ENTITY_UPDATED",
+                Status = 200,
+                Message = "User encrypted and tracked entity updated successfully",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to encrypt user data");
+            return new Result
+            {
+                Success = false,
+                Code = "USER_ENCRYPTION_FAILED",
+                Status = 500,
+                Message = "Failed to encrypt user data",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = false
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Encrypts sensitive data so we can be sure no one is gonna steal it (no one are going to though)
     /// </summary>
@@ -65,7 +134,6 @@ public static class PetEncryption
                     Returnable = true
                 }
                 : SecurityService.EncryptString(pet.Breed);
-
             if (!breedResult) return breedResult.Log(logger).ConvertTo<EncryptedPet>();
 
             return new EncryptedPet
@@ -73,6 +141,7 @@ public static class PetEncryption
                 Id = pet.Id,
                 EncryptedName = nameResult.Data,
                 NameHash = nameHashResult.Data,
+                Species = pet.Species,
                 EncryptedBreed = breedResult.Data,
                 CreatedAt = pet.CreatedAt,
                 UpdatedAt = pet.UpdatedAt,
@@ -93,7 +162,7 @@ public static class PetEncryption
             };
         }
     }
-    
+
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Decrypts sensitive data so we can use it and return it to the frontend
@@ -106,6 +175,9 @@ public static class PetEncryption
         try
         {
             // Decrypt elements
+            // ------------------------------------------------------------------------- Users
+            var userPets = UserEncryption.DecryptUserPets(encryptedPet.UserPets, logger);
+
             //------------------------------------------------------------------------- Name
             var nameResult = SecurityService.DecryptString(encryptedPet.EncryptedName);
             if (!nameResult || nameResult.Data == null)
@@ -135,6 +207,8 @@ public static class PetEncryption
                 CreatedAt = encryptedPet.CreatedAt,
                 UpdatedAt = encryptedPet.UpdatedAt,
                 Status = encryptedPet.Status,
+                Species = encryptedPet.Species,
+                UserPets = userPets.Data ?? new List<UserPet>()
             };
         }
         catch (Exception e)

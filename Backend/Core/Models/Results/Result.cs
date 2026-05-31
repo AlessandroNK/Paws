@@ -122,6 +122,22 @@ public class Result
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Returns a default success result with no important data
+    /// </summary>
+    /// <returns></returns>
+    public static Result GetDefaultSuccess()
+    {
+        return new Result
+        {
+            Success = true,
+            Code = "DEFAULT_SUCCESS_RESULT",
+            Status = 500,
+            Message = "This is a default result with no data"
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
     public Result AddError(string error, string[] messages)
     {
         Errors.Add(error, messages);

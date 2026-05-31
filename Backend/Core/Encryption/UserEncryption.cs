@@ -330,9 +330,23 @@ public static class UserEncryption
     {
         try
         {
-            var petResult = PetEncryption.DecryptPet(encryptedUserPet.EncryptedPet, logger);
-            if (!petResult || petResult.Data == null)
-                return petResult.Log(logger).ConvertTo<UserPet>();
+            // ------------------------------------------------------------------------- User
+            var userResult = Result<User?>.GetDefaultSuccess();
+            if (encryptedUserPet.EncryptedUser is not null)
+            {
+                userResult = DecryptUser(encryptedUserPet.EncryptedUser, logger);
+                if (!userResult || userResult.Data == null)
+                    return userResult.Log(logger).ConvertTo<UserPet>();
+            }
+
+            // ------------------------------------------------------------------------- Pets
+            var petResult = Result<Pet?>.GetDefaultSuccess();
+            if (encryptedUserPet.EncryptedPet is not null)
+            {
+                petResult = PetEncryption.DecryptPet(encryptedUserPet.EncryptedPet, logger);
+                if (!petResult || petResult.Data == null)
+                    return petResult.Log(logger).ConvertTo<UserPet>();
+            }
 
             return new UserPet
             {
@@ -342,7 +356,8 @@ public static class UserEncryption
                 CreatedAt = encryptedUserPet.CreatedAt,
                 UpdatedAt = encryptedUserPet.UpdatedAt,
                 Status = encryptedUserPet.Status,
-                Pet = petResult.Data
+                Pet = petResult.Data,
+                User = userResult.Data
             };
         }
         catch (Exception e)
