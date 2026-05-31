@@ -1,7 +1,6 @@
 using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Pets;
-using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
 using Backend.Core.Policies;
 using Backend.Core.Repositories.Interfaces;

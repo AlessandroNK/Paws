@@ -169,14 +169,26 @@ public static class PetEncryption
     /// </summary>
     /// <param name="encryptedPet"></param>
     /// <param name="logger">A logger so this function can logg information</param>
+    /// <param name="decryptUserPets">A flag to indicate if we should decrypt user pets or not. We can set it to false
+    /// to avoid unwanted recursiveness</param>
     /// <returns></returns>
-    public static Result<Pet?> DecryptPet(EncryptedPet encryptedPet, ILogger logger)
+    public static Result<Pet?> DecryptPet(EncryptedPet encryptedPet, ILogger logger, bool decryptUserPets = true)
     {
         try
         {
             // Decrypt elements
-            // ------------------------------------------------------------------------- Users
-            var userPets = UserEncryption.DecryptUserPets(encryptedPet.UserPets, logger);
+            // ------------------------------------------------------------------------- UserPets
+            var userPets = decryptUserPets
+                ? UserPetsEncryption.DecryptUserPets(encryptedPet.UserPets, logger)
+                : new Result<List<UserPet>>
+            {
+                Success = true,
+                Status = 200,
+                Code = "USER_PETS_DECRYPTED",
+                Message = "User pets decrypted successfully",
+                TraceCode = FileCodes.CallerIC(),
+                Data = new List<UserPet>()
+            };
 
             //------------------------------------------------------------------------- Name
             var nameResult = SecurityService.DecryptString(encryptedPet.EncryptedName);

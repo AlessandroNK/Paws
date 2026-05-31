@@ -215,25 +215,26 @@ public static class UserEncryption
     /// </summary>
     /// <param name="encryptedUser"></param>
     /// <param name="logger">The logger so this function can log errors</param>
+    /// <param name="decryptUserPets">A flag to indicate if we should decrypt user pets or not. We can set it to false
+    /// to avoid unwanted recursiveness</param>
     /// <returns></returns>
-    public static Result<User?> DecryptUser(EncryptedUser? encryptedUser, ILogger logger)
+    public static Result<User?> DecryptUser(EncryptedUser encryptedUser, ILogger logger, bool decryptUserPets = true)
     {
         try
         {
-            if (encryptedUser is null)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "ENCRYPTED_USER_NULL",
-                    Status = 500,
-                    Message = "no encrypted user to decrypt",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = false
-                };
-
             // Decrypt elements
-            // ------------------------------------------------------------------------- Pets
-            var userPets = DecryptUserPets(encryptedUser.UserPets, logger);
+            // ------------------------------------------------------------------------- UserPets
+            var userPets = decryptUserPets
+                ? UserPetsEncryption.DecryptUserPets(encryptedUser.UserPets, logger)
+                : new Result<List<UserPet>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Code = "USER_PETS_DECRYPTED",
+                    Message = "User pets decrypted successfully",
+                    TraceCode = FileCodes.CallerIC(),
+                    Data = new List<UserPet>()
+                };
 
             // ------------------------------------------------------------------------- Email
             var emailResult = SecurityService.DecryptString(encryptedUser.EncryptedEmail);
@@ -285,90 +286,6 @@ public static class UserEncryption
                 Code = "USER_DECRYPTION_FAILED",
                 Status = 500,
                 Message = "Failed to decrypt user data",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = false
-            };
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Securely decrypts pets inside userPet list element
-    /// </summary>
-    /// <param name="encryptedUserPets"></param>
-    /// <param name="logger"></param>
-    /// <returns></returns>
-    public static Result<List<UserPet>> DecryptUserPets(List<EncryptedUserPet> encryptedUserPets, ILogger logger)
-    {
-        List<UserPet> userPets = new();
-        foreach (var userPet in encryptedUserPets)
-        {
-            var result = DecryptUserPet(userPet, logger);
-            if (!result || result.Data == null) continue;
-            userPets.Add(result.Data);
-        }
-
-        return new Result<List<UserPet>>
-        {
-            Success = true,
-            Status = 200,
-            Code = "USER_PETS_DECRYPTED",
-            Message = "User pets decrypted successfully",
-            TraceCode = FileCodes.CallerIC(),
-            Data = userPets
-        };
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Securely decrypts pet inside userPet element
-    /// </summary>
-    /// <param name="encryptedUserPet"></param>
-    /// <param name="logger"></param>
-    /// <returns></returns>
-    public static Result<UserPet> DecryptUserPet(EncryptedUserPet encryptedUserPet, ILogger logger)
-    {
-        try
-        {
-            // ------------------------------------------------------------------------- User
-            var userResult = Result<User?>.GetDefaultSuccess();
-            if (encryptedUserPet.EncryptedUser is not null)
-            {
-                userResult = DecryptUser(encryptedUserPet.EncryptedUser, logger);
-                if (!userResult || userResult.Data == null)
-                    return userResult.Log(logger).ConvertTo<UserPet>();
-            }
-
-            // ------------------------------------------------------------------------- Pets
-            var petResult = Result<Pet?>.GetDefaultSuccess();
-            if (encryptedUserPet.EncryptedPet is not null)
-            {
-                petResult = PetEncryption.DecryptPet(encryptedUserPet.EncryptedPet, logger);
-                if (!petResult || petResult.Data == null)
-                    return petResult.Log(logger).ConvertTo<UserPet>();
-            }
-
-            return new UserPet
-            {
-                Id = encryptedUserPet.Id,
-                UserId = encryptedUserPet.EncryptedUserId,
-                PetId = encryptedUserPet.EncryptedPetId,
-                CreatedAt = encryptedUserPet.CreatedAt,
-                UpdatedAt = encryptedUserPet.UpdatedAt,
-                Status = encryptedUserPet.Status,
-                Pet = petResult.Data,
-                User = userResult.Data
-            };
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to decrypt user pet data");
-            return new Result<UserPet>
-            {
-                Success = false,
-                Code = "USER_PET_DECRYPTION_FAILED",
-                Status = 500,
-                Message = "Failed to decrypt user pet data",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
