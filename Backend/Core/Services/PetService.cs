@@ -238,6 +238,10 @@ public class PetService(
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
+
+        // Add important dependencies
+        addResult.Data.Pet = pet;
+        addResult.Data.User = owner;
         return addResult.ConvertTo<ShareInvitation>();
     }
 
@@ -258,20 +262,9 @@ public class PetService(
     {
         // No tengo frontend, asi que ajá
         var baseLink = Environment.GetEnvironmentVariable("FRONTEND_BASE_URL") ?? "http://localhost:3000";
-        var payload = new ShareInvitationResponse
-        {
-            UserId = invitation.UserId,
-            PetId = invitation.PetId,
-            NewOwnerName = invitation.NewOwnerName,
-            NewOwnerEmail = invitation.NewOwnerEmail,
-            NewOwnerHasAccount = invitation.NewOwnerHasAccount,
-            Nonce = invitation.Nonce
-        };
-        var json = JsonConvert.SerializeObject(payload);
-        var encryptionResult = SecurityService.EncryptString(json);
-        return !encryptionResult || encryptionResult.Data is null
-            ? encryptionResult
-            : $"{baseLink}/accept-invitation?code={encryptionResult.Data}";
+        var safeEmail = Uri.EscapeDataString(invitation.NewOwnerEmail);
+        return $"{baseLink}/accept-invitation?code={invitation.Nonce}&email={safeEmail}";
+
     }
 
     // -----------------------------------------------------------------------------------------------------------------

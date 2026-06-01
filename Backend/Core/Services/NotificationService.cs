@@ -111,7 +111,7 @@ public class NotificationService(
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "🐾Acá Paws🐶" },
+                sender = new { email = senderEmail, name = "🐾Paws acá🐶" },
                 to = new[] { new { email = email, name = email } },
                 subject = $"Tu código para Registro en Paws es {code}",
                 htmlContent = $@"
@@ -215,9 +215,9 @@ public class NotificationService(
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "🐾Acá Paws🐶" },
+                sender = new { email = senderEmail, name = "🐾Paws acá🐶" },
                 to = new[] { new { email = invitation.NewOwnerEmail, name = invitation.NewOwnerName } },
-                subject = $"{emoji}{invitation.Pet.Name} te pide que seas su dueño en Paws",
+                subject = $"{invitation.Pet.Name} {emoji} te pide que seas su dueño en Paws",
                 htmlContent = $@"
                     <h2>¡Hola {invitation.NewOwnerName}!</h2>
                     <p>{invitation.User.Name} quiere compartir contigo la propiedad de su mascota <strong>{invitation.Pet.Name}</strong> en <b>Paws</b>.</p>
