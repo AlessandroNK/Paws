@@ -397,6 +397,73 @@ public class PetService(
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    private async Task<Result> HandleAcceptExistingRelationship(
+        UserPet existingUserPet,
+        OwnershipInvitation invitation,
+        AcceptOwnershipInvitationRequest request
+    )
+    {
+        // Validations
+        if (existingUserPet.Status == EntityStatus.Active)
+        {
+            var deleteExistentInvitationResult = await _petRepo.DeleteOwnershipInvitationAsync(invitation.Id);
+            if (!deleteExistentInvitationResult) return deleteExistentInvitationResult;
+
+            return new Result
+            {
+                Success = false,
+                Code = "USER_ALREADY_OWNER",
+                Status = 400,
+                Message = "The user is already a owner of the pet",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+
+        if (existingUserPet.Status == EntityStatus.Banned)
+            return new Result
+            {
+                Success = false,
+                Code = "USER_BANNED_FROM_PET",
+                Status = 403,
+                Message = "The user is banned from being owner of the pet",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (existingUserPet.Status == EntityStatus.ToDelete)
+            return new Result
+            {
+                Success = false,
+                Code = "USER_PET_RELATIONSHIP_PENDING_DELETION",
+                Status = 400,
+                Message = "The user pet relationship is pending deletion, please try again later",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        // Update that existing one
+        existingUserPet.Status = EntityStatus.Active;
+        existingUserPet.UpdatedAt = DateTime.UtcNow;
+        var updateResult = await _userRepo.UpdateUserPet(existingUserPet);
+        if (!updateResult || updateResult.Data is null) return updateResult;
+
+        var deleteInvitationResult = await _petRepo.DeleteOwnershipInvitationAsync(invitation.Id);
+        if (!deleteInvitationResult) return deleteInvitationResult;
+        _logger.LogInformation("Ownership invitation with code {InvitationCode} accepted successfully",
+            request.InvitationCode);
+        return new Result
+        {
+            Success = true,
+            Code = "OWNERSHIP_INVITATION_ACCEPTED",
+            Status = 200,
+            Message = "Ownership invitation accepted successfully.",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
+    }
+
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
@@ -600,6 +667,18 @@ public class PetService(
                 };
             var owner = userPet.User;
 
+            // You cannot send invitations if your ownership is invalid
+            if (userPet.Status != EntityStatus.Active)
+                return new Result
+                {
+                    Success = false,
+                    Code = "INVALID_OWNERSHIP",
+                    Status = 403,
+                    Message = "Your ownership of the pet is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
             // You can't send yourself an invitation
             if (owner.Email == invitationRequest.NewOwnerEmail)
                 return new Result
@@ -613,8 +692,8 @@ public class PetService(
                 };
 
             // You can't also share with any existent co-owner
-            var alreadyOwner = pet.UserPets.Any(u => u.User?.Email == invitationRequest.NewOwnerEmail);
-            if (alreadyOwner)
+            var alreadyOwner = pet.UserPets.FirstOrDefault(u => u.User?.Email == invitationRequest.NewOwnerEmail);
+            if (alreadyOwner is not null && alreadyOwner.Status == EntityStatus.Active)
                 return new Result
                 {
                     Success = false,
@@ -814,19 +893,14 @@ public class PetService(
             var coOwner = coOwnerResult.Data;
 
             // Avoid adding existent UserPet relationship
-            var existingOwnerResult = await _userRepo.GetUserPetByBothIdsAsync(coOwner.Id, invitation.Pet.Id);
-            if (existingOwnerResult)
-                return new Result
-                {
-                    Success = false,
-                    Code = "USER_PET_RELATIONSHIP_EXISTS",
-                    Status = 400,
-                    Message = "The user is already a owner of the pet",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
+            filters = StatusFilters.IncludeAll();
+            var existingOwnerResult = await _userRepo.GetUserPetByBothIdsAsync(coOwner.Id, invitation.Pet.Id, filters);
 
-            // Here, I will add the user as a co-owner of the pet and delete the invitation
+            // There is another relationship
+            if (existingOwnerResult && existingOwnerResult.Data is not null)
+                return await HandleAcceptExistingRelationship(existingOwnerResult.Data, invitation, request);
+
+            // There is no existent relationship
             var addOwnerResult = await AddPetOwnerAsync(invitation.Pet, coOwner);
             if (!addOwnerResult) return addOwnerResult;
 
