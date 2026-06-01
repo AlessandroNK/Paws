@@ -69,7 +69,7 @@ public class EncryptedUser
     /// <summary>
     /// A flag to track user status in the system.
     /// </summary>
-    public UserStatus Status { get; set; }
+    public EntityStatus Status { get; set; }
 
     /// <summary>
     /// Any verification code for the user.

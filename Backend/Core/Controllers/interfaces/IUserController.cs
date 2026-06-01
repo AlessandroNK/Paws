@@ -87,4 +87,19 @@ public interface IUserController
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] AddNewPetRequest request
     );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Removes a pet from the user. It takes the device id from the header and the remove pet from user request from
+    /// the body. It returns an IActionResult with some relevant data as ok, code, and the removed pet data. It also
+    /// checks if the user is verified before removing the pet from the user. If the user is not verified, it returns a
+    /// bad request with a message indicating that the user is not verified.
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<IActionResult> RemovePetAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] RemovePetRequest request
+    );
 }

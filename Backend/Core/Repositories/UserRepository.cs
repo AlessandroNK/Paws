@@ -67,14 +67,33 @@ public class UserRepository(
     {
         filters ??= new StatusFilters();
 
-        if (!filters.IncludeActive) query = query.Where(i => i.Status != UserStatus.Active);
-        if (!filters.IncludeInactive) query = query.Where(i => i.Status != UserStatus.Inactive);
-        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != UserStatus.Deleted);
-        if (!filters.IncludeBanned) query = query.Where(i => i.Status != UserStatus.Banned);
-        if (!filters.IncludeUnverified) query = query.Where(i => i.Status != UserStatus.Unverified);
+        if (!filters.IncludeActive) query = query.Where(i => i.Status != EntityStatus.Active);
+        if (!filters.IncludeInactive) query = query.Where(i => i.Status != EntityStatus.Inactive);
+        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != EntityStatus.Deleted);
+        if (!filters.IncludeBanned) query = query.Where(i => i.Status != EntityStatus.Banned);
+        if (!filters.IncludeUnverified) query = query.Where(i => i.Status != EntityStatus.Unverified);
 
         return query;
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    private static IQueryable<EncryptedUserPet> ApplyStatusFilters(
+        IQueryable<EncryptedUserPet> query,
+        StatusFilters? filters = null
+    )
+    {
+        filters ??= new StatusFilters();
+
+        if (!filters.IncludeActive) query = query.Where(i => i.Status != EntityStatus.Active);
+        if (!filters.IncludeInactive) query = query.Where(i => i.Status != EntityStatus.Inactive);
+        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != EntityStatus.Deleted);
+        if (!filters.IncludeBanned) query = query.Where(i => i.Status != EntityStatus.Banned);
+        if (!filters.IncludeUnverified) query = query.Where(i => i.Status != EntityStatus.Unverified);
+
+        return query;
+    }
+
+
 
 
     //                                                                                                    Public Methods
@@ -365,7 +384,7 @@ public class UserRepository(
     /// <returns></returns>
     public async Task<Result<User?>> AddUserPet(UserPet userPet)
     {
-        // Verifications
+        // Validations
         if (userPet.UserId <= 0)
             return new Result<User?>
             {
@@ -397,7 +416,7 @@ public class UserRepository(
             EncryptedPetId = userPet.PetId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            Status = GenericStatus.Active
+            Status = EntityStatus.Active
         };
 
         // Save the relationship
@@ -447,8 +466,9 @@ public class UserRepository(
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="petId"></param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns></returns>
-    public async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId)
+    public async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId, StatusFilters? filters = null)
     {
         if (userId <= 0)
             return new Result<UserPet?>
@@ -472,36 +492,113 @@ public class UserRepository(
                 Returnable = true
             };
 
-        var encryptedUserPet = await _dbContext.EncryptedUserPets
-            .FirstOrDefaultAsync(up => up.EncryptedUserId == userId && up.EncryptedPetId == petId);
+        // Find the user pet
+        var query = _dbContext.EncryptedUserPets
+            .Where(up => up.EncryptedUserId == userId && up.EncryptedPetId == petId);
 
-        if (encryptedUserPet == null)
+        // Apply status filters
+        query = ApplyStatusFilters(query, filters);
+
+        query = query
+            .Include(p => p.EncryptedUser)
+            .Include(p => p.EncryptedPet)
+            .AsSplitQuery();
+
+        // Execute query
+        var encryptedUserPet = await query.FirstOrDefaultAsync();
+        if (encryptedUserPet is null)
             return new Result<UserPet?>
             {
                 Success = false,
-                Code = "USER_PET_RELATIONSHIP_NOT_FOUND",
+                Code = "PET_NOT_FOUND",
                 Status = 404,
-                Message = "No user-pet relationship found with the provided user and pet ids",
+                Message = "No pet found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
-        var userPet = new UserPet
-        {
-            UserId = encryptedUserPet.EncryptedUserId,
-            PetId = encryptedUserPet.EncryptedPetId,
-            CreatedAt = encryptedUserPet.CreatedAt,
-            UpdatedAt = encryptedUserPet.UpdatedAt,
-            Status = encryptedUserPet.Status
-        };
+        // Decrypt and return
+        return UserPetsEncryption.DecryptUserPet(encryptedUserPet, _logger).ConvertTo<UserPet?>();
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Removes a pet from the user. It takes the device id from the header and the remove pet from user request from
+    /// the body. It checks if the user is verified before removing the pet from the user. If the user is not verified,
+    /// it returns a bad request with a message indicating that the user is not verified. It also checks if the user is
+    /// the owner of the pet before allowing them to remove the pet from their account. If the user is not the owner of
+    /// the pet, it returns a bad request with a message indicating that the user is not the owner of the pet. Finally,
+    /// it doesn't delete the relationship between the user and the pet, but instead it sets its status to deleted, so
+    /// the information is not lost and can be used for analytics and other purposes in the future.
+    /// </summary>
+    /// <param name="userPet"></param>
+    /// <param name="filters">The filters to apply to the query</param>
+    /// <returns></returns>
+    public async Task<Result<UserPet?>> UpdateUserPet(UserPet userPet, StatusFilters? filters = null)
+    {
+        if (userPet.Id <= 0)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "USER_PET_ID_NOT_PROVIDED",
+                Status = 400,
+                Message = "User pet id not provided for update",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // First get the existing encrypted user from the database
+        var existingEncryptedUserPet = await _dbContext.EncryptedUserPets
+            .FirstOrDefaultAsync(eu => eu.Id == userPet.Id);
+
+        if (existingEncryptedUserPet == null)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "USER_PET_NOT_FOUND",
+                Status = 404,
+                Message = "User pet not found",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // Update the tracked entity with new encrypted values
+        existingEncryptedUserPet.EncryptedUserId = userPet.UserId;
+        existingEncryptedUserPet.EncryptedPetId = userPet.PetId;
+        existingEncryptedUserPet.UpdatedAt = DateTime.UtcNow;
+        existingEncryptedUserPet.Status = userPet.Status;
+
+        var saved = await _dbContext.SaveChangesAsync();
+        if (saved <= 0)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "ERROR_UPDATING_USER_PET_RELATIONSHIP",
+                Status = 500,
+                Message = "An error occurred while updating the user-pet relationship",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        var getResult = await GetUserPetByBothIdsAsync(userPet.UserId, userPet.PetId, filters);
+        if (!getResult || getResult.Data == null)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "USER_PET_RELATIONSHIP_UPDATED_BUT_NOT_FOUND",
+                Status = 500,
+                Message = "User-pet relationship updated but not found when retrieving it",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
 
         return new Result<UserPet?>
         {
             Success = true,
-            Code = "USER_PET_RELATIONSHIP_FOUND",
+            Code = "USER_PET_RELATIONSHIP_UPDATED",
             Status = 200,
-            Message = "User-pet relationship found successfully",
-            Data = userPet,
+            Message = "User-pet relationship updated successfully",
+            Data = getResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
         };

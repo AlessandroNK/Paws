@@ -48,7 +48,7 @@ public class EncryptedUserPet
     /// <summary>
     /// A flag to track relationship status in the system.
     /// </summary>
-    public GenericStatus Status { get; set; }
+    public EntityStatus Status { get; set; }
 
 
     //                                                                                                 Public Properties

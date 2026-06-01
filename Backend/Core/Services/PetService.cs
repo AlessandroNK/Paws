@@ -379,7 +379,7 @@ public class PetService(
                 PetId = pet.Id,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Status = GenericStatus.Active
+                Status = EntityStatus.Active
             };
 
             return await _userRepo.AddUserPet(userPet);
@@ -412,7 +412,7 @@ public class PetService(
         {
             _logger.LogInformation("Creating pet with name {PetName}", request.Name);
 
-            // Verifications
+            // Validations
             var requestResult = CheckCreatePetRequest(request);
             if (!requestResult) return requestResult.ConvertTo<Pet?>();
 
@@ -423,7 +423,7 @@ public class PetService(
                 Name = request.Name,
                 Species = request.Species,
                 Breed = request.Breed,
-                Status = GenericStatus.Active,
+                Status = EntityStatus.Active,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -576,7 +576,7 @@ public class PetService(
             _logger.LogInformation("Sharing ownership of pet {PetId} with user {Email}", invitationRequest.PetId,
                 invitationRequest.NewOwnerEmail);
 
-            // Verifications
+            // Validations
             var requestResult = CheckSharePetOwnershipRequest(invitationRequest);
             if (!requestResult) return requestResult;
 

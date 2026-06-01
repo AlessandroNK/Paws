@@ -105,6 +105,22 @@ public interface IUserRepository
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="petId"></param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns></returns>
-    public Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId);
+    public Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId, StatusFilters? filters = null);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Removes a pet from the user. It takes the device id from the header and the remove pet from user request from
+    /// the body. It checks if the user is verified before removing the pet from the user. If the user is not verified,
+    /// it returns a bad request with a message indicating that the user is not verified. It also checks if the user is
+    /// the owner of the pet before allowing them to remove the pet from their account. If the user is not the owner of
+    /// the pet, it returns a bad request with a message indicating that the user is not the owner of the pet. Finally,
+    /// it doesn't delete the relationship between the user and the pet, but instead it sets its status to deleted, so
+    /// the information is not lost and can be used for analytics and other purposes in the future.
+    /// </summary>
+    /// <param name="userPet"></param>
+    /// <param name="filters">The filters to apply to the query</param>
+    /// <returns></returns>
+    public Task<Result<UserPet?>> UpdateUserPet(UserPet userPet, StatusFilters? filters = null);
 }

@@ -106,4 +106,18 @@ public interface IUserService
     /// <param name="request"></param>
     /// <returns></returns>
     public Task<Result<User?>> AddNewPetAsync(AddNewPetRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Removes a pet from the user. It takes the device id from the header and the remove pet from user request from
+    /// the body. It checks if the user is verified before removing the pet from the user. If the user is not verified,
+    /// it returns a bad request with a message indicating that the user is not verified. It also checks if the user is
+    /// the owner of the pet before allowing them to remove the pet from their account. If the user is not the owner of
+    /// the pet, it returns a bad request with a message indicating that the user is not the owner of the pet. Finally,
+    /// it doesn't delete the relationship between the user and the pet, but instead it sets its status to deleted, so
+    /// the information is not lost and can be used for analytics and other purposes in the future.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<Result<User?>> RemovePetAsync(RemovePetRequest request);
 }

@@ -59,12 +59,12 @@ public class PetRepository(
     {
         filters ??= new StatusFilters();
 
-        if (!filters.IncludeActive) query = query.Where(i => i.Status != GenericStatus.Active);
-        if (!filters.IncludeInactive) query = query.Where(i => i.Status != GenericStatus.Inactive);
-        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != GenericStatus.Deleted);
-        if (!filters.IncludeBanned) query = query.Where(i => i.Status != GenericStatus.Banned);
-        if (!filters.IncludeArchived) query = query.Where(i => i.Status != GenericStatus.Archived);
-        if (!filters.IncludeToDelete) query = query.Where(i => i.Status != GenericStatus.ToDelete);
+        if (!filters.IncludeActive) query = query.Where(i => i.Status != EntityStatus.Active);
+        if (!filters.IncludeInactive) query = query.Where(i => i.Status != EntityStatus.Inactive);
+        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != EntityStatus.Deleted);
+        if (!filters.IncludeBanned) query = query.Where(i => i.Status != EntityStatus.Banned);
+        if (!filters.IncludeArchived) query = query.Where(i => i.Status != EntityStatus.Archived);
+        if (!filters.IncludeToDelete) query = query.Where(i => i.Status != EntityStatus.ToDelete);
 
         return query;
     }
@@ -77,12 +77,12 @@ public class PetRepository(
     {
         filters ??= new StatusFilters();
 
-        if (!filters.IncludeActive) query = query.Where(i => i.Status != GenericStatus.Active);
-        if (!filters.IncludeInactive) query = query.Where(i => i.Status != GenericStatus.Inactive);
-        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != GenericStatus.Deleted);
-        if (!filters.IncludeBanned) query = query.Where(i => i.Status != GenericStatus.Banned);
-        if (!filters.IncludeArchived) query = query.Where(i => i.Status != GenericStatus.Archived);
-        if (!filters.IncludeToDelete) query = query.Where(i => i.Status != GenericStatus.ToDelete);
+        if (!filters.IncludeActive) query = query.Where(i => i.Status != EntityStatus.Active);
+        if (!filters.IncludeInactive) query = query.Where(i => i.Status != EntityStatus.Inactive);
+        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != EntityStatus.Deleted);
+        if (!filters.IncludeBanned) query = query.Where(i => i.Status != EntityStatus.Banned);
+        if (!filters.IncludeArchived) query = query.Where(i => i.Status != EntityStatus.Archived);
+        if (!filters.IncludeToDelete) query = query.Where(i => i.Status != EntityStatus.ToDelete);
 
         return query;
     }

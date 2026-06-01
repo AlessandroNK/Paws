@@ -1,58 +1,26 @@
-using Backend.Core.Models.Enums;
-using Backend.Core.Models.Pets;
-using Backend.Core.Models.Users;
+using System.ComponentModel.DataAnnotations;
 
-namespace Backend.Core.Models.Relationships;
+namespace Backend.Core.Models.Users;
 
-public class UserPet
+public class RemovePetRequest
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// The id of the user-pet relationship in the database
-    /// </summary>
-    public int Id { get; set; }
-
-    /// <summary>
-    /// The id of the user in the relationship.
-    /// </summary>
-    public int UserId { get; set; }
-
-    /// <summary>
-    /// The user of the relationship
-    /// </summary>
-    public User? User { get; set; }
-
-    /// <summary>
-    /// The id of the pet in the relationship.
-    /// </summary>
-    public int PetId { get; set; }
-
-    /// <summary>
-    /// The pet of the relationship
-    /// </summary>
-    public Pet? Pet { get; set; }
-
-    /// <summary>
-    /// The date and time when the relationship was created. It is used to track when the relationship was created and to sort relationships by
-    /// creation date.
-    /// </summary>
-    public DateTime CreatedAt { get; init; }
-
-    /// <summary>
-    /// The date and time when the relationship was last updated. It is used to track when the relationship was last updated and to sort
-    /// relationships
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
-
-    /// <summary>
-    /// A flag to track relationship status in the system.
-    /// </summary>
-    public EntityStatus Status { get; set; }
 
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// The id of your sister
+    /// </summary>
+    [Required(ErrorMessage = "User ID is required.")]
+    public int UserId { get; set; }
+
+    /// <summary>
+    /// The id of the pet to remove
+    /// </summary>
+    [Required(ErrorMessage = "Pet ID is required.")]
+    public int PetId { get; set; }
 
 
     //                                                                                                         Operators

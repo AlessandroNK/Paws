@@ -1,6 +1,6 @@
 namespace Backend.Core.Models.Enums;
 
-public enum GenericStatus
+public enum EntityStatus
 {
     /// <summary>
     /// The default status of an entity. It is used to indicate that the entity is active and can be used in the system.
@@ -35,5 +35,11 @@ public enum GenericStatus
      /// The status of an entity that is marked for deletion. It is used to indicate that the entity is marked for
      /// deletion and should not be used in the system, but it is not deleted yet and can be restored if needed.
      /// </summary>
-     ToDelete = 6
+     ToDelete = 6,
+
+     /// <summary>
+     /// The status of an entity that is unverified. It is used to indicate that the entity is unverified and should not
+     /// be used in the system, but it is not deleted and can be verified if needed.
+     /// </summary>
+     Unverified = 7
 }

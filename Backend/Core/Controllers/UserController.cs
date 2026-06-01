@@ -251,5 +251,54 @@ public class UserController(
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Removes a pet from the user. It takes the device id from the header and the remove pet from user request from
+    /// the body. It returns an IActionResult with some relevant data as ok, code, and the removed pet data. It also
+    /// checks if the user is verified before removing the pet from the user. If the user is not verified, it returns a
+    /// bad request with a message indicating that the user is not verified.
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("remove-pet")]
+    public async Task<IActionResult> RemovePetAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] RemovePetRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Removing pet from user with device id: {DeviceId} and pet id: {@PetId}",
+                deviceId,
+                request.PetId);
+
+            // Validations
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Remove the pet
+            var result = await _userService.RemovePetAsync(request);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToDto<UserResponse>())
+                : BadRequest(result.ToDto<UserResponse>());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return Ok(new Result
+            {
+                Success = false,
+                Code = "BAD_OPERATION",
+                Status = 500,
+                Message = "Something is breaking inside the API",
+                TraceCode = FileCodes.CallerIC()
+            });
+        }
+    }
+
     #endregion
 }

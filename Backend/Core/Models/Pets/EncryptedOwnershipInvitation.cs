@@ -72,7 +72,7 @@ public class EncryptedOwnershipInvitation
     /// <summary>
     /// Ya know
     /// </summary>
-    public GenericStatus Status { get; set; }
+    public EntityStatus Status { get; set; }
 
 
     //                                                                                                         Operators

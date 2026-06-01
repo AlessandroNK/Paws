@@ -47,7 +47,7 @@ public class EncryptedPet
     /// <summary>
     /// A flag to track pet status in the system.
     /// </summary>
-    public GenericStatus Status { get; set; }
+    public EntityStatus Status { get; set; }
 
     /// <summary>
     /// Temporary invitations to share ownership of this pet.
