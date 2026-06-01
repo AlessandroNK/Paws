@@ -1,5 +1,6 @@
 using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
@@ -228,13 +229,11 @@ public class UserService(
     /// Finds a user by its email.
     /// </summary>
     /// <param name="email">The email to search for</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByEmailAsync(
         string email,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     )
     {
         try
@@ -257,7 +256,7 @@ public class UserService(
             return await DbRetry.ExecuteWithRetry(
                 operation: () => _userRepo.GetByEmailAsync(
                     email,
-                    excludeBanned
+                    filters
                 ),
                 operationName: "Getting user by email",
                 logger: _logger
@@ -283,13 +282,11 @@ public class UserService(
     /// Finds a user by its document number.
     /// </summary>
     /// <param name="document">The document to search for</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByDocumentAsync(
         string document,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     )
     {
         try
@@ -310,11 +307,7 @@ public class UserService(
 
             // Search for the user
             return await DbRetry.ExecuteWithRetry(
-                operation: () => _userRepo.GetByDocumentAsync(
-                    document,
-                    excludeInactive,
-                    excludeBanned
-                ),
+                operation: () => _userRepo.GetByDocumentAsync(document, filters),
                 operationName: "Getting user by document",
                 logger: _logger
             );
@@ -339,13 +332,11 @@ public class UserService(
     /// Finds a user by its ID.
     /// </summary>
     /// <param name="id">The ID to search for</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByIdAsync(
         int id,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     )
     {
         try
@@ -368,8 +359,7 @@ public class UserService(
             return await DbRetry.ExecuteWithRetry(
                 operation: () => _userRepo.GetByIdAsync(
                     id,
-                    excludeInactive,
-                    excludeBanned
+                    filters
                 ),
                 operationName: "Getting user by ID",
                 logger: _logger
@@ -408,10 +398,9 @@ public class UserService(
             if (!requestResult) return requestResult.ConvertTo<User?>();
 
             // Find the user to avoid duplications
-            // This is to avoid telling the uer the exact element that already
-            // exists so it is a little harder to attack our platform
-            var existingEmailResult = await GetByEmailAsync(request.Email);
-            var existingDocumentResult = await GetByDocumentAsync(request.DocumentNumber);
+            var filters = StatusFilters.IncludeAll();
+            var existingEmailResult = await GetByEmailAsync(request.Email, filters);
+            var existingDocumentResult = await GetByDocumentAsync(request.DocumentNumber, filters);
 
             if (existingEmailResult.Data is not null || existingDocumentResult.Data is not null)
                 return new Result<User?>
@@ -452,8 +441,29 @@ public class UserService(
             );
             if (!notificationResult) return notificationResult.ConvertTo<User?>();
 
-            // Everything went well, return the user
-            return new Result<User?>
+            // Everything went well, check for pet co-ownership
+            if (string.IsNullOrWhiteSpace(request.InvitationCode))
+                return new Result<User?>
+                {
+                    Success = true,
+                    Code = "VERIFICATION_CODE_SENT",
+                    Status = 201,
+                    Message = "User signed up successfully",
+                    Data = user,
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Process pet ownership request
+            var invitationRequest = new AcceptOwnershipInvitationRequest
+            {
+                InvitationCode = request.InvitationCode,
+                NewOwnerEmail = user.Email
+            };
+            filters = StatusFilters.Create().ThenIncludeUnverified();
+            var ownershipResult = await _petService.AcceptOwnershipInvitationAsync(invitationRequest, filters);
+            return ownershipResult
+            ?  new Result<User?>
             {
                 Success = true,
                 Code = "VERIFICATION_CODE_SENT",
@@ -462,7 +472,8 @@ public class UserService(
                 Data = user,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
-            };
+            }
+            : ownershipResult.ConvertTo<User?>();
         }
         catch (Exception e)
         {
@@ -496,7 +507,8 @@ public class UserService(
             if (!verificationResult.Success) return verificationResult.ConvertTo<User?>();
 
             // Find the user to get the code
-            var existingEmailResult = await GetByEmailAsync(request.Email);
+            var filters = StatusFilters.Create().ThenIncludeUnverified();
+            var existingEmailResult = await GetByEmailAsync(request.Email, filters);
             if (existingEmailResult.Data is null)
                 return new Result<User?>
                 {
@@ -594,8 +606,13 @@ public class UserService(
                 };
 
             // Find the user to get the code
-            var existingEmailResult = await GetByEmailAsync(request.Email);
-            if (existingEmailResult.Data is null)
+            var filters = StatusFilters.Create()
+                .ThenIncludeUnverified()
+                .ThenIncludeBanned()
+                .ThenIncludeInactive()
+                .ThenIncludeArchived();
+            var existingResult = await GetByEmailAsync(request.Email, filters);
+            if (existingResult.Data is null)
                 return new Result<User?>
                 {
                     Success = false,
@@ -605,7 +622,7 @@ public class UserService(
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
-            var user = existingEmailResult.Data;
+            var user = existingResult.Data;
 
             // Check if the user needs to be verified
             if (user.Status == UserStatus.Banned)
@@ -649,7 +666,8 @@ public class UserService(
             {
                 user.VerificationCode = SecurityService.GenerateVerificationCode();
                 user.VerificationCodeDate = DateTime.UtcNow;
-                var updateResult = await _userRepo.UpdateAsync(user);
+                filters = StatusFilters.IncludeAll().ThenExcludeDeleted();
+                var updateResult = await _userRepo.UpdateAsync(user, filters);
                 if (!updateResult || updateResult.Data is null)
                     return new Result<User?>
                     {
@@ -794,7 +812,6 @@ public class UserService(
             };
         }
     }
-
 
     #endregion
 }

@@ -2,11 +2,13 @@ using Backend.Core.Data;
 using Backend.Core.Encryption;
 using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Intern;
 using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
 using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Core.Repositories;
@@ -58,6 +60,21 @@ public class UserRepository(
 
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
+    private static IQueryable<EncryptedUser> ApplyStatusFilters(
+        IQueryable<EncryptedUser> query,
+        StatusFilters? filters = null
+    )
+    {
+        filters ??= new StatusFilters();
+
+        if (!filters.IncludeActive) query = query.Where(i => i.Status != UserStatus.Active);
+        if (!filters.IncludeInactive) query = query.Where(i => i.Status != UserStatus.Inactive);
+        if (!filters.IncludeDeleted) query = query.Where(i => i.Status != UserStatus.Deleted);
+        if (!filters.IncludeBanned) query = query.Where(i => i.Status != UserStatus.Banned);
+        if (!filters.IncludeUnverified) query = query.Where(i => i.Status != UserStatus.Unverified);
+
+        return query;
+    }
 
 
     //                                                                                                    Public Methods
@@ -70,13 +87,11 @@ public class UserRepository(
     /// Finds a user by its email.
     /// </summary>
     /// <param name="email">The email to search for</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByEmailAsync(
         string email,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     )
     {
         // Encrypt user data to find it in the db
@@ -88,13 +103,11 @@ public class UserRepository(
         var query = _dbContext.EncryptedUsers
             .Where(u => u.EmailHash == hashedEmailResult.Data);
 
-        if (excludeInactive) query = query.Where(u => u.Status != UserStatus.Inactive);
-        if (excludeBanned) query = query.Where(u => u.Status != UserStatus.Banned);
+        // Apply status filters
+        query = ApplyStatusFilters(query, filters);
 
         query = query
             .Include(u => u.UserPets)
-            // .Include(u => u.DocumentType)
-            // .Include(u => u.Tokens)
             .AsSplitQuery();
 
         // Execute query
@@ -119,13 +132,11 @@ public class UserRepository(
     /// Finds a user by its document number.
     /// </summary>
     /// <param name="document">The document of the user</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The user if any</returns>
     public async Task<Result<User?>> GetByDocumentAsync(
         string document,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     )
     {
         // Encrypt user data to find it in the db
@@ -141,13 +152,11 @@ public class UserRepository(
         var query = _dbContext.EncryptedUsers.AsQueryable()
             .Where(u => u.DocumentHash == hashedDocumentResult.Data);
 
-        if (excludeInactive) query = query.Where(u => u.Status != UserStatus.Inactive);
-        if (excludeBanned) query = query.Where(u => u.Status != UserStatus.Banned);
+        // Apply status filters
+        query = ApplyStatusFilters(query, filters);
 
         query = query
             .Include(u => u.UserPets)
-            // .Include(u => u.DocumentType)
-            // .Include(u => u.Tokens)
             .AsSplitQuery();
 
         // Execute query
@@ -171,10 +180,9 @@ public class UserRepository(
     /// Finds a user by its ID.
     /// </sumary>
     /// <param name="id">The ID of the user to retrieve</param>
-    /// <param name="excludeInactive">Whether to exclude inactive users</param>
-    /// <param name="excludeBanned">Whether to exclude banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>A <see cref="Result{User}"/> indicating the result of the operation and including the user if it was found</returns>
-    public async Task<Result<User?>> GetByIdAsync(int id, bool excludeInactive = true, bool excludeBanned = true)
+    public async Task<Result<User?>> GetByIdAsync(int id, StatusFilters? filters = null)
     {
         if (id <= 0)
             return new Result<User?>
@@ -191,8 +199,8 @@ public class UserRepository(
         var query = _dbContext.EncryptedUsers
             .Where(u => u.Id == id);
 
-        if (excludeInactive) query = query.Where(u => u.Status != UserStatus.Inactive);
-        if (excludeBanned) query = query.Where(u => u.Status != UserStatus.Banned);
+        // Apply status filters
+        query = ApplyStatusFilters(query, filters);
 
         query = query
             .Include(u => u.UserPets)
@@ -244,7 +252,8 @@ public class UserRepository(
             };
 
         // Get the user back from the db
-        var getUserResult = await GetByEmailAsync(user.Email, false);
+        var filters = StatusFilters.IncludeAll();
+        var getUserResult = await GetByEmailAsync(user.Email, filters);
         if (!getUserResult || getUserResult.Data == null)
             return new Result<User?>
             {
@@ -272,12 +281,14 @@ public class UserRepository(
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Updates an existing user. It takes the device id from the header and the sign up request from the body. It returns
-    /// an instance of the updated user
-    ///
+    /// an instance of the updated user if the update was successful, or an error result if something went wrong.
+    /// The filters parameter can be used to specify which user statuses should be included in the query when looking for
+    /// the user to update.
     /// </summary>
     /// <param name="user">the <see cref="User"/> to update</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The <see cref="User"/></returns>
-    public async Task<Result<User?>> UpdateAsync(User user)
+    public async Task<Result<User?>> UpdateAsync(User user, StatusFilters? filters = null)
     {
         if (user.Id <= 0)
             return new Result<User?>
@@ -321,7 +332,7 @@ public class UserRepository(
                 Returnable = true
             };
 
-        var getUserResult = await GetByEmailAsync(user.Email, false);
+        var getUserResult = await GetByEmailAsync(user.Email, filters);
         if (!getUserResult || getUserResult.Data == null)
             return new Result<User?>
             {
@@ -347,7 +358,8 @@ public class UserRepository(
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    ///
+    /// Adds a pet to a user. It takes a <see cref="UserPet"/> relationship and creates the corresponding
+    /// <see cref="EncryptedUserPet"/> in the database. It returns the updated user with the new pet included.
     /// </summary>
     /// <param name="userPet"></param>
     /// <returns></returns>
@@ -402,7 +414,8 @@ public class UserRepository(
                 Returnable = true
             };
 
-        var userResult = await GetByIdAsync(userPet.UserId, false, false);
+        var filters = StatusFilters.IncludeAll();
+        var userResult = await GetByIdAsync(userPet.UserId, filters);
         if (!userResult || userResult.Data == null)
             return new Result<User?>
             {
@@ -429,6 +442,70 @@ public class UserRepository(
     #endregion
 
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Finds a user-pet relationship by the user id and pet id. It returns the relationship if found, or an error result if not.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="petId"></param>
+    /// <returns></returns>
+    public async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId)
+    {
+        if (userId <= 0)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "USER_ID_NOT_PROVIDED",
+                Status = 400,
+                Message = "User id not provided for user-pet relationship lookup",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        if (petId <= 0)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "PET_ID_NOT_PROVIDED",
+                Status = 400,
+                Message = "Pet id not provided for user-pet relationship lookup",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        var encryptedUserPet = await _dbContext.EncryptedUserPets
+            .FirstOrDefaultAsync(up => up.EncryptedUserId == userId && up.EncryptedPetId == petId);
+
+        if (encryptedUserPet == null)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "USER_PET_RELATIONSHIP_NOT_FOUND",
+                Status = 404,
+                Message = "No user-pet relationship found with the provided user and pet ids",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        var userPet = new UserPet
+        {
+            UserId = encryptedUserPet.EncryptedUserId,
+            PetId = encryptedUserPet.EncryptedPetId,
+            CreatedAt = encryptedUserPet.CreatedAt,
+            UpdatedAt = encryptedUserPet.UpdatedAt,
+            Status = encryptedUserPet.Status
+        };
+
+        return new Result<UserPet?>
+        {
+            Success = true,
+            Code = "USER_PET_RELATIONSHIP_FOUND",
+            Status = 200,
+            Message = "User-pet relationship found successfully",
+            Data = userPet,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
+    }
 
     #region Helpers
 

@@ -81,7 +81,11 @@ public interface IPetService
     /// <summary>
     /// Accepts an ownership invitation for a pet.
     /// </summary>
-    /// <param name="invitationCode"></param>
+    /// <param name="request"></param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns></returns>
-    public Task<Result> AcceptOwnershipInvitationAsync(AcceptOwnershipInvitationRequest invitationCode);
+    public Task<Result> AcceptOwnershipInvitationAsync(
+        AcceptOwnershipInvitationRequest request,
+        StatusFilters? filters = null
+        );
 }

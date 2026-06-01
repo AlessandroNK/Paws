@@ -600,6 +600,31 @@ public class PetService(
                 };
             var owner = userPet.User;
 
+            // You can't send yourself an invitation
+            if (owner.Email == invitationRequest.NewOwnerEmail)
+                return new Result
+                {
+                    Success = false,
+                    Code = "CANNOT_SHARE_WITH_SELF",
+                    Status = 400,
+                    Message = "You cannot share ownership with yourself",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // You can't also share with any existent co-owner
+            var alreadyOwner = pet.UserPets.Any(u => u.User?.Email == invitationRequest.NewOwnerEmail);
+            if (alreadyOwner)
+                return new Result
+                {
+                    Success = false,
+                    Code = "CANNOT_SHARE_WITH_EXISTING_OWNER",
+                    Status = 400,
+                    Message = "The user is already a co-owner of the pet",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
             // Check for existing invitations
             var existingInvitation =
                 pet.OwnershipInvitations.FirstOrDefault(i => i.NewOwnerEmail == invitationRequest.NewOwnerEmail);
@@ -701,16 +726,21 @@ public class PetService(
     /// <summary>
     /// Accepts an ownership invitation for a pet.
     /// </summary>
-    /// <param name="invitationCode"></param>
+    /// <param name="request"></param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns></returns>
-    public async Task<Result> AcceptOwnershipInvitationAsync(AcceptOwnershipInvitationRequest invitationCode)
+    public async Task<Result> AcceptOwnershipInvitationAsync(
+        AcceptOwnershipInvitationRequest request,
+        StatusFilters? filters = null
+    )
     {
         try
         {
-            _logger.LogInformation("Accepting ownership invitation with code {InvitationCode}", invitationCode.InvitationCode);
+            _logger.LogInformation("Accepting ownership invitation with code {InvitationCode}",
+                request.InvitationCode);
 
             // Validations
-            if (string.IsNullOrEmpty(invitationCode.InvitationCode))
+            if (string.IsNullOrEmpty(request.InvitationCode))
                 return new Result
                 {
                     Success = false,
@@ -721,7 +751,7 @@ public class PetService(
                     Returnable = true
                 };
 
-            var getResult = await _petRepo.GetOwnershipInvitationByCodeAsync(invitationCode.InvitationCode);
+            var getResult = await _petRepo.GetOwnershipInvitationByCodeAsync(request.InvitationCode, filters);
             if (!getResult || getResult.Data is null) return getResult;
             var invitation = getResult.Data;
 
@@ -747,14 +777,64 @@ public class PetService(
                     Returnable = true
                 };
 
+            if (invitation.NewOwnerEmail != request.NewOwnerEmail)
+                return new Result
+                {
+                    Success = false,
+                    Code = "EMAIL_MISMATCH",
+                    Status = 400,
+                    Message = "The email in the invitation does not match the email in the request",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (invitation.User.Email == request.NewOwnerEmail)
+                return new Result
+                {
+                    Success = false,
+                    Code = "CANNOT_ACCEPT_OWN_INVITATION",
+                    Status = 400,
+                    Message = "You cannot accept an invitation that you sent",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            //Get new owner objets
+            var coOwnerResult = await _userRepo.GetByEmailAsync(invitation.NewOwnerEmail, filters);
+            if (!coOwnerResult || coOwnerResult.Data is null)
+                return new Result
+                {
+                    Success = false,
+                    Code = "NEW_OWNER_NOT_FOUND",
+                    Status = 404,
+                    Message = "The new owner user was not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var coOwner = coOwnerResult.Data;
+
+            // Avoid adding existent UserPet relationship
+            var existingOwnerResult = await _userRepo.GetUserPetByBothIdsAsync(coOwner.Id, invitation.Pet.Id);
+            if (existingOwnerResult)
+                return new Result
+                {
+                    Success = false,
+                    Code = "USER_PET_RELATIONSHIP_EXISTS",
+                    Status = 400,
+                    Message = "The user is already a owner of the pet",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
             // Here, I will add the user as a co-owner of the pet and delete the invitation
-            var addOwnerResult = await AddPetOwnerAsync(invitation.Pet, invitation.User);
+            var addOwnerResult = await AddPetOwnerAsync(invitation.Pet, coOwner);
             if (!addOwnerResult) return addOwnerResult;
 
             var deleteInvitationResult = await _petRepo.DeleteOwnershipInvitationAsync(invitation.Id);
             if (!deleteInvitationResult) return deleteInvitationResult;
 
-            _logger.LogInformation("Ownership invitation with code {InvitationCode} accepted successfully", invitationCode.InvitationCode);
+            _logger.LogInformation("Ownership invitation with code {InvitationCode} accepted successfully",
+                request.InvitationCode);
             return new Result
             {
                 Success = true,

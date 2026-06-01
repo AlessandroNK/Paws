@@ -1,3 +1,4 @@
+using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
@@ -37,13 +38,11 @@ public interface IUserService
     /// Finds a user by its email.
     /// </summary>
     /// <param name="email">The email to search for</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByEmailAsync(
         string email,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -51,13 +50,11 @@ public interface IUserService
     /// Finds a user by its document number.
     /// </summary>
     /// <param name="document">The document to search for</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByDocumentAsync(
         string document,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -65,13 +62,11 @@ public interface IUserService
     /// Finds a user by its ID.
     /// </summary>
     /// <param name="id">The ID to search for</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByIdAsync(
        int id,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     );
 
     // -----------------------------------------------------------------------------------------------------------------

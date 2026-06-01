@@ -12,13 +12,19 @@ public enum UserStatus
     /// </summary>
     Inactive = 2,
 
+    /// <summary>
+    /// The user is deleted and cannot use the API. It is used to indicate that the entity has been deleted and should
+    /// not be used in the system.
+    /// </summary>
+    Deleted = 3,
+
      /// <summary>
     /// The user is banned and cannot use the API. It is used to ban users.
     /// </summary>
-    Banned = 3,
+    Banned = 4,
 
      /// <summary>
      /// The user is unverified and cannot use the API. It is used to mark users that have not verified their email or phone
      /// </summary>
-     Unverified = 4,
+     Unverified = 7,
 }

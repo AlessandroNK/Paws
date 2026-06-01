@@ -47,4 +47,10 @@ public struct SignUpRequest
     [RegularExpression(@"^[\p{L}\p{M}\s'\-]+$",
         ErrorMessage = "The name can only contain letters, spaces, hyphens, and apostrophes.")]
     public string Name { get; set; }
+
+    /// <summary>
+    /// A unique identifier for the ownership invitation. It is used to verify the invitation when the new owner clicks
+    /// the link in the email. This is used to accept co-ownership of a pet at the same time you get registered
+    /// </summary>
+    public string InvitationCode { get; set; }
 }

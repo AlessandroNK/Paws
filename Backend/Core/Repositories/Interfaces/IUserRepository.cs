@@ -1,3 +1,4 @@
+using Backend.Core.Models.Intern;
 using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
@@ -39,13 +40,11 @@ public interface IUserRepository
     /// Finds a user by its email.
     /// </summary>
     /// <param name="email">The email to search for</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByEmailAsync(
         string email,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -53,13 +52,11 @@ public interface IUserRepository
     /// Finds a user by its document number.
     /// </summary>
     /// <param name="document">The document of the user</param>
-    /// <param name="excludeInactive">Whether to filter out inactive users</param>
-    /// <param name="excludeBanned">Whether to filter out banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The user if any</returns>
     public Task<Result<User?>> GetByDocumentAsync(
         string document,
-        bool excludeInactive = true,
-        bool excludeBanned = true
+        StatusFilters? filters = null
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -67,10 +64,9 @@ public interface IUserRepository
     /// Finds a user by its ID.
     /// </sumary>
     /// <param name="id">The ID of the user to retrieve</param>
-    /// <param name="excludeInactive">Whether to exclude inactive users</param>
-    /// <param name="excludeBanned">Whether to exclude banned users</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>A <see cref="Result{User}"/> indicating the result of the operation and including the user if it was found</returns>
-    public Task<Result<User?>> GetByIdAsync(int id, bool excludeInactive = true, bool excludeBanned = true);
+    public Task<Result<User?>> GetByIdAsync(int id, StatusFilters? filters = null);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -84,13 +80,31 @@ public interface IUserRepository
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Updates an existing user. It takes the device id from the header and the sign up request from the body. It returns
-    /// an instance of the updated user
-    ///
+    /// an instance of the updated user if the update was successful, or an error result if something went wrong.
+    /// The filters parameter can be used to specify which user statuses should be included in the query when looking for
+    /// the user to update.
     /// </summary>
     /// <param name="user">the <see cref="User"/> to update</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The <see cref="User"/></returns>
-    public Task<Result<User?>> UpdateAsync(User user);
+    public Task<Result<User?>> UpdateAsync(User user, StatusFilters? filters = null);
 
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Adds a pet to a user. It takes a <see cref="UserPet"/> relationship and creates the corresponding
+    /// <see cref="EncryptedUserPet"/> in the database. It returns the updated user with the new pet included.
+    /// </summary>
+    /// <param name="userPet"></param>
+    /// <returns></returns>
     public Task<Result<User?>> AddUserPet(UserPet userPet);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Finds a user-pet relationship by the user id and pet id. It returns the relationship if found, or an error result
+    /// if not.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="petId"></param>
+    /// <returns></returns>
+    public Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId);
 }
