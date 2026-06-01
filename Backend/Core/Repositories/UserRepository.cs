@@ -86,13 +86,13 @@ public class UserRepository(
 
         // Find the user
         var query = _dbContext.EncryptedUsers
-            .Include(u => u.UserPets)
             .Where(u => u.EmailHash == hashedEmailResult.Data);
 
         if (excludeInactive) query = query.Where(u => u.Status != UserStatus.Inactive);
         if (excludeBanned) query = query.Where(u => u.Status != UserStatus.Banned);
 
         query = query
+            .Include(u => u.UserPets)
             // .Include(u => u.DocumentType)
             // .Include(u => u.Tokens)
             .AsSplitQuery();
@@ -139,13 +139,13 @@ public class UserRepository(
 
         // Find the user
         var query = _dbContext.EncryptedUsers.AsQueryable()
-            .Include(u => u.UserPets)
             .Where(u => u.DocumentHash == hashedDocumentResult.Data);
 
         if (excludeInactive) query = query.Where(u => u.Status != UserStatus.Inactive);
         if (excludeBanned) query = query.Where(u => u.Status != UserStatus.Banned);
 
         query = query
+            .Include(u => u.UserPets)
             // .Include(u => u.DocumentType)
             // .Include(u => u.Tokens)
             .AsSplitQuery();

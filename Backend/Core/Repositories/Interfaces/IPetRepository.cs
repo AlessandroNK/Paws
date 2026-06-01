@@ -59,41 +59,46 @@ public interface IPetRepository
     public Task<Result<Pet?>> UpdateAsync(Pet pet);
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<Result<ShareInvitation?>> AddShareInvitationAsync(ShareInvitation invitation);
+    public Task<Result<OwnershipInvitation?>> AddOwnershipInvitationAsync(OwnershipInvitation invitation);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Asynchronously gets a share invitation by its ID, applying optional status filters to the query.
+    /// Asynchronously gets an ownership invitation by its ID, applying optional status filters to the query.
     /// </summary>
     /// <param name="id"></param>
     /// <param name="filters"></param>
     /// <returns></returns>
-    public Task<Result<ShareInvitation?>> GetShareInvitationByIdAsync(int id, StatusFilters? filters = null);
+    public Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByIdAsync(int id, StatusFilters? filters = null);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Gets a share invitation by its nonce, applying optional status filters to the query. The nonce is hashed and
-    /// compared to the stored hash in the database to find the invitation. This is done to avoid storing the nonce in
-    /// plaintext in the database for security reasons. If a share invitation with the provided nonce is found, it is
-    /// decrypted and returned. Otherwise, an error result is returned indicating that no share invitation was found
-    /// with the provided nonce. This method is useful for accepting share invitations, where the nonce is provided in
-    /// the invitation link and needs to be validated and used to retrieve the corresponding share invitation.
+    /// Gets an ownership invitation by its invitation code, applying optional status filters to the query. The invitation codeis hashed and
+    /// compared to the stored hash in the database to find the invitation. This is done to avoid storing the invitation codein
+    /// plaintext in the database for security reasons. If an ownership invitation with the provided invitation codeis found,
+    /// it is decrypted and returned. Otherwise, an error result is returned indicating that no ownership invitation
+    /// was found with the provided invitationCode. This method is useful for accepting ownership invitations, where the invitationCode
+    /// is provided in the invitation link and needs to be validated and used to retrieve the corresponding ownership
+    /// invitation.
     /// </summary>
-    /// <param name="nonce"></param>
+    /// <param name="invitationCode"></param>
     /// <param name="filters"></param>
     /// <returns></returns>
-    public Task<Result<ShareInvitation?>> GetShareInvitationByNonceAsync(string nonce, StatusFilters? filters = null);
+    public Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByCodeAsync(
+        string invitationCode,
+        StatusFilters? filters = null
+        );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Asynchronously deletes a share invitation by its ID. This method first retrieves the share invitation from the
-    /// database using the provided ID. If the share invitation is found, it is removed from the database context and
-    /// the changes are saved to the database. If the deletion is successful, a success result is returned. If the share
-    /// invitation is not found or if an error occurs during deletion, an appropriate error result is returned indicating
-    /// the reason for the failure. This method is useful for allowing users to delete share invitations that they have
-    /// created or received, providing them with control over their shared pets and invitations.
+    /// Asynchronously deletes an ownership invitation by its ID. This method first retrieves the ownership invitation
+    /// from the database using the provided ID. If the ownership invitation is found, it is removed from the database
+    /// context and the changes are saved to the database. If the deletion is successful, a success result is returned.
+    /// If the ownership invitation is not found or if an error occurs during deletion, an appropriate error result is
+    /// returned indicating the reason for the failure. This method is useful for allowing users to delete ownership
+    /// invitations that they have created or received, providing them with control over their shared pets and
+    /// invitations.
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public Task<Result> DeleteShareInvitationAsync(int id);
+    public Task<Result> DeleteOwnershipInvitationAsync(int id);
 }

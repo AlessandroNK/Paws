@@ -34,7 +34,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     /// <summary>
     /// OMG this is getting crazy
     /// </summary>
-    public DbSet<EncryptedShareInvitation> EncryptedShareInvitations { get; set; }
+    public DbSet<EncryptedOwnershipInvitation> EncryptedOwnershipInvitations { get; set; }
 
 
     //                                                                                                         Operators

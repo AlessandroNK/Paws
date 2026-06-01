@@ -3,7 +3,7 @@ using Backend.Core.Models.Users;
 
 namespace Backend.Core.Models.Pets;
 
-public class EncryptedShareInvitation
+public class OwnershipInvitation
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -12,29 +12,39 @@ public class EncryptedShareInvitation
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The ID of the shared invitation
+    /// The ID of the ownership invitation
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
     /// The ID of the user sharing ownership of the pet.
     /// </summary>
-    public int EncryptedUserId { get; set; }
+    public int UserId { get; set; }
+
+    /// <summary>
+    /// The owner object
+    /// </summary>
+    public User? User { get; set; }
 
     /// <summary>
     /// The ID of the pet to share ownership of.
     /// </summary>
-    public int EncryptedPetId { get; set; }
+    public int PetId { get; set; }
+
+    /// <summary>
+    /// The pet of the invitation
+    /// </summary>
+    public Pet? Pet { get; set; }
 
     /// <summary>
     /// The email of the user to share ownership with.
     /// </summary>
-    public string EncryptedNewOwnerEmail { get; set; } = string.Empty;
+    public string NewOwnerEmail { get; set; } = string.Empty;
 
     /// <summary>
     /// The name of the user to share ownership with.
     /// </summary>
-    public string EncryptedNewOwnerName { get; set; } = string.Empty;
+    public string NewOwnerName { get; set; } = string.Empty;
 
     /// <summary>
     /// Whenter the email of the new owner is already registered in the database. If true, we can directly add the pet
@@ -43,20 +53,20 @@ public class EncryptedShareInvitation
     public bool NewOwnerHasAccount { get; set; }
 
     /// <summary>
-    /// The timestamp when this shared code will expire
+    /// The timestamp when this ownership invitation will expire
     /// </summary>
     public DateTime Expiration { get; set; }
 
     /// <summary>
-    /// A unique identifier for the share invitation. It is used to verify the invitation when the new owner clicks the
-    /// link in the email.
+    /// A unique identifier for the ownership invitation. It is used to verify the invitation when the new owner clicks
+    /// the link in the email.
     /// </summary>
-    public string EncryptedNonce { get; set; }  = string.Empty;
+    public string InvitationCode { get; set; }  = string.Empty;
 
     /// <summary>
-    /// A hash of the nonce so it is easy ro find in the db
+    /// A unique link that the new owner can click to accept the invitation.
     /// </summary>
-    public string NonceHash { get; set; }
+    public string OwnershipLink { get; set; }
 
     /// <summary>
     /// Ya know
@@ -82,4 +92,5 @@ public class EncryptedShareInvitation
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+
 }

@@ -175,9 +175,9 @@ public class NotificationService(
     /// <summary>
     /// Sends an ownership share code to the given email address.
     /// </summary>
-    /// <param name="invitation">The <see cref="ShareInvitation"/> to send</param>
+    /// <param name="invitation">The <see cref="OwnershipInvitation"/> to send</param>
     /// <returns></returns>
-    public async Task<Result> SendOwnershipShareLink(ShareInvitation invitation)
+    public async Task<Result> SendOwnershipInvitationLink(OwnershipInvitation invitation)
     {
         try
         {
@@ -194,8 +194,8 @@ public class NotificationService(
             client.DefaultRequestHeaders.Add("api-key", apiKey);
 
             var accountP = invitation.NewOwnerHasAccount
-                ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>ingresa a este enlace</a> para continuar."
-                : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
+                ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>ingresa a este enlace</a> para continuar."
+                : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
 
             var emoji = invitation.Pet.Species switch
             {
@@ -222,7 +222,7 @@ public class NotificationService(
                     <h2>¡Hola {invitation.NewOwnerName}!</h2>
                     <p>{invitation.User.Name} quiere compartir contigo la propiedad de su mascota <strong>{invitation.Pet.Name}</strong> en <b>Paws</b>.</p>
                     <p>Para aceptar la invitación y convertirte en co‑propietario, dale click al siguiente <b>enlace de un solo uso</b>:</p>
-                    <p style='font-size: 20px; font-weight: 600; color: #f05a22;'><a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>Aceptar invitación</a></p>
+                    <p style='font-size: 20px; font-weight: 600; color: #f05a22;'><a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>Aceptar invitación</a></p>
                     <p>Este código es válido por 24 horas.</p>
                     {accountP}
                     <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>

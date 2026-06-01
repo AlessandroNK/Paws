@@ -60,14 +60,14 @@ public interface IPetService
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Shares the ownership of a pet with another user by sending an invitation email with a code to the new owner. The
-    /// new owner can then use the code to accept the invitation and become a co-owner of the pet. This method checks if
-    /// the user is the owner of the pet, generates a share code, saves it in the database, and sends it to the new owner's
-    /// email address. The share code is valid for 24 hours.
+    /// Creates an ownership invitation for a pet by sending an invitation email with a code to the new owner. The new
+    /// owner can then use the code to accept the invitation and become a co-owner of the pet. This method checks if the
+    /// user is the owner of the pet, generates an ownership code, saves it in the database, and sends it to the new
+    /// owner's email address. The code is valid for 24 hours.
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="invitationRequest"></param>
     /// <returns></returns>
-    public Task<Result> SendOwnershipInvitationAsync(SharePetOwnershipRequest request);
+    public Task<Result> SendOwnershipInvitationAsync(SendOwnershipInvitationRequest invitationRequest);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -76,4 +76,12 @@ public interface IPetService
     /// <param name="request">The crate pet request to check</param>
     /// <returns>A result indicating whether the request is valid or not</returns>
     public Result CheckCreatePetRequest(CreatePetRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Accepts an ownership invitation for a pet.
+    /// </summary>
+    /// <param name="invitationCode"></param>
+    /// <returns></returns>
+    public Task<Result> AcceptOwnershipInvitationAsync(AcceptOwnershipInvitationRequest invitationCode);
 }

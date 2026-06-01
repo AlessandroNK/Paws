@@ -46,9 +46,9 @@ public class Pet : IDtoConvertible<PetResponse>
     public GenericStatus Status { get; set; }
 
     /// <summary>
-    /// Temporary invitations to share this pet.
+    /// Temporary invitations to share ownership of this pet.
     /// </summary>
-    public List<ShareInvitation> ShareInvitations { get; set; } = new List<ShareInvitation>();
+    public List<OwnershipInvitation> OwnershipInvitations { get; set; } = new List<OwnershipInvitation>();
 
     /// <summary>
     /// All pet's owners

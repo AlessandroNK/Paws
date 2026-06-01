@@ -167,12 +167,13 @@ public static class PetEncryption
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Safely encrypts a shared invitation
+    /// Safely encrypts an ownership invitation
     /// </summary>
     /// <param name="invitation"></param>
     /// <param name="logger"></param>
     /// <returns></returns>
-    public static Result<EncryptedShareInvitation> EncryptShareInvitation(ShareInvitation invitation, ILogger logger)
+    public static Result<EncryptedOwnershipInvitation> EncryptOwnershipInvitation(OwnershipInvitation invitation,
+        ILogger logger)
     {
         try
         {
@@ -180,24 +181,24 @@ public static class PetEncryption
             // ------------------------------------------------------------------------- Email
             var newOwnerEmailResult = SecurityService.EncryptString(invitation.NewOwnerEmail);
             if (!newOwnerEmailResult || newOwnerEmailResult.Data == null)
-                return newOwnerEmailResult.Log(logger).ConvertTo<EncryptedShareInvitation>();
+                return newOwnerEmailResult.Log(logger).ConvertTo<EncryptedOwnershipInvitation>();
 
             // ------------------------------------------------------------------------- Name
             var newNameResult = SecurityService.EncryptString(invitation.NewOwnerName);
             if (!newNameResult || newNameResult.Data == null)
-                return newNameResult.Log(logger).ConvertTo<EncryptedShareInvitation>();
+                return newNameResult.Log(logger).ConvertTo<EncryptedOwnershipInvitation>();
 
-            // ------------------------------------------------------------------------- Nonce
-            var nonceResult = SecurityService.EncryptString(invitation.Nonce);
-            if (!nonceResult || nonceResult.Data == null)
-                return nonceResult.Log(logger).ConvertTo<EncryptedShareInvitation>();
+            // ------------------------------------------------------------------------- InvitationCode
+            var invitationCodeResult = SecurityService.EncryptString(invitation.InvitationCode);
+            if (!invitationCodeResult || invitationCodeResult.Data == null)
+                return invitationCodeResult.Log(logger).ConvertTo<EncryptedOwnershipInvitation>();
 
-            var nonceHashResult = SecurityService.HashWithSalt(invitation.Nonce);
-            if (!nonceHashResult || nonceHashResult.Data == null)
-                return nonceHashResult.Log(logger).ConvertTo<EncryptedShareInvitation>();
+            var invitationCodeHashResult = SecurityService.HashWithSalt(invitation.InvitationCode);
+            if (!invitationCodeHashResult || invitationCodeHashResult.Data == null)
+                return invitationCodeHashResult.Log(logger).ConvertTo<EncryptedOwnershipInvitation>();
 
             // create the element
-            return new EncryptedShareInvitation
+            return new EncryptedOwnershipInvitation
             {
                 Id = invitation.Id,
                 EncryptedUserId = invitation.UserId,
@@ -206,19 +207,19 @@ public static class PetEncryption
                 EncryptedNewOwnerName = newNameResult.Data,
                 NewOwnerHasAccount = invitation.NewOwnerHasAccount,
                 Expiration = invitation.Expiration,
-                EncryptedNonce = nonceResult.Data,
-                NonceHash = nonceHashResult.Data,
+                EncryptedInvitationCode = invitationCodeResult.Data,
+                InvitationCodeHash = invitationCodeHashResult.Data,
             };
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to decrypt share invitation data");
-            return new Result<EncryptedShareInvitation>
+            logger.LogError(e, "Failed to decrypt ownership invitation data");
+            return new Result<EncryptedOwnershipInvitation>
             {
                 Success = false,
-                Code = "SHARE_INVITATION_DECRYPTION_FAILED",
+                Code = "OWNERSHIP_INVITATION_DECRYPTION_FAILED",
                 Status = 500,
-                Message = "Failed to decrypt share invitation data",
+                Message = "Failed to decrypt ownership invitation data",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -239,8 +240,15 @@ public static class PetEncryption
     /// <param name="logger">A logger so this function can logg information</param>
     /// <param name="decryptUserPets">A flag to indicate if we should decrypt user pets or not. We can set it to false
     /// to avoid unwanted recursiveness</param>
+    /// <param name="decryptOwnershipInvitations">A flag to indicate if we should decrypt ownership invitations or not.
+    /// We can set it to false to avoid unwanted recursiveness</param>
     /// <returns></returns>
-    public static Result<Pet?> DecryptPet(EncryptedPet encryptedPet, ILogger logger, bool decryptUserPets = true)
+    public static Result<Pet?> DecryptPet(
+        EncryptedPet encryptedPet,
+        ILogger logger,
+        bool decryptUserPets = true,
+        bool decryptOwnershipInvitations = true
+    )
     {
         try
         {
@@ -279,9 +287,20 @@ public static class PetEncryption
             if (!breedResult || breedResult.Data == null)
                 return breedResult.Log(logger).ConvertTo<Pet?>();
 
-            // ------------------------------------------------------------------------- Share invitations
-            var shareInvitations = DecryptShareInvitations(encryptedPet.ShareInvitations, logger);
-            if (!shareInvitations) return shareInvitations.Log(logger).ConvertTo<Pet?>();
+            // ------------------------------------------------------------------------- ownership invitations
+            var ownershipInvitations = decryptOwnershipInvitations
+                ? DecryptOwnershipInvitations(encryptedPet.OwnershipInvitations, logger)
+                : new Result<List<OwnershipInvitation>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Code = "OWNERSHIP_INVITATIONS_DECRYPTED",
+                    Message = "Ownership invitations decrypted successfully",
+                    TraceCode = FileCodes.CallerIC(),
+                    Data = new List<OwnershipInvitation>(),
+                    Returnable = true
+                };
+            if (!ownershipInvitations) return ownershipInvitations.Log(logger).ConvertTo<Pet?>();
 
             // Create the element
             return new Pet
@@ -294,7 +313,7 @@ public static class PetEncryption
                 Status = encryptedPet.Status,
                 Species = encryptedPet.Species,
                 UserPets = userPets.Data ?? new List<UserPet>(),
-                ShareInvitations = shareInvitations.Data ?? new List<ShareInvitation>()
+                OwnershipInvitations = ownershipInvitations.Data ?? new List<OwnershipInvitation>()
             };
         }
         catch (Exception e)
@@ -313,29 +332,29 @@ public static class PetEncryption
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static Result<List<ShareInvitation>> DecryptShareInvitations(
-        List<EncryptedShareInvitation> encryptedShareInvitations,
+    public static Result<List<OwnershipInvitation>> DecryptOwnershipInvitations(
+        List<EncryptedOwnershipInvitation> encryptedOwnershipInvitations,
         ILogger logger
     )
     {
         try
         {
-            var decryptedInvitations = new List<ShareInvitation>();
-            foreach (var encryptedInvitation in encryptedShareInvitations)
+            var decryptedInvitations = new List<OwnershipInvitation>();
+            foreach (var encryptedInvitation in encryptedOwnershipInvitations)
             {
-                var decryptedResult = DecryptShareInvitation(encryptedInvitation, logger);
+                var decryptedResult = DecryptOwnershipInvitation(encryptedInvitation, logger);
                 if (!decryptedResult || decryptedResult.Data == null)
-                    return decryptedResult.Log(logger).ConvertTo<List<ShareInvitation>>();
+                    return decryptedResult.Log(logger).ConvertTo<List<OwnershipInvitation>>();
 
                 decryptedInvitations.Add(decryptedResult.Data);
             }
 
-            return new Result<List<ShareInvitation>>
+            return new Result<List<OwnershipInvitation>>
             {
                 Success = true,
-                Code = "SHARE_INVITATIONS_DECRYPTED",
+                Code = "OWNERSHIP_INVITATIONS_DECRYPTED",
                 Status = 200,
-                Message = "Share invitations decrypted successfully",
+                Message = "Ownership invitations decrypted successfully",
                 TraceCode = FileCodes.CallerIC(),
                 Data = decryptedInvitations,
                 Returnable = true
@@ -343,13 +362,13 @@ public static class PetEncryption
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to decrypt share invitations");
-            return new Result<List<ShareInvitation>>
+            logger.LogError(e, "Failed to decrypt ownership invitations");
+            return new Result<List<OwnershipInvitation>>
             {
                 Success = false,
-                Code = "SHARE_INVITATIONS_DECRYPTION_FAILED",
+                Code = "OWNERSHIP_INVITATIONS_DECRYPTION_FAILED",
                 Status = 500,
-                Message = "Failed to decrypt share invitations",
+                Message = "Failed to decrypt ownership invitations",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -357,50 +376,75 @@ public static class PetEncryption
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static Result<ShareInvitation?> DecryptShareInvitation(EncryptedShareInvitation encryptedShareInvitation,
-        ILogger logger)
+    public static Result<OwnershipInvitation?> DecryptOwnershipInvitation(
+        EncryptedOwnershipInvitation encryptedOwnershipInvitation,
+        ILogger logger
+    )
     {
         try
         {
             // Decrypt elements
             // ------------------------------------------------------------------------- NewOwnerEmail
-            var newOwnerEmailResult = SecurityService.DecryptString(encryptedShareInvitation.EncryptedNewOwnerEmail);
+            var newOwnerEmailResult =
+                SecurityService.DecryptString(encryptedOwnershipInvitation.EncryptedNewOwnerEmail);
             if (!newOwnerEmailResult || newOwnerEmailResult.Data == null)
-                return newOwnerEmailResult.Log(logger).ConvertTo<ShareInvitation?>();
+                return newOwnerEmailResult.Log(logger).ConvertTo<OwnershipInvitation?>();
 
             // ------------------------------------------------------------------------- NewOwnerName
-            var newOwnerNameResult = SecurityService.DecryptString(encryptedShareInvitation.EncryptedNewOwnerName);
+            var newOwnerNameResult = SecurityService.DecryptString(encryptedOwnershipInvitation.EncryptedNewOwnerName);
             if (!newOwnerNameResult || newOwnerNameResult.Data == null)
-                return newOwnerNameResult.Log(logger).ConvertTo<ShareInvitation?>();
+                return newOwnerNameResult.Log(logger).ConvertTo<OwnershipInvitation?>();
 
-            // ------------------------------------------------------------------------- EncryptedNonce
-            var encryptedNonceResult = SecurityService.DecryptString(encryptedShareInvitation.EncryptedNonce);
-            if (!encryptedNonceResult || encryptedNonceResult.Data == null)
-                return encryptedNonceResult.Log(logger).ConvertTo<ShareInvitation?>();
+            // ------------------------------------------------------------------------- EncryptedInvitationCode
+            var encryptedInvitationCodeResult =
+                SecurityService.DecryptString(encryptedOwnershipInvitation.EncryptedInvitationCode);
+            if (!encryptedInvitationCodeResult || encryptedInvitationCodeResult.Data == null)
+                return encryptedInvitationCodeResult.Log(logger).ConvertTo<OwnershipInvitation?>();
+
+            // ------------------------------------------------------------------------- Encrypted user
+            var encryptedUserResult = UserEncryption.DecryptUser(
+                encryptedOwnershipInvitation.EncryptedUser,
+                logger,
+                false
+            );
+            if (!encryptedUserResult || encryptedUserResult.Data == null)
+                return encryptedUserResult.Log(logger).ConvertTo<OwnershipInvitation?>();
+
+            // ------------------------------------------------------------------------- EncryptedPet
+            var encryptedPetResult = DecryptPet(
+                encryptedOwnershipInvitation.EncryptedPet,
+                logger,
+                false,
+                false
+            );
+            if (!encryptedPetResult || encryptedPetResult.Data == null)
+                return encryptedPetResult.Log(logger).ConvertTo<OwnershipInvitation?>();
 
             // Create the object
-            return new ShareInvitation
+            return new OwnershipInvitation
             {
-                Id = encryptedShareInvitation.Id,
-                UserId = encryptedShareInvitation.EncryptedUserId,
-                PetId = encryptedShareInvitation.EncryptedPetId,
+                Id = encryptedOwnershipInvitation.Id,
+                UserId = encryptedOwnershipInvitation.EncryptedUserId,
+                User = encryptedUserResult.Data,
+                PetId = encryptedOwnershipInvitation.EncryptedPetId,
+                Pet = encryptedPetResult.Data,
                 NewOwnerEmail = newOwnerEmailResult.Data,
                 NewOwnerName = newOwnerNameResult.Data,
-                NewOwnerHasAccount = encryptedShareInvitation.NewOwnerHasAccount,
-                Expiration = encryptedShareInvitation.Expiration,
-                Nonce = encryptedNonceResult.Data,
-                Status = encryptedShareInvitation.Status
+                NewOwnerHasAccount = encryptedOwnershipInvitation.NewOwnerHasAccount,
+                Expiration = encryptedOwnershipInvitation.Expiration,
+                InvitationCode = encryptedInvitationCodeResult.Data,
+                Status = encryptedOwnershipInvitation.Status
             };
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to decrypt share invitation data");
-            return new Result<ShareInvitation?>
+            logger.LogError(e, "Failed to decrypt ownership invitation data");
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
-                Code = "SHARE_INVITATION_DECRYPTION_FAILED",
+                Code = "OWNERSHIP_INVITATION_DECRYPTION_FAILED",
                 Status = 500,
-                Message = "Failed to decrypt share invitation data",
+                Message = "Failed to decrypt ownership invitation data",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Core.Models.Pets;
 
-public class SharePetOwnershipRequest
+public class SendOwnershipInvitationRequest
 {
     /// <summary>
     /// The ID of the user sharing ownership of the pet.

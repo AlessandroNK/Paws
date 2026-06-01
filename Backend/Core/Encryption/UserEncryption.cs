@@ -218,7 +218,11 @@ public static class UserEncryption
     /// <param name="decryptUserPets">A flag to indicate if we should decrypt user pets or not. We can set it to false
     /// to avoid unwanted recursiveness</param>
     /// <returns></returns>
-    public static Result<User?> DecryptUser(EncryptedUser encryptedUser, ILogger logger, bool decryptUserPets = true)
+    public static Result<User?> DecryptUser(
+        EncryptedUser encryptedUser,
+        ILogger logger,
+        bool decryptUserPets = true
+        )
     {
         try
         {

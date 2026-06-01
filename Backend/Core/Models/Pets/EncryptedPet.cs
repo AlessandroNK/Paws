@@ -50,9 +50,9 @@ public class EncryptedPet
     public GenericStatus Status { get; set; }
 
     /// <summary>
-    /// Temporary invitations to share this pet.
+    /// Temporary invitations to share ownership of this pet.
     /// </summary>
-    public List<EncryptedShareInvitation> ShareInvitations { get; set; } = new List<EncryptedShareInvitation>();
+    public List<EncryptedOwnershipInvitation> OwnershipInvitations { get; set; } = new List<EncryptedOwnershipInvitation>();
 
     /// <summary>
     /// All pet's owners

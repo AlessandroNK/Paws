@@ -42,9 +42,9 @@ public interface INotificationService
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Sends an ownership share code to the given email address.
+    /// Sends an ownership invitation to the given email address.
     /// </summary>
-    /// <param name="invitation">The <see cref="ShareInvitation"/> to send</param>
+    /// <param name="invitation">The <see cref="OwnershipInvitation"/> to send</param>
     /// <returns></returns>
-    public Task<Result> SendOwnershipShareLink(ShareInvitation invitation);
+    public Task<Result> SendOwnershipInvitationLink(OwnershipInvitation invitation);
 }

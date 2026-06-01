@@ -54,30 +54,61 @@ public class PetController(
     #region HttpMethods
 
     /// <summary>
-    /// Shares the ownership of a pet with another user. It sends an invitation to the user to accept the ownership of
-    /// the pet.
+    /// Shares the ownership of a pet with another user by sending an ownership invitation.
     /// </summary>
     /// <param name="deviceId">The id of the device sending the request</param>
-    /// <param name="request">The <see cref="SharePetOwnershipRequest"/> request</param>
+    /// <param name="invitationRequest">The <see cref="SendOwnershipInvitationRequest"/> request</param>
     /// <returns></returns>
     [HttpPost]
     [Route("share-ownership")]
     public async Task<IActionResult> SendOwnershipInvitationAsync(
         [FromHeader(Name = "Device-Id")] string deviceId,
-        [FromBody] SharePetOwnershipRequest request
+        [FromBody] SendOwnershipInvitationRequest invitationRequest
     )
     {
         _logger.LogInformation(
-            "Received request to share pet ownership: {@PetId} with user {@UserId} and device ID: {DeviceId}",
-            request.PetId, request.UserId, deviceId
+            "Received request to send ownership invitation for pet {@PetId} to user {@UserId} and device ID: {DeviceId}",
+            invitationRequest.PetId, invitationRequest.UserId, deviceId
         );
 
         // Validations
         var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
         if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
-        // Share the ownership
-        var result = await _petService.SendOwnershipInvitationAsync(request);
+        // Send the ownership invitation
+        var result = await _petService.SendOwnershipInvitationAsync(invitationRequest);
+
+        // Clean the response and convert it and its data to Dto
+        return result
+            ? Ok(result)
+            : BadRequest(result);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Accepts an ownership invitation for a pet.
+    /// </summary>
+    /// <param name="deviceId">The id of the device sending the request</param>
+    /// <param name="invitationCode"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("accept-ownership")]
+    public async Task<IActionResult> AcceptOwnershipInvitation(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] AcceptOwnershipInvitationRequest invitationCode
+    )
+    {
+        _logger.LogInformation(
+            "Received request to accept ownership invitation with code {@InvitationCode} and device ID: {DeviceId}",
+            invitationCode.InvitationCode, deviceId
+        );
+
+        // Validations
+        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+        if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+        // Accept the ownership invitation
+        var result = await _petService.AcceptOwnershipInvitationAsync(invitationCode);
 
         // Clean the response and convert it and its data to Dto
         return result

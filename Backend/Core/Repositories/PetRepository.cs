@@ -52,8 +52,8 @@ public class PetRepository(
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    private static IQueryable<EncryptedShareInvitation> ApplyStatusFilters(
-        IQueryable<EncryptedShareInvitation> query,
+    private static IQueryable<EncryptedOwnershipInvitation> ApplyStatusFilters(
+        IQueryable<EncryptedOwnershipInvitation> query,
         StatusFilters? filters = null
     )
     {
@@ -170,7 +170,7 @@ public class PetRepository(
         query = query
             .Include(p => p.UserPets)
             .ThenInclude(up => up.EncryptedUser)
-            .Include(p => p.ShareInvitations)
+            .Include(p => p.OwnershipInvitations)
             .AsSplitQuery();
 
         // Execute query
@@ -266,75 +266,75 @@ public class PetRepository(
     }
 
 
-    #region ShareInvitation
+    #region OwnershipInvitation
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Asynchronously adds a share invitation
+    /// Asynchronously adds an ownership invitation
     /// </summary>
     /// <param name="invitation"></param>
     /// <returns></returns>
-    public async Task<Result<ShareInvitation?>> AddShareInvitationAsync(ShareInvitation invitation)
+    public async Task<Result<OwnershipInvitation?>> AddOwnershipInvitationAsync(OwnershipInvitation invitation)
     {
         if (invitation.PetId <= 0)
-            return new Result<ShareInvitation?>
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
                 Code = "PET_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "Pet id not provided for share invitation",
+                Message = "Pet id not provided for ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
         if (invitation.UserId <= 0)
-            return new Result<ShareInvitation?>
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
                 Code = "USER_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "User id not provided for share invitation",
+                Message = "User id not provided for ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
         // Encrypt the invitation
-        var encryptResult = PetEncryption.EncryptShareInvitation(invitation, _logger);
-        if (!encryptResult || encryptResult.Data is null) return encryptResult.ConvertTo<ShareInvitation?>();
+        var encryptResult = PetEncryption.EncryptOwnershipInvitation(invitation, _logger);
+        if (!encryptResult || encryptResult.Data is null) return encryptResult.ConvertTo<OwnershipInvitation?>();
         var encryptedInvitation = encryptResult.Data;
 
-        _dbContext.EncryptedShareInvitations.Add(encryptedInvitation);
+        _dbContext.EncryptedOwnershipInvitations.Add(encryptedInvitation);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
-            return new Result<ShareInvitation?>
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
-                Code = "ERROR_CREATING_SHARE_INVITATION",
+                Code = "ERROR_CREATING_OWNERSHIP_INVITATION",
                 Status = 500,
-                Message = "An error occurred while creating the share invitation",
+                Message = "An error occurred while creating the ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
         // Get it again from the DB
-        var getResult = await GetShareInvitationByIdAsync(encryptedInvitation.Id);
+        var getResult = await GetOwnershipInvitationByIdAsync(encryptedInvitation.Id);
         if (!getResult || getResult.Data is null)
-            return new Result<ShareInvitation?>
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
-                Code = "SHARE_INVITATION_CREATED_BUT_NOT_FOUND",
+                Code = "OWNERSHIP_INVITATION_CREATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "Share invitation created but not found when retrieving it",
+                Message = "Ownership invitation created but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
-        return new Result<ShareInvitation?>
+        return new Result<OwnershipInvitation?>
         {
             Success = true,
-            Code = "SHARE_INVITATION_CREATED",
+            Code = "OWNERSHIP_INVITATION_CREATED",
             Status = 201,
-            Message = "Share invitation created successfully",
+            Message = "Ownership invitation created successfully",
             Data = getResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -343,26 +343,26 @@ public class PetRepository(
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Asynchronously gets a share invitation by its ID, applying optional status filters to the query.
+    /// Asynchronously gets an ownership invitation by its ID, applying optional status filters to the query.
     /// </summary>
     /// <param name="id"></param>
     /// <param name="filters"></param>
     /// <returns></returns>
-    public async Task<Result<ShareInvitation?>> GetShareInvitationByIdAsync(int id, StatusFilters? filters = null)
+    public async Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByIdAsync(int id, StatusFilters? filters = null)
     {
         if (id <= 0)
-            return new Result<ShareInvitation?>
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
-                Code = "INVALID_SHARE_INVITATION_ID",
+                Code = "INVALID_OWNERSHIP_INVITATION_ID",
                 Status = 400,
-                Message = "The provided share invitation ID is invalid",
+                Message = "The provided ownership invitation ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
         // Find the pet
-        var query = _dbContext.EncryptedShareInvitations
+        var query = _dbContext.EncryptedOwnershipInvitations
             .Where(i => i.Id == id);
 
         // Apply status filters
@@ -374,127 +374,131 @@ public class PetRepository(
         // Execute query
         var encryptedInvitation = await query.FirstOrDefaultAsync();
         if (encryptedInvitation is null)
-            return new Result<ShareInvitation?>
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
                 Code = "SHARE_INVITATION_NOT_FOUND",
                 Status = 404,
-                Message = "No share invitation found with the provided id",
+                Message = "No ownership invitation found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
-        // Decrypt and return share invitation
-        return PetEncryption.DecryptShareInvitation(encryptedInvitation, _logger);
+        // Decrypt and return ownership invitation
+        return PetEncryption.DecryptOwnershipInvitation(encryptedInvitation, _logger);
     }
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Gets a share invitation by its nonce, applying optional status filters to the query. The nonce is hashed and
-    /// compared to the stored hash in the database to find the invitation. This is done to avoid storing the nonce in
-    /// plaintext in the database for security reasons. If a share invitation with the provided nonce is found, it is
-    /// decrypted and returned. Otherwise, an error result is returned indicating that no share invitation was found
-    /// with the provided nonce. This method is useful for accepting share invitations, where the nonce is provided in
-    /// the invitation link and needs to be validated and used to retrieve the corresponding share invitation.
+    /// Gets an ownership invitation by its invitation code, applying optional status filters to the query. The invitation codeis hashed and
+    /// compared to the stored hash in the database to find the invitation. This is done to avoid storing the invitation codein
+    /// plaintext in the database for security reasons. If an ownership invitation with the provided invitation codeis found,
+    /// it is decrypted and returned. Otherwise, an error result is returned indicating that no ownership invitation
+    /// was found with the provided invitationCode. This method is useful for accepting ownership invitations, where the invitationCode
+    /// is provided in the invitation link and needs to be validated and used to retrieve the corresponding ownership
+    /// invitation.
     /// </summary>
-    /// <param name="nonce"></param>
+    /// <param name="invitationCode"></param>
     /// <param name="filters"></param>
     /// <returns></returns>
-    public async Task<Result<ShareInvitation?>> GetShareInvitationByNonceAsync(string nonce, StatusFilters? filters = null)
+    public async Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByCodeAsync(string invitationCode, StatusFilters? filters = null)
     {
-        if (string.IsNullOrWhiteSpace(nonce))
-            return new Result<ShareInvitation?>
+        if (string.IsNullOrWhiteSpace(invitationCode))
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
-                Code = "INVALID_SHARE_INVITATION_NONCE",
+                Code = "INVALID_OWNERSHIP_INVITATION_NONCE",
                 Status = 400,
-                Message = "The provided share invitation nonce is invalid",
+                Message = "The provided ownership invitation invitation codeis invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
-        // hash nonce
-        var nonceHashResult = SecurityService.HashWithSalt(nonce);
-        if (!nonceHashResult || nonceHashResult.Data == null)
-            return nonceHashResult.Log(_logger).ConvertTo<ShareInvitation?>();
+        // hash invitationCode
+        var invitationCodeHashResult = SecurityService.HashWithSalt(invitationCode);
+        if (!invitationCodeHashResult || invitationCodeHashResult.Data == null)
+            return invitationCodeHashResult.Log(_logger).ConvertTo<OwnershipInvitation?>();
 
-        // Find the share invitation
-        var query = _dbContext.EncryptedShareInvitations
-            .Where(p => p.NonceHash == nonceHashResult.Data);
+        // Find the ownership invitation
+        var query = _dbContext.EncryptedOwnershipInvitations
+            .Where(p => p.InvitationCodeHash == invitationCodeHashResult.Data);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
         query = query
+            .Include(i => i.EncryptedPet)
+            .Include(i => i.EncryptedUser)
             .AsSplitQuery();
 
         // Execute query
         var encryptedInvitation = await query.FirstOrDefaultAsync();
         if (encryptedInvitation is null)
-            return new Result<ShareInvitation?>
+            return new Result<OwnershipInvitation?>
             {
                 Success = false,
-                Code = "SHARE_INVITATION_NOT_FOUND",
+                Code = "OWNERSHIP_INVITATION_NOT_FOUND",
                 Status = 404,
-                Message = "No share invitation found with the provided id",
+                Message = "No ownership invitation found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
-        // Decrypt and return share invitation
-        return PetEncryption.DecryptShareInvitation(encryptedInvitation, _logger);
+        // Decrypt and return ownership invitation
+        return PetEncryption.DecryptOwnershipInvitation(encryptedInvitation, _logger);
     }
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Asynchronously deletes a share invitation by its ID. This method first retrieves the share invitation from the
-    /// database using the provided ID. If the share invitation is found, it is removed from the database context and
-    /// the changes are saved to the database. If the deletion is successful, a success result is returned. If the share
-    /// invitation is not found or if an error occurs during deletion, an appropriate error result is returned indicating
-    /// the reason for the failure. This method is useful for allowing users to delete share invitations that they have
-    /// created or received, providing them with control over their shared pets and invitations.
+    /// Asynchronously deletes an ownership invitation by its ID. This method first retrieves the ownership invitation
+    /// from the database using the provided ID. If the ownership invitation is found, it is removed from the database
+    /// context and the changes are saved to the database. If the deletion is successful, a success result is returned.
+    /// If the ownership invitation is not found or if an error occurs during deletion, an appropriate error result is
+    /// returned indicating the reason for the failure. This method is useful for allowing users to delete ownership
+    /// invitations that they have created or received, providing them with control over their shared pets and
+    /// invitations.
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public async Task<Result> DeleteShareInvitationAsync(int id)
+    public async Task<Result> DeleteOwnershipInvitationAsync(int id)
     {
         if (id <= 0)
         {
             return new Result
             {
                 Success = false,
-                Code = "INVALID_SHARE_INVITATION_ID",
+                Code = "INVALID_OWNERSHIP_INVITATION_ID",
                 Status = 400,
-                Message = "The provided share invitation ID is invalid",
+                Message = "The provided ownership invitation ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
         }
 
         // Get the invitation
-        var existingInvitation = await _dbContext.EncryptedShareInvitations
+        var existingInvitation = await _dbContext.EncryptedOwnershipInvitations
             .FirstOrDefaultAsync(i => i.Id == id);
         if (existingInvitation is null)
             return new Result
             {
                 Success = false,
-                Code = "SHARE_INVITATION_NOT_FOUND",
+                Code = "OWNERSHIP_INVITATION_NOT_FOUND",
                 Status = 404,
-                Message = "No share invitation found with the provided id",
+                Message = "No ownership invitation found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
 
         // Delete the invitation
-        _dbContext.EncryptedShareInvitations.Remove(existingInvitation);
+        _dbContext.EncryptedOwnershipInvitations.Remove(existingInvitation);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result
             {
                 Success = false,
-                Code = "ERROR_DELETING_SHARE_INVITATION",
+                Code = "ERROR_DELETING_OWNERSHIP_INVITATION",
                 Status = 500,
-                Message = "An error occurred while deleting the share invitation",
+                Message = "An error occurred while deleting the ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -502,9 +506,9 @@ public class PetRepository(
         return new Result
         {
             Success = true,
-            Code = "SHARE_INVITATION_DELETED",
+            Code = "OWNERSHIP_INVITATION_DELETED",
             Status = 200,
-            Message = "Share invitation deleted successfully",
+            Message = "Ownership invitation deleted successfully",
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
         };
