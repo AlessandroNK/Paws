@@ -1,5 +1,7 @@
 using System.Text;
 using Backend.Core.Internal;
+using Backend.Core.Models.Enums;
+using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Security;
 using Backend.Core.Services.Interfaces;
@@ -109,7 +111,7 @@ public class NotificationService(
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "Paws app" },
+                sender = new { email = senderEmail, name = "🐾Acá Paws🐶" },
                 to = new[] { new { email = email, name = email } },
                 subject = $"Tu código para Registro en Paws es {code}",
                 htmlContent = $@"
@@ -173,23 +175,9 @@ public class NotificationService(
     /// <summary>
     /// Sends an ownership share code to the given email address.
     /// </summary>
-    /// <param name="petName">The name of the pet</param>
-    /// <param name="ownerName">The name of the current owner</param>
-    /// <param name="newOwnerName">The name of the new owner</param>
-    /// <param name="newOwnerEmail">The email to send the code to</param>
-    /// <param name="code">The code to send</param>
-    /// <param name="link">The link to the app or website where the new owner can enter the code</param>
-    /// <param name="newOwnerAlreadyUser">Whether the new owner is already a user of the app</param>
+    /// <param name="invitation">The <see cref="ShareInvitation"/> to send</param>
     /// <returns></returns>
-    public async Task<Result> SendOwnershipShareCode(
-        string petName,
-        string ownerName,
-        string newOwnerName,
-        string newOwnerEmail,
-        string code,
-        string link,
-        bool newOwnerAlreadyUser = false
-    )
+    public async Task<Result> SendOwnershipShareLink(ShareInvitation invitation)
     {
         try
         {
@@ -205,22 +193,37 @@ public class NotificationService(
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("api-key", apiKey);
 
-            var accountP = newOwnerAlreadyUser
-                ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{link}' style='color:#f05a22; text-decoration:none;'>ingresa a este enlace</a> para continuar."
-                : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{link}' style='color:#f05a22; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
+            var accountP = invitation.NewOwnerHasAccount
+                ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>ingresa a este enlace</a> para continuar."
+                : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
 
+            var emoji = invitation.Pet.Species switch
+            {
+                PetSpecies.Dog => "🐶",
+                PetSpecies.Cat => "🐱",
+                PetSpecies.Bunny => "🐰",
+                PetSpecies.Hamster => "🐹",
+                PetSpecies.Turtle => "🐢",
+                PetSpecies.Cow => "🐮",
+                PetSpecies.Horse => "🐴",
+                PetSpecies.Bird => "🐦",
+                PetSpecies.Fish => "🐟",
+                PetSpecies.Reptile => "🦎",
+                PetSpecies.Rodent => "🐭",
+                _ => "🐾"
+            };
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "Paws app" },
-                to = new[] { new { email = newOwnerEmail, name = newOwnerName } },
-                subject = $"Tu código para Registro en Paws es {code}",
+                sender = new { email = senderEmail, name = "🐾Acá Paws🐶" },
+                to = new[] { new { email = invitation.NewOwnerEmail, name = invitation.NewOwnerName } },
+                subject = $"{emoji}{invitation.Pet.Name} te pide que seas su dueño en Paws",
                 htmlContent = $@"
-                    <h2>¡Hola {newOwnerName}!</h2>
-                    <p>{ownerName} quiere compartir contigo la propiedad de su mascota <strong>{petName}</strong> en <b>Paws</b>.</p>
-                    <p>Para aceptar la invitación y convertirte en co‑propietario, utiliza el siguiente <b>código de un solo uso</b>:</p>
-                    <p style='font-size: 20px; font-weight: 600; color: #f05a22;'>{code}</p>
-                    <p>Este código es válido por 24 horas. Ingresa el código en <a href='https://paws.com' style='color:#f05a22; text-decoration:none;'>Paws</a> para confirmar tu participación.</p>
+                    <h2>¡Hola {invitation.NewOwnerName}!</h2>
+                    <p>{invitation.User.Name} quiere compartir contigo la propiedad de su mascota <strong>{invitation.Pet.Name}</strong> en <b>Paws</b>.</p>
+                    <p>Para aceptar la invitación y convertirte en co‑propietario, dale click al siguiente <b>enlace de un solo uso</b>:</p>
+                    <p style='font-size: 20px; font-weight: 600; color: #f05a22;'><a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>{invitation.ShareLink}</a></p>
+                    <p>Este código es válido por 24 horas.</p>
                     {accountP}
                     <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
                     <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
@@ -233,7 +236,7 @@ public class NotificationService(
 
             if (response.IsSuccessStatusCode)
             {
-                LogHelpers.LogInfo(_logger, $"Verification code sent to {newOwnerEmail}");
+                LogHelpers.LogInfo(_logger, $"Verification code sent to {invitation.NewOwnerEmail}");
                 return new Result
                 {
                     Success = true,
@@ -247,7 +250,7 @@ public class NotificationService(
 
             LogHelpers.LogError(
                 _logger,
-                $"Failed to send verification code to {newOwnerEmail}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}"
+                $"Failed to send verification code to {invitation.NewOwnerEmail}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}"
             );
             return new Result
             {
@@ -261,7 +264,7 @@ public class NotificationService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Exception while sending ownership share code to {Email}", newOwnerEmail);
+            _logger.LogError(ex, "Exception while sending ownership share code to {Email}", invitation.NewOwnerEmail);
             return new Result
             {
                 Success = false,

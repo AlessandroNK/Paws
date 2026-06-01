@@ -1,10 +1,11 @@
+using Backend.Core.Controllers.interfaces;
 using Backend.Core.Models.Pets;
 using Backend.Core.Services;
 using Backend.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Core.Controllers.interfaces;
+namespace Backend.Core.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

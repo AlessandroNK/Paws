@@ -1,9 +1,6 @@
-using Backend.Core.Models.Enums;
-using Backend.Core.Models.Users;
-
 namespace Backend.Core.Models.Pets;
 
-public class ShareInvitation
+public class ShareInvitationResponse
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -12,29 +9,14 @@ public class ShareInvitation
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The ID of the shared invitation
-    /// </summary>
-    public int Id { get; set; }
-
-    /// <summary>
     /// The ID of the user sharing ownership of the pet.
     /// </summary>
     public int UserId { get; set; }
 
     /// <summary>
-    /// The owner object
-    /// </summary>
-    public User? User { get; set; }
-
-    /// <summary>
     /// The ID of the pet to share ownership of.
     /// </summary>
     public int PetId { get; set; }
-
-    /// <summary>
-    /// The pet of the invitation
-    /// </summary>
-    public Pet? Pet { get; set; }
 
     /// <summary>
     /// The email of the user to share ownership with.
@@ -53,25 +35,10 @@ public class ShareInvitation
     public bool NewOwnerHasAccount { get; set; }
 
     /// <summary>
-    /// The timestamp when this shared code will expire
-    /// </summary>
-    public DateTime Expiration { get; set; }
-
-    /// <summary>
     /// A unique identifier for the share invitation. It is used to verify the invitation when the new owner clicks the
     /// link in the email.
     /// </summary>
     public string Nonce { get; set; }  = string.Empty;
-
-    /// <summary>
-    /// A unique link that the new owner can click to accept the invitation.
-    /// </summary>
-    public string ShareLink { get; set; }
-
-    /// <summary>
-    /// Ya know
-    /// </summary>
-    public GenericStatus Status { get; set; }
 
 
     //                                                                                                         Operators
@@ -92,5 +59,4 @@ public class ShareInvitation
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-
 }

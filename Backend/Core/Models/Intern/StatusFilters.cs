@@ -1,9 +1,6 @@
-using Backend.Core.Models.Pets;
-using Backend.Core.Models.Results;
+namespace Backend.Core.Models.Intern;
 
-namespace Backend.Core.Services.Interfaces;
-
-public interface INotificationService
+public class StatusFilters
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -11,7 +8,12 @@ public interface INotificationService
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-
+    public bool ExcludeActive { get; set; } = true;
+    public bool ExcludeInactive { get; set; } = true;
+    public bool ExcludeDeleted { get; set; } = true;
+    public bool ExcludeBanned { get; set; } = true;
+    public bool ExcludeArchived { get; set; } = true;
+    public bool ExcludeToDelete { get; set; } = true;
 
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
@@ -31,20 +33,5 @@ public interface INotificationService
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Sends a verification code to the given email address.
-    /// </summary>
-    /// <param name="name">The name of the user</param>
-    /// <param name="email">The email to send the code to</param>
-    /// <param name="code">The code to send</param>
-    /// <returns></returns>
-    public Task<Result> SendVerificationCodeAsync(string name, string email, string code);
 
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Sends an ownership share code to the given email address.
-    /// </summary>
-    /// <param name="invitation">The <see cref="ShareInvitation"/> to send</param>
-    /// <returns></returns>
-    public Task<Result> SendOwnershipShareLink(ShareInvitation invitation);
 }

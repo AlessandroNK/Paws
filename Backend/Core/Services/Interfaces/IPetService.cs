@@ -1,3 +1,4 @@
+using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
 
@@ -44,10 +45,9 @@ public interface IPetService
     /// Gets a pet by its ID.
     /// </summary>
     /// <param name="id">The ID of the pet to retrieve</param>
-    /// <param name="excludeInactive">Whether to exclude inactive pets</param>
-    /// <param name="excludeBanned">Whether to exclude banned pets</param>
+    /// <param name="filters">The filters to apply to the query</param>
     /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
-    public Task<Result<Pet?>> GetByIdAsync(int id, bool excludeInactive = true, bool excludeBanned = true);
+    public Task<Result<Pet?>> GetByIdAsync(int id, StatusFilters? filters = null);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>

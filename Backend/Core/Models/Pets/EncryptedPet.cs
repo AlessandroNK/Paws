@@ -47,12 +47,12 @@ public class EncryptedPet
     /// <summary>
     /// A flag to track pet status in the system.
     /// </summary>
-    public PetStatus Status { get; set; }
+    public GenericStatus Status { get; set; }
 
     /// <summary>
     /// Temporary invitations to share this pet.
     /// </summary>
-    public List<EncryptedShareInvitation> ShareInvitation { get; set; } = new List<EncryptedShareInvitation>();
+    public List<EncryptedShareInvitation> ShareInvitations { get; set; } = new List<EncryptedShareInvitation>();
 
     /// <summary>
     /// All pet's owners

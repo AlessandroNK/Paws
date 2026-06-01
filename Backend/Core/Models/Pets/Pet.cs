@@ -43,12 +43,12 @@ public class Pet : IDtoConvertible<PetResponse>
     /// <summary>
     /// A flag to track pet status in the system.
     /// </summary>
-    public PetStatus Status { get; set; }
+    public GenericStatus Status { get; set; }
 
     /// <summary>
     /// Temporary invitations to share this pet.
     /// </summary>
-    public List<ShareInvitation> ShareInvitation { get; set; } = new List<ShareInvitation>();
+    public List<ShareInvitation> ShareInvitations { get; set; } = new List<ShareInvitation>();
 
     /// <summary>
     /// All pet's owners
