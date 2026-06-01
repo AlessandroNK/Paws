@@ -19,17 +19,12 @@ public class EncryptedShareInvitation
     /// <summary>
     /// The ID of the user sharing ownership of the pet.
     /// </summary>
-    public int UserId { get; set; }
-
-    /// <summary>
-    /// The owner object
-    /// </summary>
-    public EncryptedUser User { get; set; }
+    public int EncryptedUserId { get; set; }
 
     /// <summary>
     /// The ID of the pet to share ownership of.
     /// </summary>
-    public int PetId { get; set; }
+    public int EncryptedPetId { get; set; }
 
     /// <summary>
     /// The email of the user to share ownership with.

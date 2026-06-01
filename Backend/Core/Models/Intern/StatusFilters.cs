@@ -8,7 +8,7 @@ public class StatusFilters
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    public bool ExcludeActive { get; set; } = true;
+    public bool ExcludeActive { get; set; } = false;
     public bool ExcludeInactive { get; set; } = true;
     public bool ExcludeDeleted { get; set; } = true;
     public bool ExcludeBanned { get; set; } = true;

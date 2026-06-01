@@ -200,8 +200,8 @@ public static class PetEncryption
             return new EncryptedShareInvitation
             {
                 Id = invitation.Id,
-                UserId = invitation.UserId,
-                PetId = invitation.PetId,
+                EncryptedUserId = invitation.UserId,
+                EncryptedPetId = invitation.PetId,
                 EncryptedNewOwnerEmail = newOwnerEmailResult.Data,
                 EncryptedNewOwnerName = newNameResult.Data,
                 NewOwnerHasAccount = invitation.NewOwnerHasAccount,
@@ -382,8 +382,8 @@ public static class PetEncryption
             return new ShareInvitation
             {
                 Id = encryptedShareInvitation.Id,
-                UserId = encryptedShareInvitation.UserId,
-                PetId = encryptedShareInvitation.PetId,
+                UserId = encryptedShareInvitation.EncryptedUserId,
+                PetId = encryptedShareInvitation.EncryptedPetId,
                 NewOwnerEmail = newOwnerEmailResult.Data,
                 NewOwnerName = newOwnerNameResult.Data,
                 NewOwnerHasAccount = encryptedShareInvitation.NewOwnerHasAccount,
