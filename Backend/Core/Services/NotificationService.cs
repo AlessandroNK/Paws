@@ -222,7 +222,7 @@ public class NotificationService(
                     <h2>¡Hola {invitation.NewOwnerName}!</h2>
                     <p>{invitation.User.Name} quiere compartir contigo la propiedad de su mascota <strong>{invitation.Pet.Name}</strong> en <b>Paws</b>.</p>
                     <p>Para aceptar la invitación y convertirte en co‑propietario, dale click al siguiente <b>enlace de un solo uso</b>:</p>
-                    <p style='font-size: 20px; font-weight: 600; color: #f05a22;'><a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>{invitation.ShareLink}</a></p>
+                    <p style='font-size: 20px; font-weight: 600; color: #f05a22;'><a href='{invitation.ShareLink}' style='color:#f05a22; text-decoration:none;'>Aceptar invitación</a></p>
                     <p>Este código es válido por 24 horas.</p>
                     {accountP}
                     <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>

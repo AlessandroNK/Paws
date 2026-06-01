@@ -221,11 +221,6 @@ public class PetService(
                 Nonce = Guid.NewGuid().ToString()
             };
 
-        // Create the link
-        var linkResult = CreateShareLink(invitation);
-        if (!linkResult || linkResult.Data is null) return linkResult.ConvertTo<ShareInvitation>();
-        invitation.ShareLink = linkResult.Data;
-
         // Save and return this invitation
         var addResult = await _petRepo.AddShareInvitationAsync(invitation);
         if (!addResult || addResult.Data is null)
@@ -264,7 +259,6 @@ public class PetService(
         var baseLink = Environment.GetEnvironmentVariable("FRONTEND_BASE_URL") ?? "http://localhost:3000";
         var safeEmail = Uri.EscapeDataString(invitation.NewOwnerEmail);
         return $"{baseLink}/accept-invitation?code={invitation.Nonce}&email={safeEmail}";
-
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -331,6 +325,11 @@ public class PetService(
             invitation.Pet = keepInvitation.Pet;
             invitation.User = keepInvitation.User;
         }
+
+        // Create the link
+        var linkResult = CreateShareLink(invitation);
+        if (!linkResult || linkResult.Data is null) return linkResult.ConvertTo<ShareInvitation>();
+        invitation.ShareLink = linkResult.Data;
 
         // Send the invitation email
         var notificationResult = await _notificationService.SendOwnershipShareLink(invitation);
