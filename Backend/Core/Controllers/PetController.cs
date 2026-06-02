@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Core.Controllers;
 
+/// <remarks>FP01</remarks>
 [ApiController]
 [Route("api/[controller]")]
 [EnableCors("AllowFrontend")]

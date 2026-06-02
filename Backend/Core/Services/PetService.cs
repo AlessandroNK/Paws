@@ -8,10 +8,10 @@ using Backend.Core.Models.Users;
 using Backend.Core.Policies;
 using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services.Interfaces;
-using Newtonsoft.Json;
 
 namespace Backend.Core.Services;
 
+/// <remarks>FP02</remarks>
 public class PetService(
     IPetRepository petRepo,
     INotificationService notificationService,

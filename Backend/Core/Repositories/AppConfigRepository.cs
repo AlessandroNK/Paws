@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Core.Repositories;
 
+/// <remarks>FC03</remarks>
 public class AppConfigRepository(
     ApplicationDbContext dbContext,
     ILogger<AppConfigRepository> logger
@@ -86,7 +87,13 @@ public class AppConfigRepository(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result> SetConfig(string key, string value)
+    /// <summary>
+    /// Sets a configuration value by its key. It updates the value in the database.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public async Task<Result> SetConfig(AppConfigKeys key, string value)
     {
         var config = await _dbContext.AppConfigs.FirstOrDefaultAsync(c => c.Key == key);
         if (config is null)

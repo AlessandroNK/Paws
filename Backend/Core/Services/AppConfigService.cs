@@ -7,6 +7,7 @@ using Backend.Core.Services.Interfaces;
 
 namespace Backend.Core.Services;
 
+/// <remarks>FC02</remarks>
 public class AppConfigService(
     IAppConfigRepository appConfigRepo,
     ILogger<PetService> logger
@@ -27,7 +28,7 @@ public class AppConfigService(
     /// <summary>
     /// A dictionary so it is easy to get app's configurations
     /// </summary>
-    private readonly Dictionary<string, string> appConfigs = new();
+    private readonly Dictionary<AppConfigKeys, string> _appConfigs = new();
 
 
     //                                                                                                 Public Properties
@@ -71,7 +72,7 @@ public class AppConfigService(
             if (!configsResult || configsResult.Data is null) return configsResult;
 
             foreach (var config in configsResult.Data)
-                appConfigs[config.Key] = config.Value;
+                _appConfigs[config.Key] = config.Value;
 
             LogHelpers.LogInfo(_logger, "App config initialized successfully");
 
@@ -101,7 +102,13 @@ public class AppConfigService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result> SetConfig(string key, string value)
+    /// <summary>
+    /// Sets a configuration value by its key. It updates the value in the database and then updates the in-memory dictionary
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public async Task<Result> SetConfig(AppConfigKeys key, string value)
     {
         try
         {
@@ -116,7 +123,7 @@ public class AppConfigService(
             if (!setConfigResult) return setConfigResult;
 
             // Update config in memory
-            appConfigs[key] = value;
+            _appConfigs[key] = value;
 
             LogHelpers.LogInfo(_logger, $"App config {key} set successfully");
 
@@ -152,9 +159,9 @@ public class AppConfigService(
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public Result<string> GetConfig(string key)
+    public Result<string> GetConfig(AppConfigKeys key)
     {
-        if (appConfigs.TryGetValue(key, out var value))
+        if (_appConfigs.TryGetValue(key, out var value))
         {
             return new Result<string>
             {

@@ -1,5 +1,6 @@
 using Backend.Core.Controllers.interfaces;
 using Backend.Core.Internal;
+using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
 using Backend.Core.Repositories.Interfaces;
@@ -7,11 +8,12 @@ using Backend.Core.Services.Interfaces;
 
 namespace Backend.Core.Services;
 
+/// <remarks>FA02</remarks>
 public class AppointmentsService(
     IAppointmentsRepository appointmentsRepo,
     IAppConfigService appConfigService,
     ILogger<PetService> logger
-    ) : IAppointmentsService
+) : IAppointmentsService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -56,7 +58,30 @@ public class AppointmentsService(
     {
         try
         {
+            var appointmentDurationInMinutes = _appConfigService.GetConfig(
+                AppConfigKeys.AppointmentDurationInMinutes
+            );
 
+            Console.WriteLine(appointmentDurationInMinutes.Data);
+
+            return new Result
+            {
+                Success = false,
+                Code = "BEBUGGING",
+                Status = 200,
+                Message = "Debbuging my bruh",
+                Returnable = true
+            };
+
+            return new Result
+            {
+                Success = true,
+                Code = "APPOINTMENTS_POPULATED",
+                Status = 200,
+                Message = "Appointments populated successfully",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
         }
         catch (Exception e)
         {

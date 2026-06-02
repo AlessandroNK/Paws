@@ -14,7 +14,7 @@ namespace Backend.Core.Controllers;
 /// </summary>
 /// <param name="userService"></param>
 /// <param name="logger"></param>
-/// <remarks>FU03</remarks>
+/// <remarks>FU01</remarks>
 [ApiController]
 [Route("api/[controller]")]
 [EnableCors("AllowFrontend")]

@@ -1,9 +1,7 @@
 using Backend.Core.Controllers.interfaces;
-using Backend.Core.Models.Results;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Backend.Core.Controllers;
 
+/// <remarks>FA01</remarks>
 public class AppointmentsController : IAppointmentsController
 {
     //                                                                                                Private Properties

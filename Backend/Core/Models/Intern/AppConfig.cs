@@ -14,12 +14,14 @@ public class AppConfig
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The configuration key. Typical values are hierarchical keys like
-    /// "Logging:LogLevel:Default" or custom application keys. Keys are treated
-    /// as identifiers and should not be null. Use <see cref="string.Empty"/>
-    /// when no value is provided.
+    /// EF primary key so world does not explote
     /// </summary>
-    public string Key { get; set; } = string.Empty;
+    public int Id { get; set; }
+
+    /// <summary>
+    /// The configuration key. This is an enum value that identifies the specific configuration setting.
+    /// </summary>
+    public AppConfigKeys Key { get; set; }
 
     /// <summary>
     /// The configuration value associated with <see cref="Key"/>. This may be

@@ -6,6 +6,7 @@ using Backend.Core.Models.Results;
 
 namespace Backend.Core.Services;
 
+/// <remarks>FS02</remarks>
 public partial class SecurityService
 {
     //                                                                                                Private Properties

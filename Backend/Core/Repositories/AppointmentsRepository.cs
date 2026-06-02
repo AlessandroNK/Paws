@@ -2,6 +2,7 @@ using Backend.Core.Repositories.Interfaces;
 
 namespace Backend.Core.Repositories;
 
+/// <remarks>FA03</remarks>
 public class AppointmentsRepository : IAppointmentsRepository
 {
     //                                                                                                Private Properties

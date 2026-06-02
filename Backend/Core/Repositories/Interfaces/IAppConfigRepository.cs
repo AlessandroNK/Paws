@@ -39,5 +39,11 @@ public interface IAppConfigRepository
     public Task<Result<List<AppConfig>>> GetConfigs();
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<Result> SetConfig(string key, string value);
+    /// <summary>
+    /// Sets a configuration value by its key. It updates the value in the database.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public Task<Result> SetConfig(AppConfigKeys key, string value);
 }

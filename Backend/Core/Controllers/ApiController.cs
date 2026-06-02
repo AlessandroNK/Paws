@@ -11,6 +11,7 @@ namespace Backend.Core.Controllers;
 /// <summary>
 /// This controller handles internal base operations for this API.
 /// </summary>
+/// <remarks>FI01</remarks>
 [ApiController]
 [Route("[controller]")]
 [EnableCors("AllowFrontend")]

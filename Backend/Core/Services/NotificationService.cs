@@ -16,6 +16,7 @@ namespace Backend.Core.Services;
 /// The implementation of this interface should handle the data access logic, such as interacting with a database
 /// or any other data source.
 /// </summary>
+/// <remarks>FN02</remarks>
 public class NotificationService(
     ILogger<NotificationService> logger
 ) : INotificationService
@@ -112,7 +113,7 @@ public class NotificationService(
             var requestBody = new
             {
                 sender = new { email = senderEmail, name = "🐾Paws acá🐶" },
-                to = new[] { new { email = email, name = email } },
+                to = new[] { new { email, name = email } },
                 subject = $"Tu código para Registro en Paws es {code}",
                 htmlContent = $@"
                             <h2>¡Hola!</h2>
@@ -193,11 +194,26 @@ public class NotificationService(
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("api-key", apiKey);
 
+            var pet = invitation.Pet;
+            var user = invitation.User;
+            if (pet is null || user is null)
+            {
+                return new Result
+                {
+                    Success = false,
+                    Status = 400,
+                    Message = "Invalid ownership invitation.",
+                    Code = "INVALID_OWNERSHIP_INVITATION",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            }
+
             var accountP = invitation.NewOwnerHasAccount
                 ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>ingresa a este enlace</a> para continuar."
                 : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
 
-            var emoji = invitation.Pet.Species switch
+            var emoji = pet.Species switch
             {
                 PetSpecies.Dog => "🐶",
                 PetSpecies.Cat => "🐱",
@@ -220,7 +236,7 @@ public class NotificationService(
                 subject = $"{invitation.Pet.Name} {emoji} te pide que seas su dueño en Paws",
                 htmlContent = $@"
                     <h2>¡Hola {invitation.NewOwnerName}!</h2>
-                    <p>{invitation.User.Name} quiere compartir contigo la propiedad de su mascota <strong>{invitation.Pet.Name}</strong> en <b>Paws</b>.</p>
+                    <p>{user.Name} quiere compartir contigo la propiedad de su mascota <strong>{pet.Name}</strong> en <b>Paws</b>.</p>
                     <p>Para aceptar la invitación y convertirte en co‑propietario, dale click al siguiente <b>enlace de un solo uso</b>:</p>
                     <p style='font-size: 20px; font-weight: 600; color: #f05a22;'><a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>Aceptar invitación</a></p>
                     <p>Este código es válido por 24 horas.</p>

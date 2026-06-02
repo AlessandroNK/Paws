@@ -1,3 +1,4 @@
+using Backend.Core.Models.Intern;
 using Backend.Core.Models.Results;
 
 namespace Backend.Core.Services.Interfaces;
@@ -38,7 +39,13 @@ public interface IAppConfigService
     public Task<Result> InitializeAsync();
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<Result> SetConfig(string key, string value);
+    /// <summary>
+    /// Sets a configuration value by its key. It updates the value in the database and then updates the in-memory dictionary
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public Task<Result> SetConfig(AppConfigKeys key, string value);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -47,5 +54,5 @@ public interface IAppConfigService
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public Result<string> GetConfig(string key);
+    public Result<string> GetConfig(AppConfigKeys key);
 }

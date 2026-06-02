@@ -20,7 +20,7 @@ namespace Backend.Core.Repositories;
 /// The implementation of this interface should handle the data access logic, such as interacting with a database
 /// or any other data source.
 /// </summary>
-/// <remarks>FU01</remarks>
+/// <remarks>FU03</remarks>
 public class UserRepository(
     ApplicationDbContext dbContext,
     ILogger<UserRepository> logger
