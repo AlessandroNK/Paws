@@ -1,12 +1,6 @@
-using Backend.Core.Models.Intern;
-using Microsoft.AspNetCore.Mvc;
+namespace Backend.Core.Models.Intern;
 
-namespace Backend.Core.Controllers.interfaces;
-
-/// <summary>
-/// This interface defines how any APi controller should be
-/// </summary>
-public interface IApiController
+public class ProjectContext
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -14,6 +8,15 @@ public interface IApiController
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    public string Name { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Purpose { get; set; } = string.Empty;
+    public string Summary { get; set; }  = string.Empty;
+
+    public List<string> Users { get; set; } = [];
+    public List<string> Features { get; set; } = [];
+    public List<string> Goals { get; set; } = [];
+    public List<string> Limitations { get; set; } = [];
 
 
     //                                                                                                         Operators
@@ -34,12 +37,5 @@ public interface IApiController
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet]
-    [Route("version")]
-    public Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request);
+
 }

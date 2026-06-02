@@ -1,17 +1,8 @@
-using Backend.Core.Models.Appointments;
-using Backend.Core.Models.Intern;
-using Backend.Core.Models.Pets;
-using Backend.Core.Models.Relationships;
-using Backend.Core.Models.Users;
-using Backend.Core.Models.Vets;
-using Microsoft.EntityFrameworkCore;
+using Backend.Core.Models.Enums;
 
-namespace Backend.Core.Data;
+namespace Backend.Core.Models.Vets;
 
-/// <summary>
-/// provides access to the database for the application.
-/// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public struct VetResponse
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -20,39 +11,35 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
+    /// The id of the user in the database
     /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
+    public int Id  { get; init; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
+    /// The email in a readable string to return to the frontend
     /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
+    public string Email { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedUserPet"/>
+    /// The type of the document of the user.
     /// </summary>
-    public DbSet<EncryptedUserPet> EncryptedUserPets { get; set; }
+    public DocumentType DocumentType { get; init; }
 
     /// <summary>
-    /// OMG this is getting crazy
+    /// The number of identification like we are simple elements named by random numbers
     /// </summary>
-    public DbSet<EncryptedOwnershipInvitation> EncryptedOwnershipInvitations { get; set; }
+    public string DocumentNumber { get; set; }
 
     /// <summary>
-    /// The set to return the Great Roman Empire to its greatness
+    /// The name of the user.
     /// </summary>
-    public DbSet<EncryptedVet> EncryptedVets { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedAppointments"/>
+    /// The professional license number issued to the veterinarian by the
+    /// relevant authority or licensing board.
     /// </summary>
-    public DbSet<EncryptedAppointment> EncryptedAppointments { get; set; }
-
-    /// <summary>
-    /// The set to handle app's configurations
-    /// </summary>
-    public DbSet<AppConfig> AppConfigs { get; set; }
+    public string ProfessionalLicenseNumber { get; set; }
 
 
     //                                                                                                         Operators
@@ -73,9 +60,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<EncryptedUser>().ToTable("EncryptedUsers");
-        modelBuilder.Entity<EncryptedVet>().ToTable("EncryptedVets");
-    }
+
 }

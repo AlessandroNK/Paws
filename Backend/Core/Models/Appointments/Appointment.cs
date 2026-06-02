@@ -1,17 +1,13 @@
-using Backend.Core.Models.Appointments;
-using Backend.Core.Models.Intern;
-using Backend.Core.Models.Pets;
+using Backend.Core.Models.Enums;
 using Backend.Core.Models.Relationships;
-using Backend.Core.Models.Users;
 using Backend.Core.Models.Vets;
-using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Core.Data;
+namespace Backend.Core.Models.Appointments;
 
 /// <summary>
-/// provides access to the database for the application.
+/// Represents a veterinary appointment for a user's pet.
 /// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class Appointment
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -20,39 +16,49 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
+    /// Gets or sets the unique identifier for the appointment.
     /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
+    /// Gets or sets the veterinarian ID associated with this appointment.
     /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
+    public int VetId { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedUserPet"/>
+    /// The vet object
     /// </summary>
-    public DbSet<EncryptedUserPet> EncryptedUserPets { get; set; }
+    public Vet Vet { get; set; }
 
     /// <summary>
-    /// OMG this is getting crazy
+    /// Gets or sets the user's pet ID for which the appointment is scheduled.
     /// </summary>
-    public DbSet<EncryptedOwnershipInvitation> EncryptedOwnershipInvitations { get; set; }
+    public int UserPetId { get; set; }
 
     /// <summary>
-    /// The set to return the Great Roman Empire to its greatness
+    /// The UserPet object
     /// </summary>
-    public DbSet<EncryptedVet> EncryptedVets { get; set; }
+    public UserPet UserPet { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedAppointments"/>
+    /// Gets or sets the date and time of the appointment.
     /// </summary>
-    public DbSet<EncryptedAppointment> EncryptedAppointments { get; set; }
+    public DateTime DateTime { get; set; }
 
     /// <summary>
-    /// The set to handle app's configurations
+    /// Gets or sets the date and time when the appointment was created.
     /// </summary>
-    public DbSet<AppConfig> AppConfigs { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the date and time when the appointment was last updated.
+    /// </summary>
+    public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the current status of the appointment.
+    /// </summary>
+    public AppointmentStatus Status { get; set; }
 
 
     //                                                                                                         Operators
@@ -73,9 +79,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<EncryptedUser>().ToTable("EncryptedUsers");
-        modelBuilder.Entity<EncryptedVet>().ToTable("EncryptedVets");
-    }
+
 }

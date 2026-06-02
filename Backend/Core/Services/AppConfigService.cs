@@ -1,0 +1,137 @@
+using Backend.Core.Internal;
+using Backend.Core.Models.Intern;
+using Backend.Core.Models.Results;
+using Backend.Core.Policies;
+using Backend.Core.Repositories.Interfaces;
+using Backend.Core.Services.Interfaces;
+
+namespace Backend.Core.Services;
+
+public class AppConfigService(
+    IAppConfigRepository appConfigRepo,
+    ILogger<PetService> logger
+) : IAppConfigService
+{
+    //                                                                                                Private Properties
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// A repo to get and change app's configurations
+    /// </summary>
+    private readonly IAppConfigRepository _appConfigRepo = appConfigRepo;
+
+    /// <summary>
+    /// We wanna log!!!
+    /// </summary>
+    private readonly ILogger<PetService> _logger = logger;
+
+    /// <summary>
+    /// A dictionary so it is easy to get app's configurations
+    /// </summary>
+    private readonly Dictionary<string, string> appConfigs = new();
+
+
+    //                                                                                                 Public Properties
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                         Operators
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                            Events
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                      Constructors
+    // -----------------------------------------------------------------------------------------------------------------
+
+    //                                                                                                   Private Methods
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    //                                                                                                    Public Methods
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Initializes the app configuration by fetching the configurations from the database and storing them in a dictionary
+    /// for easy access.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<Result> InitializeAsync()
+    {
+        try
+        {
+            LogHelpers.LogInfo(_logger, "Initializing app config...");
+
+            // Get configs from DB
+            var configsResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _appConfigRepo.GetConfigs(),
+                operationName: "Updating pet",
+                logger: _logger
+            );
+            if (!configsResult || configsResult.Data is null) return configsResult;
+
+            foreach (var config in configsResult.Data)
+                appConfigs[config.Key] = config.Value;
+
+            LogHelpers.LogInfo(_logger, "App config initialized successfully");
+
+            return new Result
+            {
+                Success = true,
+                Code = "APP_CONFIG_INITIALIZED",
+                Status = 200,
+                Message = "App config initialized successfully",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error initializing app config");
+            return new Result
+            {
+                Success = false,
+                Code = "ERROR_INITIALIZING_APP_CONFIG",
+                Status = 500,
+                Message = "An error occurred while initializing app config",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets a configuration value by its key from the in-memory dictionary. If the key is not found, it returns a result
+    /// indicating that the config was not found.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public Result<string> GetConfig(string key)
+    {
+        if (appConfigs.TryGetValue(key, out var value))
+        {
+            return new Result<string>
+            {
+                Success = true,
+                Code = "CONFIG_FOUND",
+                Status = 200,
+                Message = "Config found",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true,
+                Data = value
+            };
+        }
+
+        return new Result<string>
+        {
+            Success = false,
+            Code = "CONFIG_NOT_FOUND",
+            Status = 404,
+            Message = "Config not found",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
+    }
+
+}

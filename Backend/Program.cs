@@ -1,3 +1,4 @@
+using Backend.Core.Controllers.interfaces;
 using Backend.Core.Data;
 using Backend.Core.Repositories;
 using Backend.Core.Repositories.Interfaces;
@@ -22,14 +23,16 @@ builder.Services.AddCors(options =>
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPetRepository, PetRepository>();
+builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
+
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-
-// Repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IPetRepository, PetRepository>();
+builder.Services.AddScoped<IAppointmentsService, AppointmentsService>();
 
 // Endpoints
 builder.Services.AddEndpointsApiExplorer();
@@ -58,7 +61,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     ServiceLifetime.Scoped
 );
 
+// Build the app
 var app = builder.Build();
+
+// Run internal services inits and tasks before starting the app
+using (var scope = app.Services.CreateScope())
+{
+    // Init App config
+    var appConfigureService = scope.ServiceProvider.GetRequiredService<IAppConfigService>();
+    var result = await appConfigureService.InitializeAsync();
+    if (!result) throw new InvalidOperationException("Failed to initialize app config");
+
+    // Init Appointments service
+    var appointmentsService = scope.ServiceProvider.GetRequiredService<IAppointmentsService>();
+    result = await appointmentsService.PopulateAppointments();
+    if (!result) throw new InvalidOperationException("Failed to populate appointments");
+}
 
 // Swagger
 app.UseSwagger();

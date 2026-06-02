@@ -1,15 +1,19 @@
-using Backend.Core.Models.Intern;
-using Microsoft.AspNetCore.Mvc;
+using Backend.Core.Controllers.interfaces;
+using Backend.Core.Internal;
+using Backend.Core.Models.Pets;
+using Backend.Core.Models.Results;
+using Backend.Core.Services.Interfaces;
 
-namespace Backend.Core.Controllers.interfaces;
+namespace Backend.Core.Services;
 
-/// <summary>
-/// This interface defines how any APi controller should be
-/// </summary>
-public interface IApiController
+public class AppointmentsService(ILogger<PetService> logger) : IAppointmentsService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// We wanna log!!!
+    /// </summary>
+    private readonly ILogger<PetService> _logger = logger;
 
 
     //                                                                                                 Public Properties
@@ -27,19 +31,30 @@ public interface IApiController
     //                                                                                                      Constructors
     // -----------------------------------------------------------------------------------------------------------------
 
-
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
 
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet]
-    [Route("version")]
-    public Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request);
+    public async Task<Result> PopulateAppointments()
+    {
+        try
+        {
+
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error accepting pet ownership");
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_ACCEPTING_PET_OWNERSHIP",
+                Status = 500,
+                Message = "An error occurred while accepting pet ownership",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
 }

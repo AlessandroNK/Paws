@@ -1,17 +1,14 @@
 using Backend.Core.Models.Appointments;
-using Backend.Core.Models.Intern;
-using Backend.Core.Models.Pets;
-using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Users;
-using Backend.Core.Models.Vets;
-using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Core.Data;
+namespace Backend.Core.Models.Vets;
 
 /// <summary>
-/// provides access to the database for the application.
+/// Represents a veterinarian user in the system. Inherits from <see cref="User"/> and
+/// contains vet-specific information such as professional license number and
+/// a collection of associated <see cref="Appointment"/> instances.
 /// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class EncryptedVet : EncryptedUser
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -20,39 +17,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
+    /// The professional license number issued to the veterinarian by the
+    /// relevant authority or licensing board.
     /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
+    public string EncryptedProfessionalLicenseNumber { get; set; } = string.Empty;
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
+    /// A list of appointments associated with this veterinarian. The list is
+    /// initialized to an empty collection to avoid null reference issues.
     /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedUserPet"/>
-    /// </summary>
-    public DbSet<EncryptedUserPet> EncryptedUserPets { get; set; }
-
-    /// <summary>
-    /// OMG this is getting crazy
-    /// </summary>
-    public DbSet<EncryptedOwnershipInvitation> EncryptedOwnershipInvitations { get; set; }
-
-    /// <summary>
-    /// The set to return the Great Roman Empire to its greatness
-    /// </summary>
-    public DbSet<EncryptedVet> EncryptedVets { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedAppointments"/>
-    /// </summary>
-    public DbSet<EncryptedAppointment> EncryptedAppointments { get; set; }
-
-    /// <summary>
-    /// The set to handle app's configurations
-    /// </summary>
-    public DbSet<AppConfig> AppConfigs { get; set; }
+    public List<Appointment> Appointments { get; set; } = new();
 
 
     //                                                                                                         Operators
@@ -73,9 +47,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<EncryptedUser>().ToTable("EncryptedUsers");
-        modelBuilder.Entity<EncryptedVet>().ToTable("EncryptedVets");
-    }
+
 }

@@ -1,12 +1,8 @@
-using Backend.Core.Models.Intern;
-using Microsoft.AspNetCore.Mvc;
+using Backend.Core.Models.Results;
 
-namespace Backend.Core.Controllers.interfaces;
+namespace Backend.Core.Services.Interfaces;
 
-/// <summary>
-/// This interface defines how any APi controller should be
-/// </summary>
-public interface IApiController
+public interface IAppConfigService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -35,11 +31,21 @@ public interface IApiController
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
+    /// Initializes the app configuration by fetching the configurations from the database and storing them in a dictionary
+    /// for easy access.
     /// </summary>
     /// <returns></returns>
-    [HttpGet]
-    [Route("version")]
-    public Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request);
+    public Task<Result> InitializeAsync();
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // public Task<Result> SetConfig(string key, string value);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets a configuration value by its key from the in-memory dictionary. If the key is not found, it returns a result
+    /// indicating that the config was not found.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public Result<string> GetConfig(string key);
 }

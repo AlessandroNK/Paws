@@ -41,5 +41,5 @@ public enum EntityStatus
      /// The status of an entity that is unverified. It is used to indicate that the entity is unverified and should not
      /// be used in the system, but it is not deleted and can be verified if needed.
      /// </summary>
-     Unverified = 7
+     Unverified = 7,
 }

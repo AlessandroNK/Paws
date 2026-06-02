@@ -606,7 +606,11 @@ public class PetService(
                     Returnable = true
                 };
 
-            var updateResult = await _petRepo.UpdateAsync(pet);
+            var updateResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.UpdateAsync(pet),
+                operationName: "Updating pet",
+                logger: _logger
+            );
             if (!updateResult || updateResult.Data is null) return updateResult;
 
             _logger.LogInformation("Pet with id {PetId} updated successfully", pet.Id);

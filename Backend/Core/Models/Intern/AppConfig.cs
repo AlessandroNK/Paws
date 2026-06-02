@@ -1,17 +1,11 @@
-using Backend.Core.Models.Appointments;
-using Backend.Core.Models.Intern;
-using Backend.Core.Models.Pets;
-using Backend.Core.Models.Relationships;
-using Backend.Core.Models.Users;
-using Backend.Core.Models.Vets;
-using Microsoft.EntityFrameworkCore;
-
-namespace Backend.Core.Data;
+namespace Backend.Core.Models.Intern;
 
 /// <summary>
-/// provides access to the database for the application.
+/// Represents a simple application configuration entry — a key/value pair used
+/// by various parts of the application to hold configuration values that may
+/// come from AppSettings, environment variables, database, or other stores.
 /// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class AppConfig
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -20,39 +14,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
+    /// The configuration key. Typical values are hierarchical keys like
+    /// "Logging:LogLevel:Default" or custom application keys. Keys are treated
+    /// as identifiers and should not be null. Use <see cref="string.Empty"/>
+    /// when no value is provided.
     /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
+    public string Key { get; set; } = string.Empty;
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
+    /// The configuration value associated with <see cref="Key"/>. This may be
+    /// an empty string when the key exists but no value is set.
     /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedUserPet"/>
-    /// </summary>
-    public DbSet<EncryptedUserPet> EncryptedUserPets { get; set; }
-
-    /// <summary>
-    /// OMG this is getting crazy
-    /// </summary>
-    public DbSet<EncryptedOwnershipInvitation> EncryptedOwnershipInvitations { get; set; }
-
-    /// <summary>
-    /// The set to return the Great Roman Empire to its greatness
-    /// </summary>
-    public DbSet<EncryptedVet> EncryptedVets { get; set; }
-
-    /// <summary>
-    /// The set to handle <see cref="EncryptedAppointments"/>
-    /// </summary>
-    public DbSet<EncryptedAppointment> EncryptedAppointments { get; set; }
-
-    /// <summary>
-    /// The set to handle app's configurations
-    /// </summary>
-    public DbSet<AppConfig> AppConfigs { get; set; }
+    public string Value { get; set; } = string.Empty;
 
 
     //                                                                                                         Operators
@@ -73,9 +46,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<EncryptedUser>().ToTable("EncryptedUsers");
-        modelBuilder.Entity<EncryptedVet>().ToTable("EncryptedVets");
-    }
+
+
 }

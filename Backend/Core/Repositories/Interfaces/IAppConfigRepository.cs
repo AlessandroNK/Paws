@@ -1,12 +1,9 @@
 using Backend.Core.Models.Intern;
-using Microsoft.AspNetCore.Mvc;
+using Backend.Core.Models.Results;
 
-namespace Backend.Core.Controllers.interfaces;
+namespace Backend.Core.Repositories.Interfaces;
 
-/// <summary>
-/// This interface defines how any APi controller should be
-/// </summary>
-public interface IApiController
+public interface IAppConfigRepository
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -35,11 +32,9 @@ public interface IApiController
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
+    /// Gets the app configurations from the database. It returns a <see cref="Result{List{AppConfig}}"/> indicating the
+    /// result of the operation and including the list of app configurations if they were found.
     /// </summary>
     /// <returns></returns>
-    [HttpGet]
-    [Route("version")]
-    public Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request);
+    public Task<Result<List<AppConfig>>> GetConfigs();
 }
