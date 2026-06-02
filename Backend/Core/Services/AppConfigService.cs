@@ -101,6 +101,51 @@ public class AppConfigService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result> SetConfig(string key, string value)
+    {
+        try
+        {
+            LogHelpers.LogInfo(_logger, $"Setting app config {key}...");
+
+            // Update config in DB
+            var setConfigResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _appConfigRepo.SetConfig(key, value),
+                operationName: "Setting app config",
+                logger: _logger
+            );
+            if (!setConfigResult) return setConfigResult;
+
+            // Update config in memory
+            appConfigs[key] = value;
+
+            LogHelpers.LogInfo(_logger, $"App config {key} set successfully");
+
+            return new Result
+            {
+                Success = true,
+                Code = "APP_CONFIG_SET",
+                Status = 200,
+                Message = $"App config {key} set successfully",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error setting app config");
+            return new Result
+            {
+                Success = false,
+                Code = "ERROR_SETTING_APP_CONFIG",
+                Status = 500,
+                Message = "An error occurred while setting app config",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Gets a configuration value by its key from the in-memory dictionary. If the key is not found, it returns a result
     /// indicating that the config was not found.

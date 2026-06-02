@@ -84,4 +84,33 @@ public class AppConfigRepository(
             Returnable = true
         };
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result> SetConfig(string key, string value)
+    {
+        var config = await _dbContext.AppConfigs.FirstOrDefaultAsync(c => c.Key == key);
+        if (config is null)
+        {
+            // Create new config
+            config = new AppConfig { Key = key, Value = value };
+            _dbContext.AppConfigs.Add(config);
+        }
+        else
+        {
+            // Update existing config
+            config.Value = value;
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return new Result
+        {
+            Success = true,
+            Code = "CONFIG_SET",
+            Status = 200,
+            Message = $"Config {key} set successfully",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
+    }
 }

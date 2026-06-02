@@ -38,7 +38,7 @@ public interface IAppConfigService
     public Task<Result> InitializeAsync();
 
     // -----------------------------------------------------------------------------------------------------------------
-    // public Task<Result> SetConfig(string key, string value);
+    public Task<Result> SetConfig(string key, string value);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>

@@ -2,14 +2,29 @@ using Backend.Core.Controllers.interfaces;
 using Backend.Core.Internal;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
+using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services.Interfaces;
 
 namespace Backend.Core.Services;
 
-public class AppointmentsService(ILogger<PetService> logger) : IAppointmentsService
+public class AppointmentsService(
+    IAppointmentsRepository appointmentsRepo,
+    IAppConfigService appConfigService,
+    ILogger<PetService> logger
+    ) : IAppointmentsService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// A repo to handle appointments in the database
+    /// </summary>
+    private readonly IAppointmentsRepository _appointmentsRepo = appointmentsRepo;
+
+    /// <summary>
+    /// The service to get and set app configurations
+    /// </summary>
+    private readonly IAppConfigService _appConfigService = appConfigService;
+
     /// <summary>
     /// We wanna log!!!
     /// </summary>

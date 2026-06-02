@@ -37,4 +37,7 @@ public interface IAppConfigRepository
     /// </summary>
     /// <returns></returns>
     public Task<Result<List<AppConfig>>> GetConfigs();
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result> SetConfig(string key, string value);
 }
