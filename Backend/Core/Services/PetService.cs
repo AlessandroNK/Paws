@@ -224,7 +224,7 @@ public class PetService(
             };
 
         // Save and return this invitation
-        var addResult = await _petRepo.AddOwnershipInvitationAsync(invitation);
+        var addResult = await AddOwnershipInvitationAsync(invitation);
         if (!addResult || addResult.Data is null)
             return new Result<OwnershipInvitation>
             {
@@ -312,7 +312,7 @@ public class PetService(
         if (invitation.Expiration < DateTime.UtcNow)
         {
             // In case the invitation is expired, delete the expired one
-            var deleteResult = await _petRepo.DeleteOwnershipInvitationAsync(invitation.Id);
+            var deleteResult = await DeleteOwnershipInvitationAsync(invitation.Id);
             if (!deleteResult) return deleteResult;
 
             // Then create a new one
@@ -382,7 +382,11 @@ public class PetService(
                 Status = EntityStatus.Active
             };
 
-            return await _userRepo.AddUserPet(userPet);
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _userRepo.AddUserPet(userPet),
+                operationName: "adding pet to user",
+                logger: _logger
+            );
         }
         catch (Exception e)
         {
@@ -407,7 +411,7 @@ public class PetService(
         // Validations
         if (existingUserPet.Status == EntityStatus.Active)
         {
-            var deleteExistentInvitationResult = await _petRepo.DeleteOwnershipInvitationAsync(invitation.Id);
+            var deleteExistentInvitationResult = await DeleteOwnershipInvitationAsync(invitation.Id);
             if (!deleteExistentInvitationResult) return deleteExistentInvitationResult;
 
             return new Result
@@ -449,7 +453,7 @@ public class PetService(
         var updateResult = await _userRepo.UpdateUserPet(existingUserPet);
         if (!updateResult || updateResult.Data is null) return updateResult;
 
-        var deleteInvitationResult = await _petRepo.DeleteOwnershipInvitationAsync(invitation.Id);
+        var deleteInvitationResult = await DeleteOwnershipInvitationAsync(invitation.Id);
         if (!deleteInvitationResult) return deleteInvitationResult;
         _logger.LogInformation("Ownership invitation with code {InvitationCode} accepted successfully",
             request.InvitationCode);
@@ -464,6 +468,140 @@ public class PetService(
         };
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    private async Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByCodeAsync(string invitationCode,
+        StatusFilters? filters = null)
+    {
+        if (string.IsNullOrEmpty(invitationCode))
+            return new Result<OwnershipInvitation?>
+            {
+                Success = false,
+                Code = "INVALID_INVITATION_CODE",
+                Status = 400,
+                Message = "The invitation code is invalid",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        return await DbRetry.ExecuteWithRetry(
+            operation: () => _petRepo.GetOwnershipInvitationByCodeAsync(invitationCode, filters),
+            operationName: "getting ownership invitation",
+            logger: _logger
+        );
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    private async Task<Result<OwnershipInvitation?>> AddOwnershipInvitationAsync(OwnershipInvitation invitation)
+    {
+        try
+        {
+            _logger.LogInformation("Adding ownership invitation for pet {PetId} to {Email}", invitation.PetId,
+                invitation.NewOwnerEmail);
+
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.AddOwnershipInvitationAsync(invitation),
+                operationName: "Adding ownership invitation",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error creating ownership invitation");
+            return new Result<OwnershipInvitation?>
+            {
+                Success = false,
+                Code = "ERROR_CREATING_OWNERSHIP_INVITATION",
+                Status = 500,
+                Message = "An error occurred while creating the ownership invitation",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    private async Task<Result> DeleteOwnershipInvitationAsync(int id)
+    {
+        try
+        {
+            _logger.LogInformation("Deleting ownership invitation with id {InvitationId}", id);
+
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.DeleteOwnershipInvitationAsync(id),
+                operationName: "Deleting ownership invitation",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error deleting ownership invitation");
+            return new Result
+            {
+                Success = false,
+                Code = "ERROR_DELETING_OWNERSHIP_INVITATION",
+                Status = 500,
+                Message = "An error occurred while deleting the ownership invitation",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    private async Task<Result<Pet?>> GetByIdFromRepoAsync(int id, StatusFilters? filters = null)
+    {
+        try
+        {
+            _logger.LogInformation("Getting pet by id {PetId} from repository", id);
+
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.GetByIdAsync(id, filters),
+                operationName: $"Getting pet by id {id}",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error getting pet by id {id}");
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_PET",
+                Status = 500,
+                Message = "An error occurred while getting the pet. Please try again later.",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    private async Task<Result<Pet?>> UpdatePetAsync(Pet pet)
+    {
+        try
+        {
+            _logger.LogInformation("Updating pet in repository with id {PetId}", pet.Id);
+
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.UpdateAsync(pet),
+                operationName: "Updating pet",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error updating pet");
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_UPDATING_PET",
+                Status = 500,
+                Message = "An error occurred while updating the pet",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
@@ -550,11 +688,7 @@ public class PetService(
                     Returnable = true
                 };
 
-            var getResult = await DbRetry.ExecuteWithRetry(
-                operation: () => _petRepo.GetByIdAsync(id, filters),
-                operationName: $"Getting pet by id {id}",
-                logger: _logger
-            );
+            var getResult = await GetByIdFromRepoAsync(id, filters);
 
             if (!getResult) return getResult;
             if (getResult.Data is null)
@@ -606,11 +740,7 @@ public class PetService(
                     Returnable = true
                 };
 
-            var updateResult = await DbRetry.ExecuteWithRetry(
-                operation: () => _petRepo.UpdateAsync(pet),
-                operationName: "Updating pet",
-                logger: _logger
-            );
+            var updateResult = await UpdatePetAsync(pet);
             if (!updateResult || updateResult.Data is null) return updateResult;
 
             _logger.LogInformation("Pet with id {PetId} updated successfully", pet.Id);
@@ -834,7 +964,7 @@ public class PetService(
                     Returnable = true
                 };
 
-            var getResult = await _petRepo.GetOwnershipInvitationByCodeAsync(request.InvitationCode, filters);
+            var getResult = await GetOwnershipInvitationByCodeAsync(request.InvitationCode, filters);
             if (!getResult || getResult.Data is null) return getResult;
             var invitation = getResult.Data;
 
@@ -908,7 +1038,7 @@ public class PetService(
             var addOwnerResult = await AddPetOwnerAsync(invitation.Pet, coOwner);
             if (!addOwnerResult) return addOwnerResult;
 
-            var deleteInvitationResult = await _petRepo.DeleteOwnershipInvitationAsync(invitation.Id);
+            var deleteInvitationResult = await DeleteOwnershipInvitationAsync(invitation.Id);
             if (!deleteInvitationResult) return deleteInvitationResult;
 
             _logger.LogInformation("Ownership invitation with code {InvitationCode} accepted successfully",
