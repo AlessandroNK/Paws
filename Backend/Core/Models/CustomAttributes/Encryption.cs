@@ -4,8 +4,3 @@ namespace Backend.Core.Models.CustomAttributes;
 public sealed class EncryptProperty : Attribute
 {
 }
-
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class HashProperty : Attribute
-{
-}

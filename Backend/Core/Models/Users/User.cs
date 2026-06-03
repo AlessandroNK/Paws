@@ -5,13 +5,14 @@ using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Relationships;
+using Backend.Core.Services;
 
 namespace Backend.Core.Models.Users;
 
 /// <summary>
 /// Represents a user in the API
 /// </summary>
-public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResponse>
+public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResponse>, IEncryptable
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -44,7 +45,6 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     /// <summary>
     /// A hash of the email so it is easy to find
     /// </summary>
-    [HashProperty]
     public string EmailHash { get; set; } = string.Empty;
 
     /// <summary>
@@ -61,7 +61,6 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     /// <summary>
     /// A hash of the document number so it is easy to find
     /// </summary>
-    [HashProperty]
     public string DocumentHash { get; set; } = string.Empty;
 
     /// <summary>
@@ -166,5 +165,13 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
             DocumentNumber = DocumentNumber,
             Name = Name
         };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public void Hash()
+    {
+        PasswordHash = SecurityService.HashString(Password);
+        EmailHash = SecurityService.HashString(Email);
+        DocumentHash = SecurityService.HashString(DocumentNumber);
     }
 }

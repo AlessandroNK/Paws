@@ -1,6 +1,7 @@
 using System.Reflection;
 using Backend.Core.Models.Appointments;
 using Backend.Core.Models.CustomAttributes;
+using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Relationships;
@@ -97,12 +98,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             foreach (var property in entityType.ClrType.GetProperties())
             {
                 if (property.GetCustomAttribute<EncryptProperty>() is not null)
-                    modelBuilder
-                        .Entity(entityType.ClrType)
-                        .Property(property.Name)
-                        .HasConversion(hasher);
-
-                else if (property.GetCustomAttribute<HashProperty>() is not null)
                     modelBuilder
                         .Entity(entityType.ClrType)
                         .Property(property.Name)

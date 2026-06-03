@@ -295,6 +295,9 @@ public class UserRepository(
     /// <returns>A <see cref="Result"/> indicating whether the sign up was successful</returns>
     public async Task<Result<User?>> AddAsync(User user)
     {
+        // Hash element
+        user.Hash();
+
         // Save the user
         _dbContext.Users.Add(user);
         var saved = await _dbContext.SaveChangesAsync();
@@ -348,6 +351,9 @@ public class UserRepository(
     /// <returns>The <see cref="User"/></returns>
     public async Task<Result<User?>> UpdateAsync(User user, StatusFilters? filters = null)
     {
+        // Hash element
+        user.Hash();
+
         // Update the entity
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)

@@ -5,7 +5,7 @@ using Backend.Core.Models.Relationships;
 
 namespace Backend.Core.Models.Pets;
 
-public class Pet : IDtoConvertible<PetResponse>
+public class Pet : IDtoConvertible<PetResponse>, IEncryptable
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -19,6 +19,11 @@ public class Pet : IDtoConvertible<PetResponse>
     /// </summary>
     [EncryptProperty]
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The hash of the pet's name.
+    /// </summary>
+    public string NameHash { get; set; } = string.Empty;
 
     /// <summary>
     /// The species of the pet
@@ -92,5 +97,10 @@ public class Pet : IDtoConvertible<PetResponse>
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,
         };
+    }
+    // -----------------------------------------------------------------------------------------------------------------
+    public void Hash()
+    {
+        NameHash = Name.GetHashCode().ToString();
     }
 }

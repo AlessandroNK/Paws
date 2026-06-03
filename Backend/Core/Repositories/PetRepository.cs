@@ -1,6 +1,7 @@
 using Backend.Core.Data;
 using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
@@ -96,6 +97,9 @@ public class PetRepository(
     /// <returns>A <see cref="Result"/> indicating whether the creation was successful</returns>
     public async Task<Result<Pet?>> AddAsync(Pet pet)
     {
+        // Hash element
+        pet.Hash();
+
         // Save the pet
         _dbContext.Pets.Add(pet);
         var saved = await _dbContext.SaveChangesAsync();
@@ -212,6 +216,9 @@ public class PetRepository(
     /// <returns></returns>
     public async Task<Result<Pet?>> UpdateAsync(Pet pet)
     {
+        // Hash element
+        pet.Hash();
+
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<Pet?>
@@ -259,6 +266,9 @@ public class PetRepository(
     /// <returns></returns>
     public async Task<Result<OwnershipInvitation?>> AddOwnershipInvitationAsync(OwnershipInvitation invitation)
     {
+        // Hash element
+        invitation.Hash();
+
         if (invitation.PetId <= 0)
             return new Result<OwnershipInvitation?>
             {

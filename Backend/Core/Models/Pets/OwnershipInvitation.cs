@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Enums;
+using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Users;
+using Backend.Core.Services;
 
 namespace Backend.Core.Models.Pets;
 
-public class OwnershipInvitation
+public class OwnershipInvitation : IEncryptable
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -73,7 +75,6 @@ public class OwnershipInvitation
     /// owner clicks
     /// the link in the email.
     /// </summary>
-    [HashProperty]
     public string InvitationCodeHash { get; set; } = string.Empty;
 
     /// <summary>
@@ -106,4 +107,8 @@ public class OwnershipInvitation
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    public void Hash()
+    {
+        InvitationCodeHash = SecurityService.HashString(InvitationCode);
+    }
 }
