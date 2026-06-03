@@ -1,3 +1,4 @@
+using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Relationships;
@@ -16,6 +17,7 @@ public class Pet : IDtoConvertible<PetResponse>
     /// <summary>
     /// The name of the pet.
     /// </summary>
+    [EncryptProperty]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
@@ -26,6 +28,7 @@ public class Pet : IDtoConvertible<PetResponse>
     /// <summary>
     /// The breed of the pet. it will depend on
     /// </summary>
+    [EncryptProperty]
     public string Breed { get; set; } = string.Empty;
 
     /// <summary>

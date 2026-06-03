@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Users;
 
@@ -39,11 +41,13 @@ public class OwnershipInvitation
     /// <summary>
     /// The email of the user to share ownership with.
     /// </summary>
+    [EncryptProperty]
     public string NewOwnerEmail { get; set; } = string.Empty;
 
     /// <summary>
     /// The name of the user to share ownership with.
     /// </summary>
+    [EncryptProperty]
     public string NewOwnerName { get; set; } = string.Empty;
 
     /// <summary>
@@ -61,12 +65,22 @@ public class OwnershipInvitation
     /// A unique identifier for the ownership invitation. It is used to verify the invitation when the new owner clicks
     /// the link in the email.
     /// </summary>
-    public string InvitationCode { get; set; }  = string.Empty;
+    [EncryptProperty]
+    public string InvitationCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A hash for the unique identifier for the ownership invitation. It is used to verify the invitation when the new
+    /// owner clicks
+    /// the link in the email.
+    /// </summary>
+    [HashProperty]
+    public string InvitationCodeHash { get; set; } = string.Empty;
 
     /// <summary>
     /// A unique link that the new owner can click to accept the invitation.
     /// </summary>
-    public string OwnershipLink { get; set; }
+    [NotMapped]
+    public string OwnershipLink { get; set; } = string.Empty;
 
     /// <summary>
     /// Ya know
@@ -92,5 +106,4 @@ public class OwnershipInvitation
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-
 }

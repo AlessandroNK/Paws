@@ -1,5 +1,4 @@
 using Backend.Core.Data;
-using Backend.Core.Encryption;
 using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Intern;
@@ -8,7 +7,6 @@ using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
 using Backend.Core.Repositories.Interfaces;
 using Backend.Core.Services;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Core.Repositories;
@@ -60,8 +58,8 @@ public class UserRepository(
 
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
-    private static IQueryable<EncryptedUser> ApplyStatusFilters(
-        IQueryable<EncryptedUser> query,
+    private static IQueryable<User> ApplyStatusFilters(
+        IQueryable<User> query,
         StatusFilters? filters = null
     )
     {
@@ -77,8 +75,8 @@ public class UserRepository(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    private static IQueryable<EncryptedUserPet> ApplyStatusFilters(
-        IQueryable<EncryptedUserPet> query,
+    private static IQueryable<UserPet> ApplyStatusFilters(
+        IQueryable<UserPet> query,
         StatusFilters? filters = null
     )
     {
@@ -92,8 +90,6 @@ public class UserRepository(
 
         return query;
     }
-
-
 
 
     //                                                                                                    Public Methods
@@ -107,10 +103,12 @@ public class UserRepository(
     /// </summary>
     /// <param name="email">The email to search for</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includePets">Whether to include the user's pets in the result</param>
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByEmailAsync(
         string email,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includePets = false
     )
     {
         // Encrypt user data to find it in the db
@@ -119,19 +117,23 @@ public class UserRepository(
             return hashedEmailResult.Log(_logger).ConvertTo<User?>();
 
         // Find the user
-        var query = _dbContext.EncryptedUsers
+        var query = _dbContext.Users
             .Where(u => u.EmailHash == hashedEmailResult.Data);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
-        query = query
-            .Include(u => u.UserPets)
-            .AsSplitQuery();
+        // Includes
+        if (includePets)
+            query = query
+                .Include(p => p.UserPets)
+                .ThenInclude(up => up.Pet);
+
+        query = query.AsSplitQuery();
 
         // Execute query
-        var encryptedUser = await query.FirstOrDefaultAsync();
-        if (encryptedUser is null)
+        var user = await query.FirstOrDefaultAsync();
+        if (user is null)
             return new Result<User?>
             {
                 Success = false,
@@ -143,7 +145,16 @@ public class UserRepository(
             };
 
         // Decrypt and return user
-        return UserEncryption.DecryptUser(encryptedUser, _logger);
+        return new Result<User?>
+        {
+            Success = true,
+            Code = "USER_FOUND",
+            Status = 200,
+            Message = "User found successfully",
+            Data = user,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -152,10 +163,12 @@ public class UserRepository(
     /// </summary>
     /// <param name="document">The document of the user</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includePets">Whether to include the user's pets in the result</param>
     /// <returns>The user if any</returns>
     public async Task<Result<User?>> GetByDocumentAsync(
         string document,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includePets = false
     )
     {
         // Encrypt user data to find it in the db
@@ -168,19 +181,23 @@ public class UserRepository(
         }
 
         // Find the user
-        var query = _dbContext.EncryptedUsers.AsQueryable()
+        var query = _dbContext.Users.AsQueryable()
             .Where(u => u.DocumentHash == hashedDocumentResult.Data);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
-        query = query
-            .Include(u => u.UserPets)
-            .AsSplitQuery();
+        // Includes
+        if (includePets)
+            query = query
+                .Include(p => p.UserPets)
+                .ThenInclude(up => up.Pet);
+
+        query = query.AsSplitQuery();
 
         // Execute query
-        var encryptedUser = await query.FirstOrDefaultAsync();
-        if (encryptedUser is null)
+        var user = await query.FirstOrDefaultAsync();
+        if (user is null)
             return new Result<User?>
             {
                 Success = false,
@@ -191,8 +208,17 @@ public class UserRepository(
                 Returnable = true
             };
 
-        // Decrypt and return user
-        return UserEncryption.DecryptUser(encryptedUser, _logger);
+        // Return user
+        return new Result<User?>
+        {
+            Success = true,
+            Code = "USER_FOUND",
+            Status = 200,
+            Message = "User found successfully",
+            Data = user,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
     }
 
     /// <sumary>
@@ -200,8 +226,13 @@ public class UserRepository(
     /// </sumary>
     /// <param name="id">The ID of the user to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includePets">Whether to include the user's pets in the result</param>
     /// <returns>A <see cref="Result{User}"/> indicating the result of the operation and including the user if it was found</returns>
-    public async Task<Result<User?>> GetByIdAsync(int id, StatusFilters? filters = null)
+    public async Task<Result<User?>> GetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includePets = false
+    )
     {
         if (id <= 0)
             return new Result<User?>
@@ -215,20 +246,23 @@ public class UserRepository(
             };
 
         // Find the user
-        var query = _dbContext.EncryptedUsers
+        var query = _dbContext.Users
             .Where(u => u.Id == id);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
-        query = query
-            .Include(u => u.UserPets)
-            .ThenInclude(p => p.EncryptedPet)
-            .AsSplitQuery();
+        // Includes
+        if (includePets)
+            query = query
+                .Include(p => p.UserPets)
+                .ThenInclude(up => up.Pet);
+
+        query = query.AsSplitQuery();
 
         // Execute query
-        var encryptedUser = await query.FirstOrDefaultAsync();
-        if (encryptedUser is null)
+        var user = await query.FirstOrDefaultAsync();
+        if (user is null)
             return new Result<User?>
             {
                 Success = false,
@@ -240,7 +274,16 @@ public class UserRepository(
             };
 
         // Decrypt and return user
-        return UserEncryption.DecryptUser(encryptedUser, _logger);
+        return new Result<User?>
+        {
+            Success = true,
+            Code = "USER_FOUND",
+            Status = 200,
+            Message = "User found successfully",
+            Data = user,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -252,12 +295,8 @@ public class UserRepository(
     /// <returns>A <see cref="Result"/> indicating whether the sign up was successful</returns>
     public async Task<Result<User?>> AddAsync(User user)
     {
-        // Encrypt user data
-        var result = UserEncryption.EncryptUser(user, _logger);
-        if (!result || result.Data is null) return result.ConvertTo<User?>();
-
         // Save the user
-        _dbContext.EncryptedUsers.Add(result.Data);
+        _dbContext.Users.Add(user);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<User?>
@@ -309,36 +348,7 @@ public class UserRepository(
     /// <returns>The <see cref="User"/></returns>
     public async Task<Result<User?>> UpdateAsync(User user, StatusFilters? filters = null)
     {
-        if (user.Id <= 0)
-            return new Result<User?>
-            {
-                Success = false,
-                Code = "USER_ID_NOT_PROVIDED",
-                Status = 400,
-                Message = "User id not provided for update",
-                TraceCode = $"{FileCodes.CallerIC()}",
-                Returnable = true
-            };
-
-        // First get the existing encrypted user from the database
-        var existingEncryptedUser = await _dbContext.EncryptedUsers
-            .FirstOrDefaultAsync(eu => eu.Id == user.Id);
-
-        if (existingEncryptedUser == null)
-            return new Result<User?>
-            {
-                Success = false,
-                Code = "USER_NOT_FOUND",
-                Status = 404,
-                Message = "User not found",
-                TraceCode = $"{FileCodes.CallerIC()}",
-                Returnable = true
-            };
-
-        // Update the tracked entity with new encrypted values
-        var updateResult = UserEncryption.EncryptUserAndUpdateTrackedEntity(user, existingEncryptedUser, _logger);
-        if (!updateResult) return updateResult.ConvertTo<User?>();
-
+        // Update the entity
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<User?>
@@ -378,7 +388,7 @@ public class UserRepository(
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Adds a pet to a user. It takes a <see cref="UserPet"/> relationship and creates the corresponding
-    /// <see cref="EncryptedUserPet"/> in the database. It returns the updated user with the new pet included.
+    /// <see cref="UserPet"/> in the database. It returns the updated user with the new pet included.
     /// </summary>
     /// <param name="userPet"></param>
     /// <returns></returns>
@@ -407,20 +417,8 @@ public class UserRepository(
                 Returnable = true
             };
 
-        // Encrypt the relationship (this is necessary only
-        // because we need a dto where we can get the encrypted
-        // user and pet when retrieving them from the DB)
-        var encrypted = new EncryptedUserPet
-        {
-            EncryptedUserId = userPet.UserId,
-            EncryptedPetId = userPet.PetId,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            Status = EntityStatus.Active
-        };
-
         // Save the relationship
-        _dbContext.EncryptedUserPets.Add(encrypted);
+        _dbContext.UserPets.Add(userPet);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<User?>
@@ -467,8 +465,16 @@ public class UserRepository(
     /// <param name="userId"></param>
     /// <param name="petId"></param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeUser">Whether to include the user in the result</param>
+    /// <param name="includePet">Whether to include the pet in the result</param
     /// <returns></returns>
-    public async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId, StatusFilters? filters = null)
+    public async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(
+        int userId,
+        int petId,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    )
     {
         if (userId <= 0)
             return new Result<UserPet?>
@@ -493,20 +499,21 @@ public class UserRepository(
             };
 
         // Find the user pet
-        var query = _dbContext.EncryptedUserPets
-            .Where(up => up.EncryptedUserId == userId && up.EncryptedPetId == petId);
+        var query = _dbContext.UserPets
+            .Where(up => up.UserId == userId && up.PetId == petId);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
-        query = query
-            .Include(p => p.EncryptedUser)
-            .Include(p => p.EncryptedPet)
-            .AsSplitQuery();
+        // Includes
+        if (includeUser) query = query.Include(p => p.User);
+        if (includePet) query = query.Include(p => p.Pet);
+
+        query = query.AsSplitQuery();
 
         // Execute query
-        var encryptedUserPet = await query.FirstOrDefaultAsync();
-        if (encryptedUserPet is null)
+        var userPet = await query.FirstOrDefaultAsync();
+        if (userPet is null)
             return new Result<UserPet?>
             {
                 Success = false,
@@ -518,7 +525,16 @@ public class UserRepository(
             };
 
         // Decrypt and return
-        return UserPetsEncryption.DecryptUserPet(encryptedUserPet, _logger).ConvertTo<UserPet?>();
+        return new Result<UserPet?>
+        {
+            Success = true,
+            Code = "USER_PET_RELATIONSHIP_FOUND",
+            Status = 200,
+            Message = "User-pet relationship found successfully",
+            Data = userPet,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -547,27 +563,7 @@ public class UserRepository(
                 Returnable = true
             };
 
-        // First get the existing encrypted user from the database
-        var existingEncryptedUserPet = await _dbContext.EncryptedUserPets
-            .FirstOrDefaultAsync(eu => eu.Id == userPet.Id);
-
-        if (existingEncryptedUserPet == null)
-            return new Result<UserPet?>
-            {
-                Success = false,
-                Code = "USER_PET_NOT_FOUND",
-                Status = 404,
-                Message = "User pet not found",
-                TraceCode = $"{FileCodes.CallerIC()}",
-                Returnable = true
-            };
-
         // Update the tracked entity with new encrypted values
-        existingEncryptedUserPet.EncryptedUserId = userPet.UserId;
-        existingEncryptedUserPet.EncryptedPetId = userPet.PetId;
-        existingEncryptedUserPet.UpdatedAt = DateTime.UtcNow;
-        existingEncryptedUserPet.Status = userPet.Status;
-
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<UserPet?>

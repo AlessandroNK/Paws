@@ -1,10 +1,14 @@
+using System.Reflection;
 using Backend.Core.Models.Appointments;
+using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Users;
 using Backend.Core.Models.Vets;
+using Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Backend.Core.Data;
 
@@ -20,34 +24,34 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// The set to handle <see cref="EncryptedUsers"/>
+    /// The set to handle <see cref="User"/>
     /// </summary>
-    public DbSet<EncryptedUser> EncryptedUsers { get; set; }
+    public DbSet<User> Users { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedPets"/>
+    /// The set to handle <see cref="Pets"/>
     /// </summary>
-    public DbSet<EncryptedPet> EncryptedPets { get; set; }
+    public DbSet<Pet> Pets { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedUserPet"/>
+    /// The set to handle <see cref="UserPet"/>
     /// </summary>
-    public DbSet<EncryptedUserPet> EncryptedUserPets { get; set; }
+    public DbSet<UserPet> UserPets { get; set; }
 
     /// <summary>
     /// OMG this is getting crazy
     /// </summary>
-    public DbSet<EncryptedOwnershipInvitation> EncryptedOwnershipInvitations { get; set; }
+    public DbSet<OwnershipInvitation> OwnershipInvitations { get; set; }
 
     /// <summary>
     /// The set to return the Great Roman Empire to its greatness
     /// </summary>
-    public DbSet<EncryptedVet> EncryptedVets { get; set; }
+    public DbSet<Vet> Vets { get; set; }
 
     /// <summary>
-    /// The set to handle <see cref="EncryptedAppointments"/>
+    /// The set to handle <see cref="Appointments"/>
     /// </summary>
-    public DbSet<EncryptedAppointment> EncryptedAppointments { get; set; }
+    public DbSet<Appointment> Appointments { get; set; }
 
     /// <summary>
     /// The set to handle app's configurations
@@ -75,7 +79,35 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     // -----------------------------------------------------------------------------------------------------------------
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<EncryptedUser>().ToTable("EncryptedUsers");
-        modelBuilder.Entity<EncryptedVet>().ToTable("EncryptedVets");
+        modelBuilder.Entity<User>().ToTable("Users");
+        modelBuilder.Entity<Vet>().ToTable("Vets");
+
+        var encrypter = new ValueConverter<string, string>(
+            plain => SecurityService.EncryptString(plain),
+            cipher => SecurityService.DecryptString(cipher)
+        );
+
+        var hasher = new ValueConverter<string, string>(
+            plain => SecurityService.HashString(plain),
+            stored => stored
+        );
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.ClrType.GetProperties())
+            {
+                if (property.GetCustomAttribute<EncryptProperty>() is not null)
+                    modelBuilder
+                        .Entity(entityType.ClrType)
+                        .Property(property.Name)
+                        .HasConversion(hasher);
+
+                else if (property.GetCustomAttribute<HashProperty>() is not null)
+                    modelBuilder
+                        .Entity(entityType.ClrType)
+                        .Property(property.Name)
+                        .HasConversion(encrypter);
+            }
+        }
     }
 }

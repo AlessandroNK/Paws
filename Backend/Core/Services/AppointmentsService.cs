@@ -130,10 +130,21 @@ public class AppointmentsService(
             var start = DateTime.UtcNow;
             var end = DateTime.UtcNow.AddDays(daysToPopulateAppointments);
             var existingResult = await GetByTimeRangeAsync(start, end);
+            if (!existingResult)
+                return new Result
+                {
+                    Success = false,
+                    Code = "ERROR_GETTING_EXISTING_APPOINTMENTS",
+                    Status = 500,
+                    Message = "An error occurred while getting existing appointments",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
 
-
-
-
+            if (existingResult.Code == "NO_APPOINTMENTS_FOUND")
+            {
+                // Handle the case where no appointments are found
+            }
 
             //
             //

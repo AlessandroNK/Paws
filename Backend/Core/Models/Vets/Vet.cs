@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Backend.Core.Models.Appointments;
+using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Users;
 
@@ -22,7 +23,14 @@ public class Vet : User, IDtoConvertible<VetResponse>
     /// The professional license number issued to the veterinarian by the
     /// relevant authority or licensing board.
     /// </summary>
+    [EncryptProperty]
     public string ProfessionalLicenseNumber { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The date when the veterinarian started practicing. This can be used to calculate the veterinarian's experience and to determine if they meet certain
+    /// requirements for specific appointments or tasks within the system.
+    /// </summary>
+    public DateTime VetSince { get; set; }
 
     /// <summary>
     /// A list of appointments associated with this veterinarian. The list is

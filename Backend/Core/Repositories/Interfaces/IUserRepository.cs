@@ -41,10 +41,12 @@ public interface IUserRepository
     /// </summary>
     /// <param name="email">The email to search for</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includePets">Whether to include the user's pets in the result</param>
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByEmailAsync(
         string email,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includePets = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -53,10 +55,12 @@ public interface IUserRepository
     /// </summary>
     /// <param name="document">The document of the user</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includePets">Whether to include the user's pets in the result</param>
     /// <returns>The user if any</returns>
     public Task<Result<User?>> GetByDocumentAsync(
         string document,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includePets = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -65,8 +69,13 @@ public interface IUserRepository
     /// </sumary>
     /// <param name="id">The ID of the user to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includePets">Whether to include the user's pets in the result</param>
     /// <returns>A <see cref="Result{User}"/> indicating the result of the operation and including the user if it was found</returns>
-    public Task<Result<User?>> GetByIdAsync(int id, StatusFilters? filters = null);
+    public Task<Result<User?>> GetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includePets = false
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -106,8 +115,16 @@ public interface IUserRepository
     /// <param name="userId"></param>
     /// <param name="petId"></param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeUser">Whether to include the user in the result</param>
+    /// <param name="includePet">Whether to include the pet in the result</param>
     /// <returns></returns>
-    public Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId, StatusFilters? filters = null);
+    public Task<Result<UserPet?>> GetUserPetByBothIdsAsync(
+        int userId,
+        int petId,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>

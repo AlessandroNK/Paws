@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Core.Internal;
+using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Pets;
@@ -25,6 +27,7 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     /// <summary>
     /// A hash of the user's password. It is used to verify the user's password when signing in.
     /// </summary>
+    [NotMapped]
     public string Password { get; set; } = string.Empty;
 
     /// <summary>
@@ -35,7 +38,14 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     /// <summary>
     /// The email in a readable string to return to the frontend
     /// </summary>
+    [EncryptProperty]
     public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A hash of the email so it is easy to find
+    /// </summary>
+    [HashProperty]
+    public string EmailHash { get; set; } = string.Empty;
 
     /// <summary>
     /// The type of the document of the user.
@@ -45,11 +55,19 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     /// <summary>
     /// The number of identification like we are simple elements named by random numbers
     /// </summary>
+    [EncryptProperty]
     public string DocumentNumber { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A hash of the document number so it is easy to find
+    /// </summary>
+    [HashProperty]
+    public string DocumentHash { get; set; } = string.Empty;
 
     /// <summary>
     /// The name of the user.
     /// </summary>
+    [EncryptProperty]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
@@ -72,6 +90,7 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     /// <summary>
     /// Any verification code for the user.
     /// </summary>
+    [EncryptProperty]
     public string VerificationCode { get; set; }
 
     /// <summary>

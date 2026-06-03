@@ -46,8 +46,15 @@ public interface IPetRepository
     /// </summary>
     /// <param name="id">The ID of the pet to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeUsers">Whether to include the user data in the query</param>
+    /// <param name="includeOwnerInvitations">Whether to include the ownership invitations in the query</param>
     /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
-    public Task<Result<Pet?>> GetByIdAsync(int id, StatusFilters? filters = null);
+    public Task<Result<Pet?>> GetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUsers = false,
+        bool includeOwnerInvitations = false
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -67,8 +74,15 @@ public interface IPetRepository
     /// </summary>
     /// <param name="id"></param>
     /// <param name="filters"></param>
+    /// <param name="includeUsers"></param>
+    /// <param name="includePet"></param>
     /// <returns></returns>
-    public Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByIdAsync(int id, StatusFilters? filters = null);
+    public Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUsers = true,
+        bool includePet = true
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -82,11 +96,15 @@ public interface IPetRepository
     /// </summary>
     /// <param name="invitationCode"></param>
     /// <param name="filters"></param>
+    /// <param name="includeUsers"></param>
+    /// <param name="includePet"></param>
     /// <returns></returns>
     public Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByCodeAsync(
         string invitationCode,
-        StatusFilters? filters = null
-        );
+        StatusFilters? filters = null,
+        bool includeUsers = true,
+        bool includePet = true
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>

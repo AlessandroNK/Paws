@@ -20,12 +20,20 @@ public class StatusFilters
 
     #endregion
 
-    #region UserSpecificStatus
+    #region UserSpecific
 
     public bool IncludeUnverified { get; set; }
 
     #endregion
 
+    #region AppointmentsSpecific
+
+    public bool IncludeFree { get; set; }
+    public bool IncludeCanceled { get; set; }
+    public bool IncludeScheduled { get; set; }
+    public bool IncludeCompleted { get; set; }
+
+    #endregion
 
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
@@ -146,6 +154,34 @@ public class StatusFilters
         return this;
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenIncludeFree()
+    {
+        IncludeFree = true;
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenScheduled()
+    {
+        IncludeScheduled = true;
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenCompleted()
+    {
+        IncludeCompleted = true;
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenCanceled()
+    {
+        IncludeCanceled = true;
+        return this;
+    }
+
     #endregion
 
     #region Exclude
@@ -196,6 +232,34 @@ public class StatusFilters
     public StatusFilters ThenExcludeUnverified()
     {
         IncludeUnverified = false;
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenExcludeFree()
+    {
+        IncludeFree = false;
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenExcludeScheduled()
+    {
+        IncludeScheduled = false;
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenExcludeCompleted()
+    {
+        IncludeCompleted = false;
+        return this;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public StatusFilters ThenExcludeCanceled()
+    {
+        IncludeCanceled = false;
         return this;
     }
 

@@ -15,49 +15,34 @@ public class Appointment
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Gets or sets the unique identifier for the appointment.
-    /// </summary>
+    /// <summary>Gets or sets the appointment identifier.</summary>
     public int Id { get; set; }
 
-    /// <summary>
-    /// Gets or sets the veterinarian ID associated with this appointment.
-    /// </summary>
+    /// <summary>Gets or sets the assigned veterinarian identifier.</summary>
     public int VetId { get; set; }
 
-    /// <summary>
-    /// The vet object
-    /// </summary>
-    public Vet Vet { get; set; }
+    /// <summary>Gets or sets the associated veterinarian.</summary>
+    public Vet? Vet { get; set; }
 
-    /// <summary>
-    /// Gets or sets the user's pet ID for which the appointment is scheduled.
-    /// </summary>
+    /// <summary>Gets or sets the user's pet identifier.</summary>
     public int UserPetId { get; set; }
 
-    /// <summary>
-    /// The UserPet object
-    /// </summary>
-    public UserPet UserPet { get; set; }
+    /// <summary>Gets or sets the associated user pet.</summary>
+    public UserPet? UserPet { get; set; }
 
-    /// <summary>
-    /// Gets or sets the date and time of the appointment.
-    /// </summary>
-    public DateTime DateTime { get; set; }
+    /// <summary>Gets or sets the appointment start date and time.</summary>
+    public DateTime Start { get; set; }
 
-    /// <summary>
-    /// Gets or sets the date and time when the appointment was created.
-    /// </summary>
+    /// <summary>Gets or sets the appointment end date and time.</summary>
+    public DateTime End { get; set; }
+
+    /// <summary>Gets or sets when the appointment was created.</summary>
     public DateTime CreatedAt { get; set; }
 
-    /// <summary>
-    /// Gets or sets the date and time when the appointment was last updated.
-    /// </summary>
+    /// <summary>Gets or sets when the appointment was last updated.</summary>
     public DateTime UpdatedAt { get; set; }
 
-    /// <summary>
-    /// Gets or sets the current status of the appointment.
-    /// </summary>
+    /// <summary>Gets or sets the current appointment status.</summary>
     public AppointmentStatus Status { get; set; }
 
 
@@ -79,5 +64,4 @@ public class Appointment
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-
 }

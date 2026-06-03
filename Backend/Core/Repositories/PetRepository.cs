@@ -1,5 +1,4 @@
 using Backend.Core.Data;
-using Backend.Core.Encryption;
 using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Intern;
@@ -53,8 +52,8 @@ public class PetRepository(
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    private static IQueryable<EncryptedOwnershipInvitation> ApplyStatusFilters(
-        IQueryable<EncryptedOwnershipInvitation> query,
+    private static IQueryable<OwnershipInvitation> ApplyStatusFilters(
+        IQueryable<OwnershipInvitation> query,
         StatusFilters? filters = null
     )
     {
@@ -71,8 +70,8 @@ public class PetRepository(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    private static IQueryable<EncryptedPet> ApplyStatusFilters(
-        IQueryable<EncryptedPet> query,
+    private static IQueryable<Pet> ApplyStatusFilters(
+        IQueryable<Pet> query,
         StatusFilters? filters = null
     )
     {
@@ -97,12 +96,8 @@ public class PetRepository(
     /// <returns>A <see cref="Result"/> indicating whether the creation was successful</returns>
     public async Task<Result<Pet?>> AddAsync(Pet pet)
     {
-        // Encrypt pet data
-        var result = PetEncryption.EncryptPet(pet, _logger);
-        if (!result || result.Data is null) return result.ConvertTo<Pet?>();
-
         // Save the pet
-        _dbContext.EncryptedPets.Add(result.Data);
+        _dbContext.Pets.Add(pet);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<Pet?>
@@ -116,7 +111,7 @@ public class PetRepository(
             };
 
         // Get the pet back from the db
-        var getPetResult = await GetByIdAsync(result.Data.Id);
+        var getPetResult = await GetByIdAsync(pet.Id);
         if (!getPetResult || getPetResult.Data == null)
             return new Result<Pet?>
             {
@@ -128,14 +123,13 @@ public class PetRepository(
                 Returnable = true
             };
 
-        pet = getPetResult.Data;
         return new Result<Pet?>
         {
             Success = true,
             Code = "PET_CREATED",
             Status = 201,
             Message = "Pet created successfully",
-            Data = pet,
+            Data = getPetResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
         };
@@ -147,8 +141,15 @@ public class PetRepository(
     /// </summary>
     /// <param name="id">The ID of the pet to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeUsers">Whether to include the user data in the query</param>
+    /// <param name="includeOwnerInvitations">Whether to include the ownership invitations in the query</param>
     /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
-    public async Task<Result<Pet?>> GetByIdAsync(int id, StatusFilters? filters = null)
+    public async Task<Result<Pet?>> GetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUsers = false,
+        bool includeOwnerInvitations = false
+    )
     {
         if (id <= 0)
             return new Result<Pet?>
@@ -162,22 +163,26 @@ public class PetRepository(
             };
 
         // Find the pet
-        var query = _dbContext.EncryptedPets
+        var query = _dbContext.Pets
             .Where(p => p.Id == id);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
-        query = query
-            .Include(p => p.UserPets)
-            .ThenInclude(up => up.EncryptedUser)
-            .Include(p => p.OwnershipInvitations)
-            .AsSplitQuery();
+        // Includes
+        if (includeUsers)
+            query = query
+                .Include(p => p.UserPets)
+                .ThenInclude(up => up.User);
+
+        if (includeOwnerInvitations) query = query.Include(p => p.OwnershipInvitations);
+
+        query = query.AsSplitQuery();
 
         // Execute query
-        var encryptedPet = await query.FirstOrDefaultAsync();
-        if (encryptedPet is null)
-            return new Result<Pet?>
+        var pet = await query.FirstOrDefaultAsync();
+        return pet is null
+            ? new Result<Pet?>
             {
                 Success = false,
                 Code = "PET_NOT_FOUND",
@@ -185,10 +190,17 @@ public class PetRepository(
                 Message = "No pet found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
+            }
+            : new Result<Pet?>
+            {
+                Success = true,
+                Code = "PET_FOUND",
+                Status = 200,
+                Message = "Pet found successfully",
+                Data = pet,
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
             };
-
-        // Decrypt and return pet
-        return PetEncryption.DecryptPet(encryptedPet, _logger);
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -200,36 +212,6 @@ public class PetRepository(
     /// <returns></returns>
     public async Task<Result<Pet?>> UpdateAsync(Pet pet)
     {
-        if (pet.Id <= 0)
-            return new Result<Pet?>
-            {
-                Success = false,
-                Code = "PET_ID_NOT_PROVIDED",
-                Status = 400,
-                Message = "Pet id not provided for update",
-                TraceCode = $"{FileCodes.CallerIC()}",
-                Returnable = true
-            };
-
-        // First get the existing encrypted pet from the database
-        var existingEncryptedPet = await _dbContext.EncryptedPets
-            .FirstOrDefaultAsync(ep => ep.Id == pet.Id);
-
-        if (existingEncryptedPet == null)
-            return new Result<Pet?>
-            {
-                Success = false,
-                Code = "PET_NOT_FOUND",
-                Status = 404,
-                Message = "pet not found",
-                TraceCode = $"{FileCodes.CallerIC()}",
-                Returnable = true
-            };
-
-        // Update the tracked entity with new encrypted values
-        var updateResult = PetEncryption.EncryptPetAndUpdateTrackedEntity(pet, existingEncryptedPet, _logger);
-        if (!updateResult) return updateResult.ConvertTo<Pet?>();
-
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<Pet?>
@@ -299,12 +281,8 @@ public class PetRepository(
                 Returnable = true
             };
 
-        // Encrypt the invitation
-        var encryptResult = PetEncryption.EncryptOwnershipInvitation(invitation, _logger);
-        if (!encryptResult || encryptResult.Data is null) return encryptResult.ConvertTo<OwnershipInvitation?>();
-        var encryptedInvitation = encryptResult.Data;
-
-        _dbContext.EncryptedOwnershipInvitations.Add(encryptedInvitation);
+        // Add the entity
+        _dbContext.OwnershipInvitations.Add(invitation);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result<OwnershipInvitation?>
@@ -318,7 +296,7 @@ public class PetRepository(
             };
 
         // Get it again from the DB
-        var getResult = await GetOwnershipInvitationByIdAsync(encryptedInvitation.Id);
+        var getResult = await GetOwnershipInvitationByIdAsync(invitation.Id);
         if (!getResult || getResult.Data is null)
             return new Result<OwnershipInvitation?>
             {
@@ -348,8 +326,15 @@ public class PetRepository(
     /// </summary>
     /// <param name="id"></param>
     /// <param name="filters"></param>
+    /// <param name="includeUsers"></param>
+    /// <param name="includePet"></param>
     /// <returns></returns>
-    public async Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByIdAsync(int id, StatusFilters? filters = null)
+    public async Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUsers = true,
+        bool includePet = true
+    )
     {
         if (id <= 0)
             return new Result<OwnershipInvitation?>
@@ -363,18 +348,22 @@ public class PetRepository(
             };
 
         // Find the pet
-        var query = _dbContext.EncryptedOwnershipInvitations
+        var query = _dbContext.OwnershipInvitations
             .Where(i => i.Id == id);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
+        // Includes
+        if (includeUsers) query = query.Include(i => i.User);
+        if (includePet) query = query.Include(i => i.Pet);
+
         query = query
             .AsSplitQuery();
 
         // Execute query
-        var encryptedInvitation = await query.FirstOrDefaultAsync();
-        if (encryptedInvitation is null)
+        var invitation = await query.FirstOrDefaultAsync();
+        if (invitation is null)
             return new Result<OwnershipInvitation?>
             {
                 Success = false,
@@ -385,8 +374,16 @@ public class PetRepository(
                 Returnable = true
             };
 
-        // Decrypt and return ownership invitation
-        return PetEncryption.DecryptOwnershipInvitation(encryptedInvitation, _logger);
+        return new Result<OwnershipInvitation?>
+        {
+            Success = true,
+            Code = "OWNERSHIP_INVITATION_FOUND",
+            Status = 200,
+            Message = "Ownership invitation found successfully",
+            Data = invitation,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -401,8 +398,15 @@ public class PetRepository(
     /// </summary>
     /// <param name="invitationCode"></param>
     /// <param name="filters"></param>
+    /// <param name="includeUsers"></param>
+    /// <param name="includePet"></param>
     /// <returns></returns>
-    public async Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByCodeAsync(string invitationCode, StatusFilters? filters = null)
+    public async Task<Result<OwnershipInvitation?>> GetOwnershipInvitationByCodeAsync(
+        string invitationCode,
+        StatusFilters? filters = null,
+        bool includeUsers = true,
+        bool includePet = true
+    )
     {
         if (string.IsNullOrWhiteSpace(invitationCode))
             return new Result<OwnershipInvitation?>
@@ -410,7 +414,7 @@ public class PetRepository(
                 Success = false,
                 Code = "INVALID_OWNERSHIP_INVITATION_NONCE",
                 Status = 400,
-                Message = "The provided ownership invitation invitation codeis invalid",
+                Message = "The provided ownership invitation invitation code is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -421,20 +425,19 @@ public class PetRepository(
             return invitationCodeHashResult.Log(_logger).ConvertTo<OwnershipInvitation?>();
 
         // Find the ownership invitation
-        var query = _dbContext.EncryptedOwnershipInvitations
+        var query = _dbContext.OwnershipInvitations
             .Where(p => p.InvitationCodeHash == invitationCodeHashResult.Data);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
-        query = query
-            .Include(i => i.EncryptedPet)
-            .Include(i => i.EncryptedUser)
-            .AsSplitQuery();
+        // Includes
+        if (includeUsers) query = query.Include(i => i.User);
+        if (includePet) query = query.Include(i => i.Pet);
 
         // Execute query
-        var encryptedInvitation = await query.FirstOrDefaultAsync();
-        if (encryptedInvitation is null)
+        var invitation = await query.FirstOrDefaultAsync();
+        if (invitation is null)
             return new Result<OwnershipInvitation?>
             {
                 Success = false,
@@ -446,7 +449,16 @@ public class PetRepository(
             };
 
         // Decrypt and return ownership invitation
-        return PetEncryption.DecryptOwnershipInvitation(encryptedInvitation, _logger);
+        return new Result<OwnershipInvitation?>
+        {
+            Success = true,
+            Code = "OWNERSHIP_INVITATION_FOUND",
+            Status = 200,
+            Message = "Ownership invitation found successfully",
+            Data = invitation,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -477,7 +489,7 @@ public class PetRepository(
         }
 
         // Get the invitation
-        var existingInvitation = await _dbContext.EncryptedOwnershipInvitations
+        var existingInvitation = await _dbContext.OwnershipInvitations
             .FirstOrDefaultAsync(i => i.Id == id);
         if (existingInvitation is null)
             return new Result
@@ -491,7 +503,7 @@ public class PetRepository(
             };
 
         // Delete the invitation
-        _dbContext.EncryptedOwnershipInvitations.Remove(existingInvitation);
+        _dbContext.OwnershipInvitations.Remove(existingInvitation);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)
             return new Result

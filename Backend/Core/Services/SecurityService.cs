@@ -11,6 +11,7 @@ public partial class SecurityService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+
     #region Regex
 
     [GeneratedRegex(@"[a-z]")]
@@ -112,6 +113,31 @@ public partial class SecurityService
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
+    /// Creates a Hash from a string.
+    /// </summary>
+    /// <param name="toEncrypt">The string to encrypt</param>
+    /// <returns></returns>
+    public static string HashString(string toEncrypt)
+    {
+        // Validations
+        if (string.IsNullOrWhiteSpace(toEncrypt)) return string.Empty;
+
+        // Global key
+        var key = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
+        if (string.IsNullOrEmpty(key))
+            throw new InvalidOperationException("No encryption key found in environment variables");
+
+        using (var sha = SHA256.Create())
+        {
+            // Combine salt + input
+            var combined = Encoding.UTF8.GetBytes(key + toEncrypt);
+            var hash = sha.ComputeHash(combined);
+            return Convert.ToBase64String(hash);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
     /// Pues eso, encripta un string.
     /// </summary>
     /// <param name="toEncrypt">The string to encrypt</param>
@@ -184,11 +210,53 @@ public partial class SecurityService
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
+    /// Pues eso, encripta un string.
+    /// </summary>
+    /// <param name="toEncrypt">The string to encrypt</param>
+    /// <returns></returns>
+    public static string EncryptString(string toEncrypt)
+    {
+        // Validations
+        if (string.IsNullOrWhiteSpace(toEncrypt)) return string.Empty;
+
+        // Global key
+        var key = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
+        if (string.IsNullOrEmpty(key))
+            throw new InvalidOperationException("No encryption key found in environment variables");
+
+        // Encrypt the string using AES encryption
+        using (Aes aes = Aes.Create())
+        {
+            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+
+            // Random IV so this is cooler
+            aes.GenerateIV();
+            var iv = aes.IV;
+
+            using (var encryptor = aes.CreateEncryptor())
+            {
+                byte[] plainBytes = Encoding.UTF8.GetBytes(toEncrypt);
+                byte[] cipherBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+
+                // Combine IV + cipher bytes for transmission/storage
+                byte[] finalString = new byte[iv.Length + cipherBytes.Length];
+                Buffer.BlockCopy(iv, 0, finalString, 0, iv.Length);
+                Buffer.BlockCopy(cipherBytes, 0, finalString, iv.Length, cipherBytes.Length);
+
+                return Convert.ToBase64String(finalString);
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
     /// Pues eso, desencripta un string previamente encriptado con EncryptString.
     /// </summary>
     /// <param name="toDecrypt"></param>
     /// <returns></returns>
-    public static Result<string> DecryptString(string toDecrypt)
+    public static Result<string> DecryptStringRes(string toDecrypt)
     {
         // Global key
         var key = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
@@ -215,6 +283,46 @@ public partial class SecurityService
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
+
+        byte[] combinedBytes = Convert.FromBase64String(toDecrypt);
+
+        using (Aes aes = Aes.Create())
+        {
+            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+
+            // Extract IV from the beginning of the combined bytes
+            byte[] iv = new byte[aes.BlockSize / 8];
+            Buffer.BlockCopy(combinedBytes, 0, iv, 0, iv.Length);
+            aes.IV = iv;
+
+            using (var decryptor = aes.CreateDecryptor())
+            {
+                byte[] cipherBytes = new byte[combinedBytes.Length - iv.Length];
+                Buffer.BlockCopy(combinedBytes, iv.Length, cipherBytes, 0, cipherBytes.Length);
+
+                byte[] plainBytes = decryptor.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
+                return Encoding.UTF8.GetString(plainBytes);
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Pues eso, desencripta un string previamente encriptado con EncryptString.
+    /// </summary>
+    /// <param name="toDecrypt"></param>
+    /// <returns></returns>
+    public static string DecryptString(string toDecrypt)
+    {
+        // Validations
+        if (string.IsNullOrWhiteSpace(toDecrypt)) return string.Empty;
+
+        // Global key
+        var key = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
+        if (string.IsNullOrEmpty(key))
+            throw new InvalidOperationException("No encryption key found in environment variables");
 
         byte[] combinedBytes = Convert.FromBase64String(toDecrypt);
 
