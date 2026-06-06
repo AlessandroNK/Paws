@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Backend.Core.Models.Intern;
+using Backend.Core.Services;
 
 namespace Backend.Core.Internal;
 
@@ -14,6 +15,8 @@ public static class Env
     /// This one is easy to guess don't mames
     /// </summary>
     private static Version Version { get; } = new Version(0, 0, 1);
+
+    private static string InteractionCode { get; set; }
 
 
     //                                                                                                 Public Properties
@@ -45,9 +48,15 @@ public static class Env
     public static string GetVersion() => Version.ToString();
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static string GetAppContext()
+    public static string GetAppContext() => "No hay contexto por ahora, I am wrking on it";
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static string GetInteractionCode() => InteractionCode;
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static void SetInteractionCode(string deviceId)
     {
-        return "No hay contexto por ahora, I am wrking on it";
+        InteractionCode = $"{deviceId}-{Guid.NewGuid()}-{DateTime.Now}";
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -58,7 +67,8 @@ public static class Env
             Name = "PAWS",
             Type = "Veterinary Appointment Management Platform",
             Purpose = "Automates and optimizes veterinary appointment scheduling and clinic operations.",
-            Summary = "PAWS® is a veterinary appointment management platform designed to automate and optimize scheduling processes for veterinary clinics. Its primary purpose is to improve the experience of pet owners while increasing operational efficiency for clinic staff.",
+            Summary =
+                "PAWS® is a veterinary appointment management platform designed to automate and optimize scheduling processes for veterinary clinics. Its primary purpose is to improve the experience of pet owners while increasing operational efficiency for clinic staff.",
 
             Users =
             [

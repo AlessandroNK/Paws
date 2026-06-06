@@ -105,25 +105,69 @@ public class AppConfigService(
     /// <summary>
     /// Sets a configuration value by its key. It updates the value in the database and then updates the in-memory dictionary
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
-    public async Task<Result> SetConfig(AppConfigKeys key, string value)
+    public async Task<Result> SetConfig(SetConfigRequest request)
     {
         try
         {
-            LogHelpers.LogInfo(_logger, $"Setting app config {key}...");
+            // Validation
+            if (!Enum.IsDefined(typeof(AppConfigKeys), request.Key))
+            {
+                return new Result
+                {
+                    Success = false,
+                    Code = "INVALID_CONFIG_KEY",
+                    Status = 400,
+                    Message = "Config key is not valid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Value))
+            {
+                return new Result
+                {
+                    Success = false,
+                    Code = "INVALID_CONFIG_VALUE",
+                    Status = 400,
+                    Message = "Config value cannot be null or whitespace",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            }
+
+            LogHelpers.LogInfo(_logger, $"Setting app config {request.Key}...");
+
+            AppConfigKeys key;
+            try
+            {
+                key = (AppConfigKeys)request.Key;
+            }
+            catch (Exception)
+            {
+                return new Result
+                {
+                    Success = false,
+                    Code = "INVALID_CONFIG_KEY",
+                    Status = 400,
+                    Message = "Config key is not valid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            }
 
             // Update config in DB
             var setConfigResult = await DbRetry.ExecuteWithRetry(
-                operation: () => _appConfigRepo.SetConfig(key, value),
+                operation: () => _appConfigRepo.SetConfig(key, request.Value),
                 operationName: "Setting app config",
                 logger: _logger
             );
             if (!setConfigResult) return setConfigResult;
 
             // Update config in memory
-            _appConfigs[key] = value;
+            _appConfigs[key] = request.Value;
 
             LogHelpers.LogInfo(_logger, $"App config {key} set successfully");
 
@@ -185,5 +229,4 @@ public class AppConfigService(
             Returnable = true
         };
     }
-
 }

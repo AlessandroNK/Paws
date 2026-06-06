@@ -82,7 +82,8 @@ public class UserController(
                 request.Email);
 
             // Validations
-            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            Env.SetInteractionCode(deviceId);
+        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the user up
@@ -130,7 +131,8 @@ public class UserController(
                 request.Email);
 
             // Validations
-            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            Env.SetInteractionCode(deviceId);
+        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the user up
@@ -177,7 +179,8 @@ public class UserController(
                 request.Email);
 
             // Validations
-            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            Env.SetInteractionCode(deviceId);
+        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Resend the verification code

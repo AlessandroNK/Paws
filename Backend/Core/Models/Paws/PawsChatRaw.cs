@@ -1,12 +1,6 @@
-using Backend.Core.Models.Intern;
-using Microsoft.AspNetCore.Mvc;
+namespace Backend.Core.Models.Paws;
 
-namespace Backend.Core.Controllers.interfaces;
-
-/// <summary>
-/// This interface defines how any APi controller should be
-/// </summary>
-public interface IApiController
+public class PawsChatRaw
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -14,6 +8,8 @@ public interface IApiController
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    public string Mood { get; set; }
+    public string Message { get; set; }
 
 
     //                                                                                                         Operators
@@ -34,18 +30,5 @@ public interface IApiController
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
-    /// </summary>
-    /// <returns></returns>
-    public Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request);
 
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
-    /// </summary>
-    /// <returns></returns>
-    public IActionResult GetVersion();
 }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Backend.Core.Models.Intern;
 
 public class ChatRequest
@@ -9,6 +11,8 @@ public class ChatRequest
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
     public string UserName { get; set; }
+
+    [Required(ErrorMessage = "Message is required.")]
     public string Message { get; set; }
 
     //                                                                                                         Operators

@@ -76,6 +76,7 @@ public class PetController(
         );
 
         // Validations
+        Env.SetInteractionCode(deviceId);
         var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
         if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
@@ -108,6 +109,7 @@ public class PetController(
         );
 
         // Validations
+        Env.SetInteractionCode(deviceId);
         var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
         if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
@@ -144,7 +146,8 @@ public class PetController(
                 request.Pet.Name);
 
             // Validations
-            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            Env.SetInteractionCode(deviceId);
+        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the pet up
@@ -193,7 +196,8 @@ public class PetController(
                 request.PetId);
 
             // Validations
-            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            Env.SetInteractionCode(deviceId);
+        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Remove the pet

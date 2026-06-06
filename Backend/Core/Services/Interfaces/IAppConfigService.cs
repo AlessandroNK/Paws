@@ -42,10 +42,9 @@ public interface IAppConfigService
     /// <summary>
     /// Sets a configuration value by its key. It updates the value in the database and then updates the in-memory dictionary
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
-    public Task<Result> SetConfig(AppConfigKeys key, string value);
+    public Task<Result> SetConfig(SetConfigRequest request);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>

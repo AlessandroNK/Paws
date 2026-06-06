@@ -70,6 +70,6 @@ public static class FileCodes
     /// <returns>A code in the format <c>{FILE}:{LINE}-{VERIFY}</c>, for example <c>FU03:0044-123456</c>.</returns>
     public static string CallerIC([CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
     {
-        return $"{GetCode(file)}:{line:D4}-{SecurityService.GenerateVerificationCode()}";
+        return $"{GetCode(file)}:{line:D4}-{Env.GetInteractionCode()}";
     }
 }

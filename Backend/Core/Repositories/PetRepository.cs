@@ -473,7 +473,7 @@ public class PetRepository(
                 Success = false,
                 Code = "OWNERSHIP_INVITATION_NOT_FOUND",
                 Status = 404,
-                Message = "No ownership invitation found with the provided id",
+                Message = "No ownership invitation found with the provided invitation code",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };

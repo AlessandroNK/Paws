@@ -1,12 +1,8 @@
-using Backend.Core.Models.Intern;
-using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
-namespace Backend.Core.Controllers.interfaces;
+namespace Backend.Core.Models.Intern;
 
-/// <summary>
-/// This interface defines how any APi controller should be
-/// </summary>
-public interface IApiController
+public class SetConfigRequest
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -14,6 +10,17 @@ public interface IApiController
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// The key of the configuration to set. It will be used to identify the configuration in the database and to retrieve it later.
+    /// </summary>
+    [Required(ErrorMessage = "Key id is required.")]
+    public int Key { get; set; }
+
+    /// <summary>
+    /// The value of the configuration to set. It will be used to update the configuration in the database.
+    /// </summary>
+    [Required(ErrorMessage = "Value is required.")]
+    public string Value { get; set; }
 
 
     //                                                                                                         Operators
@@ -34,18 +41,5 @@ public interface IApiController
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
-    /// </summary>
-    /// <returns></returns>
-    public Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request);
 
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// This endpoint returns the version of the API. It is used to check if the API is up and running and to check if
-    /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
-    /// </summary>
-    /// <returns></returns>
-    public IActionResult GetVersion();
 }
