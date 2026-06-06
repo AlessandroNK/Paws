@@ -125,7 +125,7 @@ public interface IPetRepository
         // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Adds a pet to a user. It takes a <see cref="UserPet"/> relationship and creates the corresponding
-    /// <see cref="EncryptedUserPet"/> in the database. It returns the updated user with the new pet included.
+    /// <see cref="UserPet"/> in the database. It returns the updated user with the new pet included.
     /// </summary>
     /// <param name="userPet"></param>
     /// <returns></returns>

@@ -208,7 +208,8 @@ public class PetService(
                 NewOwnerEmail = newOwnerEmail,
                 Expiration = DateTime.UtcNow.AddHours(24),
                 NewOwnerHasAccount = false,
-                InvitationCode = Guid.NewGuid().ToString()
+                InvitationCode = Guid.NewGuid().ToString(),
+                Status = EntityStatus.Active
             }
             : new OwnershipInvitation
             {
@@ -220,7 +221,8 @@ public class PetService(
                 NewOwnerEmail = newOwnerResult.Data.Email,
                 Expiration = DateTime.UtcNow.AddHours(24),
                 NewOwnerHasAccount = true,
-                InvitationCode = Guid.NewGuid().ToString()
+                InvitationCode = Guid.NewGuid().ToString(),
+                Status = EntityStatus.Active
             };
 
         // Save and return this invitation
@@ -548,34 +550,6 @@ public class PetService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    private async Task<Result<Pet?>> GetByIdFromRepoAsync(int id, StatusFilters? filters = null)
-    {
-        try
-        {
-            _logger.LogInformation("Getting pet by id {PetId} from repository", id);
-
-            return await DbRetry.ExecuteWithRetry(
-                operation: () => _petRepo.GetByIdAsync(id, filters),
-                operationName: $"Getting pet by id {id}",
-                logger: _logger
-            );
-        }
-        catch (Exception e)
-        {
-            LogHelpers.LogError(_logger, e, $"Error getting pet by id {id}");
-            return new Result<Pet?>
-            {
-                Success = false,
-                Code = "ERROR_GETTING_PET",
-                Status = 500,
-                Message = "An error occurred while getting the pet. Please try again later.",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            };
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
     private async Task<Result<Pet?>> UpdatePetAsync(Pet pet)
     {
         try
@@ -603,7 +577,7 @@ public class PetService(
         }
     }
 
-        // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Gets the relationship between a user and a pet by their respective ids. This is useful to check if a user is the
     /// owner of a pet before allowing them to perform certain actions on the pet, such as editing its information or
@@ -613,12 +587,21 @@ public class PetService(
     /// <param name="userId"></param>
     /// <param name="petId"></param>
     /// <param name="filters"></param>
+    /// <param name="includeUser">Whether to include the user in the result</param>
+    /// <param name="includePet">Whether to include the pet in the result</param>
     /// <returns></returns>
-    private async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId, StatusFilters? filters = null)
+    private async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(
+        int userId,
+        int petId,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    )
     {
         try
         {
-            _logger.LogInformation("Getting user pet relationship by user ID: {@UserId} and pet ID: {@PetId}", userId, petId);
+            _logger.LogInformation("Getting user pet relationship by user ID: {@UserId} and pet ID: {@PetId}", userId,
+                petId);
 
             // Validations
             if (userId <= 0)
@@ -648,7 +631,9 @@ public class PetService(
                 operation: () => _petRepo.GetUserPetByBothIdsAsync(
                     userId,
                     petId,
-                    filters
+                    filters,
+                    includeUser,
+                    includePet
                 ),
                 operationName: "Getting user pet by IDs",
                 logger: _logger
@@ -671,6 +656,71 @@ public class PetService(
 
 
     //                                                                                                    Public Methods
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets a pet by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the pet to retrieve</param>
+    /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeUsers">Whether to include the user data in the query</param>
+    /// <param name="includeOwnerInvitations">Whether to include the ownership invitations in the query</param>
+    /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
+    public async Task<Result<Pet?>> GetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUsers = false,
+        bool includeOwnerInvitations = false
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting pet by id {PetId}", id);
+
+            if (id <= 0)
+                return new Result<Pet?>
+                {
+                    Success = false,
+                    Code = "INVALID_PET_ID",
+                    Status = 400,
+                    Message = "The pet ID is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var getResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.GetByIdAsync(id, filters, includeUsers, includeOwnerInvitations),
+                operationName: $"Getting pet by id {id}",
+                logger: _logger
+            );
+
+            if (!getResult) return getResult;
+            if (getResult.Data is null)
+                return new Result<Pet?>
+                {
+                    Success = false,
+                    Code = "PET_NOT_FOUND",
+                    Status = 404,
+                    Message = "Pet not found"
+                };
+
+            _logger.LogInformation("Pet with id {PetId} retrieved successfully", id);
+            return getResult;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error getting pet by id {id}");
+            return new Result<Pet?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_PET",
+                Status = 500,
+                Message = "An error occurred while getting the pet. Please try again later.",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Creates a new pet in the system. It takes the pet data and the user id of the owner. It returns a result with
@@ -727,58 +777,6 @@ public class PetService(
                 Code = "ERROR_ADDING_PET",
                 Status = 500,
                 Message = "An error occurred while adding the pet. Please try again later."
-            };
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Gets a pet by its ID.
-    /// </summary>
-    /// <param name="id">The ID of the pet to retrieve</param>
-    /// <param name="filters">The filters to apply to the query</param>
-    /// <returns>A <see cref="Result{Pet}"/> indicating the result of the operation and including the pet if it was found</returns>
-    public async Task<Result<Pet?>> GetByIdAsync(int id, StatusFilters? filters = null)
-    {
-        try
-        {
-            _logger.LogInformation("Getting pet by id {PetId}", id);
-
-            if (id <= 0)
-                return new Result<Pet?>
-                {
-                    Success = false,
-                    Code = "INVALID_PET_ID",
-                    Status = 400,
-                    Message = "The pet ID is invalid",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            var getResult = await GetByIdFromRepoAsync(id, filters);
-
-            if (!getResult) return getResult;
-            if (getResult.Data is null)
-                return new Result<Pet?>
-                {
-                    Success = false,
-                    Code = "PET_NOT_FOUND",
-                    Status = 404,
-                    Message = "Pet not found"
-                };
-
-            _logger.LogInformation("Pet with id {PetId} retrieved successfully", id);
-            return getResult;
-        }
-        catch (Exception e)
-        {
-            LogHelpers.LogError(_logger, e, $"Error getting pet by id {id}");
-            return new Result<Pet?>
-            {
-                Success = false,
-                Code = "ERROR_GETTING_PET",
-                Status = 500,
-                Message = "An error occurred while getting the pet. Please try again later."
             };
         }
     }
@@ -849,9 +847,39 @@ public class PetService(
             if (!requestResult) return requestResult;
 
             // Check for pet existence
-            var existenceResult = await GetByIdAsync(invitationRequest.PetId);
+            var filters = StatusFilters.ExcludeAll().ThenIncludeActive().ThenIncludeDeleted().ThenIncludeBanned();
+            var existenceResult = await GetByIdAsync(
+                invitationRequest.PetId,
+                filters,
+                true,
+                true
+            );
             if (!existenceResult || existenceResult.Data is null) return existenceResult;
             var pet = existenceResult.Data;
+
+            // Pet has to be active to be able to accept
+            // new owners
+            if (pet.Status == EntityStatus.Banned)
+                return new Result
+                {
+                    Success = false,
+                    Code = "PET_BANNED",
+                    Status = 403,
+                    Message = "This pet is banned and cannot be used",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (pet.Status == EntityStatus.Deleted)
+                return new Result
+                {
+                    Success = false,
+                    Code = "PET_DELETED",
+                    Status = 403,
+                    Message = "This pet was deleted from this user and cannot be used",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
 
             // Check for the pet, it has to be
             // owned by this specific owner
@@ -866,6 +894,29 @@ public class PetService(
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
+
+            if (userPet.Status ==  EntityStatus.Banned)
+                return new Result
+                {
+                    Success = false,
+                    Code = "USER_BANNED_FROM_PET",
+                    Status = 403,
+                    Message = "The user is banned from being owner of the pet",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (userPet.Status ==  EntityStatus.Deleted)
+                return new Result
+                {
+                    Success = false,
+                    Code = "USER_DELETED_FROM_PET",
+                    Status = 403,
+                    Message = "The user is not longer the owner of this pet",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
             var owner = userPet.User;
 
             // You cannot send invitations if your ownership is invalid
@@ -1135,7 +1186,7 @@ public class PetService(
         }
     }
 
-        // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Creates and adds a pet to the user. It takes the device id from the header and the add pet to user request from
     /// the body. It returns an IActionResult with some relevant data as ok, code, and the created pet data. It also
@@ -1218,7 +1269,28 @@ public class PetService(
                 Status = EntityStatus.Active
             };
 
-            return await _petRepo.AddUserPet(userPet);
+            var addResult = await _petRepo.AddUserPet(userPet);
+
+            return addResult && addResult.Data is not null
+                ? new Result<Pet?>
+                {
+                    Success = true,
+                    Code = "PET_ADDED_TO_USER",
+                    Status = 200,
+                    Message = "Pet added to user successfully",
+                    Data = addResult.Data,
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : new Result<Pet?>
+                {
+                    Success = false,
+                    Code = "ERROR_ADDING_PET_TO_USER",
+                    Status = 500,
+                    Message = "An error occurred while adding pet to user",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
         }
         catch (Exception e)
         {
@@ -1253,7 +1325,14 @@ public class PetService(
                 request.UserId);
 
             // Get thet user pet relationship
-            var userPetResult = await GetUserPetByBothIdsAsync(request.UserId, request.PetId);
+            var userPetResult = await GetUserPetByBothIdsAsync(
+                request.UserId,
+                request.PetId,
+                null,
+                true,
+                true
+            );
+
             if (!userPetResult || userPetResult.Data is null)
                 return new Result<Pet?>
                 {
@@ -1290,7 +1369,7 @@ public class PetService(
                     Returnable = true
                 };
 
-            if  (user.Status == EntityStatus.Unverified)
+            if (user.Status == EntityStatus.Unverified)
                 return new Result<Pet?>
                 {
                     Success = false,

@@ -701,7 +701,7 @@ public class UserService(
                 Success = true,
                 Code = "VERIFICATION_CODE_SENT",
                 Status = 201,
-                Message = "User signed up successfully",
+                Message = "User verification code sent successfully",
                 Data = user,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
