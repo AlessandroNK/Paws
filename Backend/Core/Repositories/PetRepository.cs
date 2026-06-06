@@ -115,7 +115,7 @@ public class PetRepository(
     /// <returns>A <see cref="Result"/> indicating whether the creation was successful</returns>
     public async Task<Result<Pet?>> AddAsync(Pet pet)
     {
-// Save the pet
+        // Save the pet
         _dbContext.Pets.Add(pet);
         var saved = await _dbContext.SaveChangesAsync();
         if (saved <= 0)

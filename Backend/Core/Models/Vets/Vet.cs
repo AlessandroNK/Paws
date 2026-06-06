@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using Backend.Core.Internal;
 using Backend.Core.Models.Appointments;
 using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Interfaces;
+using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
+using Backend.Core.Services;
 
 namespace Backend.Core.Models.Vets;
 
@@ -11,7 +14,7 @@ namespace Backend.Core.Models.Vets;
 /// contains vet-specific information such as professional license number and
 /// a collection of associated <see cref="Appointment"/> instances.
 /// </summary>
-public class Vet : User, IDtoConvertible<VetResponse>
+public class Vet : User, IDtoConvertible<VetResponse>, IEncryptable
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------

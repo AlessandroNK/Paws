@@ -190,7 +190,7 @@ public class PetService(
         // operation, improving UX. For new users, I will
         // send a link to signUp in the page easily, with
         // their email and name already wrote in the form
-        var newOwnerResult = await _userRepo.GetByEmailAsync(newOwnerEmail);
+        var newOwnerResult = await GetByEmailAsync(newOwnerEmail);
 
         // Any error but user not found
         if (!newOwnerResult && newOwnerResult.Code != "USER_NOT_FOUND")
@@ -654,6 +654,58 @@ public class PetService(
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Finds a user by its email.
+    /// </summary>
+    /// <param name="email">The email to search for</param>
+    /// <param name="filters">The filters to apply to the query</param>
+    /// <returns>The created user</returns>
+    public async Task<Result<User?>> GetByEmailAsync(
+        string email,
+        StatusFilters? filters = null
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting user by email");
+
+            // Validations
+            if (string.IsNullOrWhiteSpace(email))
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_EMAIL",
+                    Status = 400,
+                    Message = "Email is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Search for the user
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _userRepo.GetByEmailAsync(
+                    email,
+                    filters
+                ),
+                operationName: "Getting user by email",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error getting user by email");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_USER",
+                Status = 500,
+                Message = "An error occurred while getting the user",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------

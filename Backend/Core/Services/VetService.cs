@@ -1,49 +1,31 @@
-using Backend.Core.Models.Enums;
-using Backend.Core.Models.Relationships;
+using Backend.Core.Internal;
+using Backend.Core.Models.Intern;
+using Backend.Core.Models.Results;
+using Backend.Core.Models.Users;
 using Backend.Core.Models.Vets;
+using Backend.Core.Policies;
+using Backend.Core.Repositories.Interfaces;
+using Backend.Core.Services.Interfaces;
 
-namespace Backend.Core.Models.Appointments;
+namespace Backend.Core.Services;
 
-/// <summary>
-/// Represents a veterinary appointment for a user's pet.
-/// </summary>
-public class Appointment
+public class VetService(
+    IVetRepository vetRepository,
+    ILogger<VetService> logger
+    ) : IVetService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
+    private readonly IVetRepository _vetRepo = vetRepository;
+
+    /// <summary>
+    /// We wanna log!!!
+    /// </summary>
+    private readonly ILogger<VetService> _logger = logger;
 
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>Gets or sets the appointment identifier.</summary>
-    public int Id { get; set; }
-
-    /// <summary>Gets or sets the assigned veterinarian identifier.</summary>
-    public int VetId { get; set; }
-
-    /// <summary>Gets or sets the associated veterinarian.</summary>
-    public Vet? Vet { get; set; }
-
-    /// <summary>Gets or sets the user's pet identifier.</summary>
-    public int UserPetId { get; set; }
-
-    /// <summary>Gets or sets the associated user pet.</summary>
-    public UserPet? UserPet { get; set; }
-
-    /// <summary>Gets or sets the appointment start date and time.</summary>
-    public DateTime StartTime { get; set; }
-
-    /// <summary>Gets or sets the appointment end date and time.</summary>
-    public DateTime EndTime { get; set; }
-
-    /// <summary>Gets or sets when the appointment was created.</summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>Gets or sets when the appointment was last updated.</summary>
-    public DateTime UpdatedAt { get; set; }
-
-    /// <summary>Gets or sets the current appointment status.</summary>
-    public AppointmentStatus Status { get; set; }
 
 
     //                                                                                                         Operators
@@ -64,4 +46,31 @@ public class Appointment
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<List<Vet>>> GetVetsAsync(StatusFilters? filters = null)
+    {
+        try
+        {
+            _logger.LogInformation("Getting all vets");
+
+            // Search for the user
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _vetRepo.GetVetsAsync(),
+                operationName: "Getting all vets",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error getting all vets");
+            return new Result<List<Vet>>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_VETS",
+                Status = 500,
+                Message = "An error occurred while getting the vets",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
 }
