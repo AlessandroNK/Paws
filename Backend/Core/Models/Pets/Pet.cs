@@ -1,7 +1,10 @@
+using Backend.Core.Internal;
 using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Relationships;
+using Backend.Core.Models.Results;
+using Backend.Core.Services;
 
 namespace Backend.Core.Models.Pets;
 
@@ -98,9 +101,42 @@ public class Pet : IDtoConvertible<PetResponse>, IEncryptable
             UpdatedAt = UpdatedAt,
         };
     }
+
     // -----------------------------------------------------------------------------------------------------------------
-    public void Hash()
+    public Result Hash()
     {
-        NameHash = Name.GetHashCode().ToString();
+        if (string.IsNullOrWhiteSpace(Name))
+            return new Result
+            {
+                Success = false,
+                Code = "NAME_NOT_PROVIDED",
+                Status = 400,
+                Message = "Name not provided for pet hashing",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+
+        var nameResult = SecurityService.HashWithSalt(Name);
+        if (!nameResult.Success || nameResult.Data is null)
+            return new Result
+            {
+                Success = false,
+                Code = "NAME_HASHING_FAILED",
+                Status = 500,
+                Message = "Failed to hash pet name",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+        NameHash = nameResult.Data;
+
+        return new Result
+        {
+            Success = true,
+            Code = "PET_HASHED",
+            Status = 200,
+            Message = "Pet hashed successfully",
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = false
+        };
     }
 }

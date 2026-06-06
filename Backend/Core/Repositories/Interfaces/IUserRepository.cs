@@ -97,47 +97,4 @@ public interface IUserRepository
     /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The <see cref="User"/></returns>
     public Task<Result<User?>> UpdateAsync(User user, StatusFilters? filters = null);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Adds a pet to a user. It takes a <see cref="UserPet"/> relationship and creates the corresponding
-    /// <see cref="EncryptedUserPet"/> in the database. It returns the updated user with the new pet included.
-    /// </summary>
-    /// <param name="userPet"></param>
-    /// <returns></returns>
-    public Task<Result<User?>> AddUserPet(UserPet userPet);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Finds a user-pet relationship by the user id and pet id. It returns the relationship if found, or an error result
-    /// if not.
-    /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="petId"></param>
-    /// <param name="filters">The filters to apply to the query</param>
-    /// <param name="includeUser">Whether to include the user in the result</param>
-    /// <param name="includePet">Whether to include the pet in the result</param>
-    /// <returns></returns>
-    public Task<Result<UserPet?>> GetUserPetByBothIdsAsync(
-        int userId,
-        int petId,
-        StatusFilters? filters = null,
-        bool includeUser = false,
-        bool includePet = false
-    );
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Removes a pet from the user. It takes the device id from the header and the remove pet from user request from
-    /// the body. It checks if the user is verified before removing the pet from the user. If the user is not verified,
-    /// it returns a bad request with a message indicating that the user is not verified. It also checks if the user is
-    /// the owner of the pet before allowing them to remove the pet from their account. If the user is not the owner of
-    /// the pet, it returns a bad request with a message indicating that the user is not the owner of the pet. Finally,
-    /// it doesn't delete the relationship between the user and the pet, but instead it sets its status to deleted, so
-    /// the information is not lost and can be used for analytics and other purposes in the future.
-    /// </summary>
-    /// <param name="userPet"></param>
-    /// <param name="filters">The filters to apply to the query</param>
-    /// <returns></returns>
-    public Task<Result<UserPet?>> UpdateUserPet(UserPet userPet, StatusFilters? filters = null);
 }

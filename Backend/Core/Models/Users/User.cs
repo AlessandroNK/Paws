@@ -5,6 +5,7 @@ using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Relationships;
+using Backend.Core.Models.Results;
 using Backend.Core.Services;
 
 namespace Backend.Core.Models.Users;
@@ -12,7 +13,10 @@ namespace Backend.Core.Models.Users;
 /// <summary>
 /// Represents a user in the API
 /// </summary>
-public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResponse>, IEncryptable
+public class User : IDtoConvertible<UserResponse>,
+    IDtoConvertible<BasicUserResponse>,
+    IDtoConvertible<OnlyEmailUserResponse>,
+    IEncryptable
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -96,7 +100,7 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     /// A timestamp indication the time when the code was created. This is useful to invalidate the code after a certain
     /// time has passed and to prevent sending codes to the user until the previous code has expired.
     /// </summary>
-    public DateTime VerificationCodeDate { get; set; }
+    public DateTime? VerificationCodeDate { get; set; }
 
     /// <summary>
     /// All user's pets
@@ -168,10 +172,104 @@ public class User : IDtoConvertible<UserResponse>, IDtoConvertible<BasicUserResp
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public void Hash()
+    OnlyEmailUserResponse IDtoConvertible<OnlyEmailUserResponse>.ToDto()
     {
-        PasswordHash = SecurityService.HashString(Password);
-        EmailHash = SecurityService.HashString(Email);
-        DocumentHash = SecurityService.HashString(DocumentNumber);
+        return new OnlyEmailUserResponse
+        {
+            Email = Email,
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Result Hash()
+    {
+        // ------------------------------------------------------------------------------ Password
+        if (string.IsNullOrWhiteSpace(Password) && string.IsNullOrWhiteSpace(PasswordHash))
+            return new Result
+            {
+                Success = false,
+                Code = "PASSWORD_NOT_PROVIDED",
+                Status = 400,
+                Message = "Password not provided for user hash",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+
+        // If no new password, then use the existing hash
+        var passwordResult = !string.IsNullOrWhiteSpace(Password)
+            ? SecurityService.HashWithSalt(Password)
+            : PasswordHash;
+
+        if (!passwordResult || passwordResult.Data is null)
+            return new Result
+            {
+                Success = false,
+                Code = "PASSWORD_HASHING_FAILED",
+                Status = 500,
+                Message = "Password hashing failed for user hash",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+        PasswordHash = passwordResult.Data;
+
+        // ------------------------------------------------------------------------------ Document number
+        if (string.IsNullOrWhiteSpace(DocumentNumber))
+            return new Result
+            {
+                Success = false,
+                Code = "DOCUMENT_NOT_PROVIDED",
+                Status = 400,
+                Message = "Document not provided for user hash",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+
+        var documentHashResult = SecurityService.HashWithSalt(DocumentNumber);
+        if (!documentHashResult || documentHashResult.Data is null)
+            return new Result
+            {
+                Success = false,
+                Code = "DOCUMENT_HASHING_FAILED",
+                Status = 500,
+                Message = "Document hashing failed for user hash",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+        DocumentHash = documentHashResult.Data;
+
+        // ------------------------------------------------------------------------------ Email
+        if (string.IsNullOrWhiteSpace(Email))
+            return new Result
+            {
+                Success = false,
+                Code = "EMAIL_NOT_PROVIDED",
+                Status = 400,
+                Message = "Email not provided for user hash",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+
+        var emailResult = SecurityService.HashWithSalt(Email);
+        if (!emailResult || emailResult.Data is null)
+            return new Result
+            {
+                Success = false,
+                Code = "EMAIL_HASHING_FAILED",
+                Status = 500,
+                Message = "Email hashing failed for user hash",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = false
+            };
+        EmailHash = emailResult.Data;
+
+        return new Result
+        {
+            Success = true,
+            Code = "USER_HASHED",
+            Status = 200,
+            Message = "User hashed successfully",
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = false
+        };
     }
 }

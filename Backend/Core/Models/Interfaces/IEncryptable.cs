@@ -1,3 +1,5 @@
+using Backend.Core.Models.Results;
+
 namespace Backend.Core.Models.Interfaces;
 
 public interface IEncryptable
@@ -28,5 +30,5 @@ public interface IEncryptable
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    public void Hash();
+    public Result Hash();
 }

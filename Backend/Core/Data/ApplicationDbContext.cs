@@ -74,10 +74,39 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// This method processes the entities that are being added or modified in the context. It checks if the entity
+    /// implements the <see cref="IEncryptable"/> interface and if its state is either Added or Modified. If both
+    /// conditions are met, it calls the Hash method of the entity to encrypt its data before saving it to the database.
+    /// </summary>
+    /// <exception cref="Exception"></exception>
+    private void ProcessEntities()
+    {
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.Entity is not IEncryptable encryptable) continue;
+            if (entry is not ({ State: EntityState.Added } or { State: EntityState.Modified })) continue;
+
+            // Here, we encrypt some entity's pieces of data
+            // Hash
+            var hashResult = encryptable.Hash();
+            if (!hashResult)
+                throw new Exception(
+                    $"{hashResult.Code} Failed to hash entity of type {entry.Entity.GetType().Name}: {hashResult.Message}");
+        }
+    }
 
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// This method is called when the model is being created. It is used to configure the model and its properties. In
+    /// this case, we are configuring the model to use the "Users" table for the <see cref="User"/> entity and the "Vets"
+    /// table for the <see cref="Vet"/> entity. We are also configuring the model to use a value converter for the
+    /// properties that have the <see cref="EncryptProperty"/> attribute. The value converter will encrypt the data
+    /// before saving it to the database and decrypt it when reading it from the database.
+    /// </summary>
+    /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>().ToTable("Users");
@@ -86,11 +115,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         var encrypter = new ValueConverter<string, string>(
             plain => SecurityService.EncryptString(plain),
             cipher => SecurityService.DecryptString(cipher)
-        );
-
-        var hasher = new ValueConverter<string, string>(
-            plain => SecurityService.HashString(plain),
-            stored => stored
         );
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -104,5 +128,34 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                         .HasConversion(encrypter);
             }
         }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// This method is called when the changes are being saved to the database. It is used to process the entities that
+    /// are being added or modified in the context. It calls the ProcessEntities method to encrypt the data before saving
+    /// it to the database. Then, it calls the base SaveChanges method to save the changes to the database.
+    /// </summary>
+    /// <returns></returns>
+    public override int SaveChanges()
+    {
+        // Encrypt things so information can be safely stored
+        ProcessEntities();
+        return base.SaveChanges();
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// This method is called when the changes are being asynchronously saved to the database. It is used to process
+    /// the entities that are being added or modified in the context. It calls the ProcessEntities method to encrypt the
+    /// data before saving it to the database. Then, it calls the base SaveChanges method to save the changes to the
+    /// database.
+    /// </summary>
+    /// <returns></returns>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        // Encrypt things so information can be safely stored
+        ProcessEntities();
+        return await base.SaveChangesAsync(cancellationToken);
     }
 }

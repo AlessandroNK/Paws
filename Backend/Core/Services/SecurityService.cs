@@ -113,31 +113,6 @@ public partial class SecurityService
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Creates a Hash from a string.
-    /// </summary>
-    /// <param name="toEncrypt">The string to encrypt</param>
-    /// <returns></returns>
-    public static string HashString(string toEncrypt)
-    {
-        // Validations
-        if (string.IsNullOrWhiteSpace(toEncrypt)) return string.Empty;
-
-        // Global key
-        var key = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
-        if (string.IsNullOrEmpty(key))
-            throw new InvalidOperationException("No encryption key found in environment variables");
-
-        using (var sha = SHA256.Create())
-        {
-            // Combine salt + input
-            var combined = Encoding.UTF8.GetBytes(key + toEncrypt);
-            var hash = sha.ComputeHash(combined);
-            return Convert.ToBase64String(hash);
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
     /// Pues eso, encripta un string.
     /// </summary>
     /// <param name="toEncrypt">The string to encrypt</param>

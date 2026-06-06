@@ -107,72 +107,6 @@ public class UserService(
         }
     }
 
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Gets the relationship between a user and a pet by their respective ids. This is useful to check if a user is the
-    /// owner of a pet before allowing them to perform certain actions on the pet, such as editing its information or
-    /// sharing its ownership with another user. It can also be used to get the details of the relationship, such as the
-    /// status of the relationship (active, pending, etc.) and the dates of creation and last update of the relationship.
-    /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="petId"></param>
-    /// <param name="filters"></param>
-    /// <returns></returns>
-    private async Task<Result<UserPet?>> GetUserPetByBothIdsAsync(int userId, int petId, StatusFilters? filters = null)
-    {
-        try
-        {
-            _logger.LogInformation("Getting user pet relationship by user ID: {@UserId} and pet ID: {@PetId}", userId, petId);
-
-            // Validations
-            if (userId <= 0)
-                return new Result<UserPet?>
-                {
-                    Success = false,
-                    Code = "INVALID_USER_ID",
-                    Status = 400,
-                    Message = "User id must be greater than 0",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            if (petId <= 0)
-                return new Result<UserPet?>
-                {
-                    Success = false,
-                    Code = "INVALID_PET_ID",
-                    Status = 400,
-                    Message = "Pet id must be greater than 0",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            // Search for the user
-            return await DbRetry.ExecuteWithRetry(
-                operation: () => _userRepo.GetUserPetByBothIdsAsync(
-                    userId,
-                    petId,
-                    filters
-                ),
-                operationName: "Getting user pet by IDs",
-                logger: _logger
-            );
-        }
-        catch (Exception e)
-        {
-            LogHelpers.LogError(_logger, e, "Error getting user pet by IDs");
-            return new Result<UserPet?>
-            {
-                Success = false,
-                Code = "ERROR_GETTING_USER_PET",
-                Status = 500,
-                Message = "An error occurred while getting the user pet relationship",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            };
-        }
-    }
-
     #region Helpers
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -624,9 +558,11 @@ public class UserService(
 
             // Update the user
             user.VerificationCode = string.Empty;
+            user.VerificationCodeDate = null;
             user.Status = EntityStatus.Active;
             user.UpdatedAt = DateTime.UtcNow;
             var updateResult = await _userRepo.UpdateAsync(user);
+            updateResult.Log(_logger, "Error updating user status to active after verification");
 
             updateResult.Code = !updateResult || updateResult.Data is null
                 ? "ERROR_VERIFYING_ACCOUNT"
@@ -713,10 +649,12 @@ public class UserService(
                     Returnable = true
                 };
 
+            user.VerificationCodeDate ??= DateTime.UtcNow.AddMinutes(-16);
+
             // Verify if at least 1 minute has passed since the last code send ask
             // to avoid flooding my API because I have to pay for those
             // misused resources
-            if (user.VerificationCodeDate.AddMinutes(1) > DateTime.UtcNow)
+            if (user.VerificationCodeDate?.AddMinutes(1) > DateTime.UtcNow)
                 return new Result<User?>
                 {
                     Success = false,
@@ -728,12 +666,14 @@ public class UserService(
                 };
 
             // Verify if the code is expired or not
-            if (user.VerificationCodeDate.AddMinutes(15) < DateTime.UtcNow)
+            if (user.VerificationCodeDate?.AddMinutes(15) < DateTime.UtcNow)
             {
                 user.VerificationCode = SecurityService.GenerateVerificationCode();
                 user.VerificationCodeDate = DateTime.UtcNow;
                 filters = StatusFilters.IncludeAll().ThenExcludeDeleted();
                 var updateResult = await _userRepo.UpdateAsync(user, filters);
+                updateResult.Log(_logger, $"Error updating verification code for user with email: {user.Email}");
+
                 if (!updateResult || updateResult.Data is null)
                     return new Result<User?>
                     {
@@ -776,260 +716,6 @@ public class UserService(
                 Code = "ERROR_VERIFYING_ACCOUNT",
                 Status = 500,
                 Message = "An error occurred while verifying the account"
-            };
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Creates and adds a pet to the user. It takes the device id from the header and the add pet to user request from
-    /// the body. It returns an IActionResult with some relevant data as ok, code, and the created pet data. It also
-    /// checks if the user is verified before adding the pet to the user. If the user is not verified, it returns a bad
-    /// request with a message indicating that the user is not verified.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    public async Task<Result<User?>> AddNewPetAsync(AddNewPetRequest request)
-    {
-        try
-        {
-            _logger.LogInformation("Adding pet with name {@Name} to user with id: {@Id}", request.Pet.Name,
-                request.UserId);
-
-            // Validations
-            if (request.UserId <= 0)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "INVALID_USER_ID",
-                    Status = 400,
-                    Message = "User id must be greater than 0",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            var petCheckResult = _petService.CheckCreatePetRequest(request.Pet);
-            if (!petCheckResult) return petCheckResult.ConvertTo<User?>();
-
-            // Find the user to add the pet to
-            var userResult = await _userRepo.GetByIdAsync(request.UserId);
-            if (userResult.Data is null)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "USER_NOT_FOUND",
-                    Status = 404,
-                    Message = "User not found",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-            var user = userResult.Data;
-
-            // Check if the user is verified
-            if (user.Status == EntityStatus.Banned)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "USER_BANNED",
-                    Status = 400,
-                    Message = "User is banned",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            if (user.Status == EntityStatus.Unverified)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "USER_NOT_VERIFIED",
-                    Status = 400,
-                    Message = "User is not verified",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            // Create the pet
-            var petResult = await _petService.CreatePetAsync(request.Pet);
-            if (!petResult || petResult.Data is null) return petResult.ConvertTo<User?>();
-            var pet = petResult.Data;
-
-            // Add the pet to the user
-            var userPet = new UserPet
-            {
-                UserId = request.UserId,
-                PetId = pet.Id,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Status = EntityStatus.Active
-            };
-
-            return await _userRepo.AddUserPet(userPet);
-        }
-        catch (Exception e)
-        {
-            LogHelpers.LogError(_logger, e, "Error adding pet to user");
-            return new Result<User?>
-            {
-                Success = false,
-                Code = "ERROR_ADDING_PET_TO_USER",
-                Status = 500,
-                Message = "An error occurred while adding pet to user"
-            };
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Removes a pet from the user. It takes the device id from the header and the remove pet from user request from
-    /// the body. It checks if the user is verified before removing the pet from the user. If the user is not verified,
-    /// it returns a bad request with a message indicating that the user is not verified. It also checks if the user is
-    /// the owner of the pet before allowing them to remove the pet from their account. If the user is not the owner of
-    /// the pet, it returns a bad request with a message indicating that the user is not the owner of the pet. Finally,
-    /// it doesn't delete the relationship between the user and the pet, but instead it sets its status to deleted, so
-    /// the information is not lost and can be used for analytics and other purposes in the future.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    public async Task<Result<User?>> RemovePetAsync(RemovePetRequest request)
-    {
-        try
-        {
-            _logger.LogInformation("Removing pet with id {@PetId} from user with id: {@Id}", request.PetId,
-                request.UserId);
-
-            // Get thet user pet relationship
-            var userPetResult = await GetUserPetByBothIdsAsync(request.UserId, request.PetId);
-            if (!userPetResult || userPetResult.Data is null)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "USER_PET_RELATIONSHIP_NOT_FOUND",
-                    Status = 404,
-                    Message = "The relationship between the user and the pet was not found",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-            var userPet = userPetResult.Data;
-
-            // Check user status
-            if (userPet.User is null)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "USER_NOT_FOUND",
-                    Status = 404,
-                    Message = "User not found",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-            var user = userPet.User;
-
-            if (user.Status == EntityStatus.Banned)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "USER_BANNED",
-                    Status = 400,
-                    Message = "User is banned",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            if  (user.Status == EntityStatus.Unverified)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "USER_NOT_VERIFIED",
-                    Status = 400,
-                    Message = "User is not verified",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            // Check pet status
-            if (userPet.Pet is null)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "PET_NOT_FOUND",
-                    Status = 404,
-                    Message = "Pet not found",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-            var pet = userPet.Pet;
-
-            if (pet.Status == EntityStatus.Banned)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "PET_BANNED",
-                    Status = 400,
-                    Message = "Pet is banned",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            if (pet.Status == EntityStatus.Deleted)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "PET_DELETED",
-                    Status = 400,
-                    Message = "Pet was already deleted",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            // TODO add tokens so only the logged in user can do those things
-            // Remove the pet from the user by setting the relationship status to deleted
-            userPet.Status = EntityStatus.Deleted;
-            userPet.UpdatedAt = DateTime.UtcNow;
-            var filters = StatusFilters.ExcludeAll().ThenIncludeDeleted();
-            var deleteResult = await _userRepo.UpdateUserPet(userPet, filters);
-            if (!deleteResult || deleteResult.Data is null)
-                return new Result<User?>
-                {
-                    Success = false,
-                    Code = "ERROR_DELETING_USER_PET",
-                    Status = 500,
-                    Message = "An error occurred while deleting user pet",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            return deleteResult.Data.Status == EntityStatus.Deleted
-                ? new Result<User?>
-                {
-                    Success = true,
-                    Code = "PET_REMOVED_FROM_USER",
-                    Status = 200,
-                    Message = "Pet removed from user successfully",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                }
-                : new Result<User?>
-                {
-                    Success = false,
-                    Code = "ERROR_REMOVING_PET_FROM_USER",
-                    Status = 500,
-                    Message = "An error occurred while removing pet from user",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-        }
-        catch (Exception e)
-        {
-            LogHelpers.LogError(_logger, e, "Error removing pet from user");
-            return new Result<User?>
-            {
-                Success = false,
-                Code = "ERROR_REMOVING_PET_FROM_USER",
-                Status = 500,
-                Message = "An error occurred while removing pet from user",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
             };
         }
     }

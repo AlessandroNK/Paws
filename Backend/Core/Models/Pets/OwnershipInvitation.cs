@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Backend.Core.Internal;
 using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
+using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
 using Backend.Core.Services;
 
@@ -107,8 +109,40 @@ public class OwnershipInvitation : IEncryptable
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    public void Hash()
+    public Result Hash()
     {
-        InvitationCodeHash = SecurityService.HashString(InvitationCode);
+        if (string.IsNullOrWhiteSpace(InvitationCode))
+            return new Result
+            {
+                Success = false,
+                Code = "INVALID_INVITATION_CODE",
+                Status = 400,
+                Message = "Invitation code cannot be null or empty.",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = false
+            };
+
+        var invitationResult = SecurityService.HashWithSalt(InvitationCode);
+        if (!invitationResult || invitationResult.Data is null)
+            return new Result
+            {
+                Success = false,
+                Code = "HASHING_ERROR",
+                Status = 500,
+                Message = "An error occurred while hashing the invitation code.",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = false
+            };
+
+        InvitationCodeHash = invitationResult.Data;
+        return new Result
+        {
+            Success = true,
+            Code = "SUCCESS",
+            Status = 200,
+            Message = "Invitation code hashed successfully.",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
     }
 }
