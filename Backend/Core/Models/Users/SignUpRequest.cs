@@ -44,8 +44,8 @@ public struct SignUpRequest
     [Required(ErrorMessage = "Name is required.")]
     [MaxLength(200, ErrorMessage = "The name cannot exceed 200 characters.")]
     [MinLength(1, ErrorMessage = "The name must be at least 1 character long.")]
-    [RegularExpression(@"^[\p{L}\p{M}\s'\-]+$",
-        ErrorMessage = "The name can only contain letters, spaces, hyphens, and apostrophes.")]
+    [RegularExpression(@"^[\p{L}\p{M}\s'.\-]+$",
+        ErrorMessage = "The name can only contain letters, spaces, hyphens, apostrophes, and dots.")]
     public string Name { get; set; }
 
     /// <summary>

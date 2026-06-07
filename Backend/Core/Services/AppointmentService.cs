@@ -12,12 +12,12 @@ using Backend.Core.Services.Interfaces;
 namespace Backend.Core.Services;
 
 /// <remarks>FA02</remarks>
-public class AppointmentsService(
+public class AppointmentService(
     IAppointmentsRepository appointmentsRepo,
     IAppConfigService appConfigService,
     IVetRepository vetRepo,
     ILogger<PetService> logger
-) : IAppointmentsService
+) : IAppointmentService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -71,70 +71,80 @@ public class AppointmentsService(
 
     //                                                                                                   Private Methods
     // -----------------------------------------------------------------------------------------------------------------
-    private async Task<Result<int>> PopulateFullScheduleForVet(
+    private async Task<Result<int>> PopulateDayForVet(
         Vet vet,
-        TimeRange timeRange,
+        DateTime day,
         int appointmentDuration
     )
     {
-        return new Result<int>
-        {
-            Success = true,
-            Code = "BEBUGGING",
-            Status = 200,
-            Message = "Debbuging my bruh",
-            Returnable = true
-        };
         try
         {
-            // First, we find the next space in the schedule that
-            // matches those separations
+            // Validations
+            if (day.DayOfWeek == DayOfWeek.Sunday)
+                return new Result<int>
+                {
+                    Success = false,
+                    Code = "CANNOT_POPULATE_SCHEDULE_FOR_VET_ON_SUNDAY",
+                    Status = 400,
+                    Message =
+                        $"Cannot populate schedule for vet {vet.Id} on Sunday as the vet does not work on Sundays (yet).",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // These Vets work from 8am to 9pm with no break,
+            // because we are abusive bosses with no consideration
+            // for the wellbeing of the employees, and no pinch
+            // of humanity
+            var activeHours = new HourRange
+            {
+                Start = new TimeOnly(8, 0),
+                End = new TimeOnly(21, 0),
+            };
+
+            // First, we start the appointment date
+            // to the exact hour the vet opens so
+            // no time wasted xD
             var appointmentDate = new DateTime(
-                timeRange.Start.Year,
-                timeRange.Start.Month,
-                timeRange.Start.Day,
-                timeRange.Start.Hour,
+                day.Year,
+                day.Month,
+                day.Day,
+                activeHours.Start.Hour,
+                activeHours.Start.Minute,
                 0,
-                0
+                DateTimeKind.Utc
             );
 
-            while (true)
-            {
-                // This was almost simple, but so confused at
-                // the beginning at the same time
-                appointmentDate = appointmentDate.AddMinutes(appointmentDuration);
-                if (appointmentDate < timeRange.Start) continue;
-
-                // Now we have the first appointment time, we can
-                // populate the schedule for the vet starting from that time
-                break;
-            }
-
             // Start populating
-            const int maxRetry = 4;
-            var errors = 0;
             var totalNewAppointments = 0;
-            while (appointmentDate < timeRange.End && errors < maxRetry)
+            var errors = 0;
+            while (TimeOnly.FromDateTime(appointmentDate) < activeHours.End)
             {
-                // Populate the schedule for the vet starting from the current appointment date
-                var newAppointment = new Appointment
-                {
-                    VetId = vet.Id,
-                    StartTime = appointmentDate,
-                    EndTime = appointmentDate.AddMinutes(appointmentDuration),
-                    Status = AppointmentStatus.Available
-                };
-                var result = await AddAsync(newAppointment);
-                if (result)
-                {
-                    totalNewAppointments++;
-                }
-                else
-                {
-                    errors++;
-                    result.Log(_logger);
-                }
+                // Check for appointments inside active hours
+                // because, even when we are so abusive, we
+                // don't want to be sued xD
+                var endTime = appointmentDate.AddMinutes(appointmentDuration);
+                if (
+                    TimeOnly.FromDateTime(appointmentDate) < activeHours.Start ||
+                    TimeOnly.FromDateTime(endTime) > activeHours.End
+                ) break;
 
+                // If it fits, then add it
+                var appointment = new Appointment
+                {
+                    EndTime = endTime,
+                    StartTime = appointmentDate,
+                    Status = AppointmentStatus.Available,
+                    UserPetId = null,
+                    VetId = vet.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                // Save the appointment
+                var result = await AddAsync(appointment);
+                if (result) totalNewAppointments++;
+                else errors++;
                 appointmentDate = appointmentDate.AddMinutes(appointmentDuration);
             }
 
@@ -408,8 +418,7 @@ public class AppointmentsService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result<int>> PopulateScheduleForVetAsync(Vet vet, TimeRange timeRange,
-        int appointmentDurationInMinutes)
+    public async Task<Result<int>> PopulateScheduleForVetAsync(Vet vet, TimeRange timeRange, int appointmentDuration)
     {
         try
         {
@@ -426,32 +435,16 @@ public class AppointmentsService(
                 };
 
             if (existingResult.Code == "NO_APPOINTMENTS_FOUND")
-                return await PopulateFullScheduleForVet(vet, timeRange, appointmentDurationInMinutes);
+                return await PopulateDayForVet(vet, DateTime.UtcNow.Date, appointmentDuration);
 
             return new Result<int>
             {
                 Success = false,
-                Code = "BEBUGGING",
+                Code = "DEVELOPING",
                 Status = 200,
-                Message = "Debbuging my bruh",
+                Message = "Developing...",
                 Returnable = true
             };
-            //
-            //
-            //
-            // var timePeriode = = _appConfigService.GetConfig(
-            //     AppConfigKeys.AppointmentDurationInMinutes
-            // );
-            // Console.WriteLine(appointmentDurationInMinutes.Data);
-            //
-            // return new Result
-            // {
-            //     Success = false,
-            //     Code = "BEBUGGING",
-            //     Status = 200,
-            //     Message = "Debbuging my bruh",
-            //     Returnable = true
-            // };
         }
         catch (Exception e)
         {

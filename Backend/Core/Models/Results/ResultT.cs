@@ -151,7 +151,7 @@ public class Result<T> : Result
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Cleans and hides internal information when the result is not retornable to keep intern info secure
+    /// Cleans and hides internal information when the result is not returnable to keep internal info secure
     /// </summary>
     /// <returns></returns>
     public ResultDtoT<TU> ToDto<TU>()
@@ -168,7 +168,6 @@ public class Result<T> : Result
             Errors = Returnable ? Errors : new Dictionary<string, string[]>(),
             TraceCode = TraceCode
         };
-
         if (Data is not IDtoConvertible<TU> convertibleData) return result;
 
         // We will try to convert the data to a Dto,
@@ -189,5 +188,21 @@ public class Result<T> : Result
         }
 
         return result;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Result<TU> Map<TU>(Func<T, TU> mapper)
+    {
+        return new Result<TU>
+        {
+            Success = Success,
+            Code = Code,
+            Status = Status,
+            Message = Message,
+            Data = mapper(Data),
+            Errors = Errors,
+            TraceCode = TraceCode,
+            Returnable = Returnable,
+        };
     }
 }

@@ -179,21 +179,20 @@ public class Result
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Cleans and hides internal information when the result is not retorneable to keep intern info secure
+    /// Cleans and hides internal information when the result is not returnable to keep intern info secure
     /// </summary>
     /// <returns></returns>
-    public ResultDto CleanToReturn()
+    public Result ToDto()
     {
-        // We will filter info as we need so we can
-        // return this result to the frontend securely
-        return new ResultDto
+        return new Result
         {
             Success = Success,
             Code = Returnable ? Code : "INTERNAL_ERROR",
             Status = Status,
             Message = Returnable ? Message : "An error occurred in the API",
             Errors = Returnable ? Errors : new Dictionary<string, string[]>(),
-            TraceCode = TraceCode
+            TraceCode = TraceCode,
+            Returnable = Returnable,
         };
     }
 }

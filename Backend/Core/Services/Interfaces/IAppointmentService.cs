@@ -1,13 +1,11 @@
-using Backend.Core.Models.Enums;
-using Backend.Core.Models.Relationships;
+using Backend.Core.Models.Appointments;
+using Backend.Core.Models.Intern;
+using Backend.Core.Models.Results;
 using Backend.Core.Models.Vets;
 
-namespace Backend.Core.Models.Appointments;
+namespace Backend.Core.Services.Interfaces;
 
-/// <summary>
-/// Represents a veterinary appointment for a user's pet.
-/// </summary>
-public class Appointment
+public interface IAppointmentService
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -15,35 +13,6 @@ public class Appointment
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    /// <summary>Gets or sets the appointment identifier.</summary>
-    public int Id { get; set; }
-
-    /// <summary>Gets or sets the assigned veterinarian identifier.</summary>
-    public int VetId { get; set; }
-
-    /// <summary>Gets or sets the associated veterinarian.</summary>
-    public Vet? Vet { get; set; }
-
-    /// <summary>Gets or sets the user's pet identifier.</summary>
-    public int? UserPetId { get; set; } = null;
-
-    /// <summary>Gets or sets the associated user pet.</summary>
-    public UserPet? UserPet { get; set; }
-
-    /// <summary>Gets or sets the appointment start date and time.</summary>
-    public DateTime StartTime { get; set; }
-
-    /// <summary>Gets or sets the appointment end date and time.</summary>
-    public DateTime EndTime { get; set; }
-
-    /// <summary>Gets or sets when the appointment was created.</summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>Gets or sets when the appointment was last updated.</summary>
-    public DateTime UpdatedAt { get; set; }
-
-    /// <summary>Gets or sets the current appointment status.</summary>
-    public AppointmentStatus Status { get; set; }
 
 
     //                                                                                                         Operators
@@ -64,4 +33,25 @@ public class Appointment
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<Appointment?>> AddAsync(Appointment appointment);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets appointments that are scheduled between the specified start and end times.
+    /// </summary>
+    /// <param name="vetId">The vet ID to search for appointments</param>
+    /// <param name="timeRange">The time range to search for appointments</param>
+    /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includePartialAppointments">Whether to include appointments that partially overlap with the specified
+    /// time range. If false, only appointments that are completely within the time range will be included.</param>
+    /// <returns></returns>
+    public Task<Result<List<Appointment>>> GetByVetIdAndTimeRangeAsync(
+        int vetId,
+        TimeRange timeRange,
+        StatusFilters? filters = null,
+        bool includePartialAppointments = false
+    );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<int>> PopulateAppointments();
 }

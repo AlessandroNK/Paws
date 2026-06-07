@@ -69,7 +69,23 @@ public class Vet : User, IDtoConvertible<VetResponse>, IEncryptable
             DocumentType = DocumentType,
             DocumentNumber = DocumentNumber,
             Name = Name,
-            ProfessionalLicenseNumber = ProfessionalLicenseNumber
+            ProfessionalLicenseNumber = ProfessionalLicenseNumber,
+            VetSince = VetSince
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public VetResponse ToDto()
+    {
+        return new VetResponse
+        {
+            Id = Id,
+            Email = Email,
+            DocumentType = DocumentType,
+            DocumentNumber = DocumentNumber,
+            Name = Name,
+            ProfessionalLicenseNumber = ProfessionalLicenseNumber,
+            VetSince = VetSince
         };
     }
 }

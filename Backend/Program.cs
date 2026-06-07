@@ -34,7 +34,7 @@ builder.Services.AddScoped<IVetRepository, VetRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IAppointmentsService, AppointmentsService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IAppConfigService, AppConfigService>();
 builder.Services.AddScoped<IVetService, VetService>();
 
@@ -75,11 +75,6 @@ using (var scope = app.Services.CreateScope())
     var appConfigureService = scope.ServiceProvider.GetRequiredService<IAppConfigService>();
     var result = await appConfigureService.InitializeAsync();
     if (!result) throw new InvalidOperationException("Failed to initialize app config");
-
-    // Init Appointments service
-    var appointmentsService = scope.ServiceProvider.GetRequiredService<IAppointmentsService>();
-    result = await appointmentsService.PopulateAppointments();
-    if (!result) throw new InvalidOperationException("Failed to populate appointments");
 }
 
 // Swagger

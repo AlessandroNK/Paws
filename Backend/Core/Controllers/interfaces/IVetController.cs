@@ -1,8 +1,6 @@
-using Backend.Core.Controllers.interfaces;
-namespace Backend.Core.Controllers;
+namespace Backend.Core.Controllers.interfaces;
 
-/// <remarks>FA01</remarks>
-public class AppointmentsController : IAppointmentsController
+public interface IVetController
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -30,4 +28,5 @@ public class AppointmentsController : IAppointmentsController
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+
 }

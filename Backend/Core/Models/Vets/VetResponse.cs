@@ -41,6 +41,12 @@ public struct VetResponse
     /// </summary>
     public string ProfessionalLicenseNumber { get; set; }
 
+    /// <summary>
+    /// The date when the veterinarian started practicing veterinary medicine or obtained their veterinary license.
+    /// This information can be used to determine the veterinarian's experience and expertise in the field.
+    /// </summary>
+    public DateTime VetSince { get; set; }
+
 
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------

@@ -156,7 +156,7 @@ public class UserService(
 
         if (
             request.Name is { Length: < 1 or > 200 } ||
-            !System.Text.RegularExpressions.Regex.IsMatch(request.Name, @"^[\p{L}\p{M}\s'\-]+$")
+            !System.Text.RegularExpressions.Regex.IsMatch(request.Name, @"^[\p{L}\p{M}\s'.\-]+$")
         )
             return new Result
             {
@@ -164,7 +164,7 @@ public class UserService(
                 Code = "INVALID_NAME",
                 Status = 400,
                 Message =
-                    "The name must be between 1 and 200 characters and can only contain letters, spaces, hyphens, and apostrophes",
+                    "The name must be between 1 and 200 characters and can only contain letters, spaces, hyphens, apostrophes, and dots",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

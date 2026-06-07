@@ -140,7 +140,6 @@ public class ApiController(
                 }
             );
 
-            Console.WriteLine(parsed.Message);
             pawsResponse = new PawsChatResponse
             {
                 Message = parsed!.Message,
@@ -149,8 +148,6 @@ public class ApiController(
         }
         catch (Exception e)
         {
-            Console.WriteLine("FAILED TO PARSE PAWS RESPONSE, INSULTING THE MODEL");
-            Console.WriteLine(e.Message);
             // Model didn't respect the format, I need to insult it
             pawsResponse = new PawsChatResponse
             {

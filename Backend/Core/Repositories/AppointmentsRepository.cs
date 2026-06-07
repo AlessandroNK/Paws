@@ -244,7 +244,7 @@ public class AppointmentsRepository(
 
         // Find the appointment
         var query = _dbContext.Appointments
-            .Where(p => p.Id == id);
+            .Where(a => a.Id == id);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);

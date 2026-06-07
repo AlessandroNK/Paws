@@ -28,7 +28,7 @@ public class StatusFilters
 
     #region AppointmentsSpecific
 
-    public bool IncludeFree { get; set; }
+    public bool IncludeFree { get; set; } = true;
     public bool IncludeCanceled { get; set; }
     public bool IncludeScheduled { get; set; }
     public bool IncludeCompleted { get; set; }

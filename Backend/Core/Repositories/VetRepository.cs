@@ -84,6 +84,7 @@ public class VetRepository(
                 Success = true,
                 Status = 200,
                 Code = "VETS_FOUND",
+                Message = $"Found {vets.Count} vets matching the specified filters",
                 Data = vets,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
