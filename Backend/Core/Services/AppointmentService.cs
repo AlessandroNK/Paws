@@ -418,6 +418,40 @@ public class AppointmentService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
+        StatusFilters? filters = null,
+        bool includeVet = false,
+        bool includeUser = false,
+        bool includePet = false
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting all vets");
+
+            // Search for the user
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _appointmentsRepo.GetAvailableAppointmentsAsync(filters, includeVet, includeUser, includePet),
+                operationName: "Getting all vets",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error getting all vets");
+            return new Result<List<Appointment?>>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_APPOINTMENTS",
+                Status = 500,
+                Message = "An error occurred while getting the appointments",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
     public async Task<Result<int>> PopulateScheduleForVetAsync(Vet vet, TimeRange timeRange, int appointmentDuration)
     {
         try

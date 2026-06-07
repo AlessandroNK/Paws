@@ -53,5 +53,13 @@ public interface IAppointmentService
     );
 
     // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
+        StatusFilters? filters = null,
+        bool includeVet = false,
+        bool includeUser = false,
+        bool includePet = false
+    );
+
+    // -----------------------------------------------------------------------------------------------------------------
     public Task<Result<int>> PopulateAppointments();
 }

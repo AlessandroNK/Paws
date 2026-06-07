@@ -31,4 +31,12 @@ public interface IAppointmentsController
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
+    public Task<IActionResult> GetAvailableAppointmentsAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId
+    );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<IActionResult> PopulateAppointments(
+        [FromHeader(Name = "Device-Id")] string deviceId
+    );
 }

@@ -289,4 +289,54 @@ public class AppointmentsRepository(
                 Returnable = true
             };
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
+        StatusFilters? filters = null,
+        bool includeVet = false,
+        bool includeUser = false,
+        bool includePet = false
+    )
+    {
+        // Find appointments
+        var time = DateTime.UtcNow;
+        var query = _dbContext.Appointments.AsQueryable()
+            .Where(a => a.Status == AppointmentStatus.Available && a.StartTime >= time);
+
+        // Apply status filters
+        query = ApplyStatusFilters(query, filters);
+
+        // Includes
+        if (includeVet)
+            query = query
+                .Include(a => a.Vet);
+
+        if (includeUser)
+            query = query
+                .Include(a => a.UserPet)
+                .ThenInclude(up => up.User);
+
+        if (includePet)
+            query = query
+                .Include(a => a.UserPet)
+                .ThenInclude(up => up.Pet);
+
+        query = query.AsSplitQuery();
+
+        // Execute query
+        var appointments = await query.ToListAsync();
+
+        return new Result<List<Appointment>>
+        {
+            Success = true,
+            Code = appointments.Count != 0 ? "APPOINTMENTS_FOUND" : "NO_APPOINTMENTS_FOUND",
+            Status = 200,
+            Message = appointments.Count != 0
+                ? "Appointments found successfully"
+                : "No appointments found",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true,
+            Data = appointments
+        };
+    }
 }

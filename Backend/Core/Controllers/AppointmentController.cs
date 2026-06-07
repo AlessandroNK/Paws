@@ -15,7 +15,7 @@ namespace Backend.Core.Controllers;
 public class AppointmentController(
     IAppointmentService appointmentService,
     ILogger<UserController> logger
-    ) : ControllerBase, IAppointmentsController
+) : ControllerBase, IAppointmentsController
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -53,9 +53,43 @@ public class AppointmentController(
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<IActionResult> GetAppointments()
+    [HttpGet]
+    [Route("get-available-appointments")]
+    public async Task<IActionResult> GetAvailableAppointmentsAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId
+    )
     {
-        throw new NotImplementedException();
+        try
+        {
+            _logger.LogInformation("Getting appointments for device {DeviceId}", deviceId);
+
+            // Validations
+            Env.SetInteractionCode(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Sign the user up
+            var result = await _appointmentService.GetAvailableAppointmentsAsync(includeVet: true);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.Map(
+                    vets => vets.Select(a => a.ToDto()).ToList()
+                ))
+                : BadRequest(result.ToDto());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return Ok(new Result
+            {
+                Success = false,
+                Code = "BAD_OPERATION",
+                Status = 500,
+                Message = "Something is breaking inside the API",
+                TraceCode = FileCodes.CallerIC()
+            });
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -63,7 +97,7 @@ public class AppointmentController(
     [Route("populate")]
     public async Task<IActionResult> PopulateAppointments(
         [FromHeader(Name = "Device-Id")] string deviceId
-        )
+    )
     {
         try
         {
@@ -96,4 +130,3 @@ public class AppointmentController(
         }
     }
 }
-

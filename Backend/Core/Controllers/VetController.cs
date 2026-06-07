@@ -86,12 +86,11 @@ public class VetController(
             var result = await _vetService.GetVetsAsync();
 
             // Clean the response and convert it and its data to Dto
-            var dtoResult = result.Map(
-                vets => vets.Select(v => v.ToDto()).ToList()
-            );
             return result
-                ? Ok(dtoResult)
-                : BadRequest(result.ToDto<List<VetResponse>>());
+                ? Ok(result.Map(
+                    vets => vets.Select(v => v.ToDto()).ToList()
+                ))
+                : BadRequest(result.ToDto());
         }
         catch (Exception e)
         {
