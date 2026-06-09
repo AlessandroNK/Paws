@@ -486,6 +486,17 @@ public class AppointmentService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Populates the schedule of all vets for a specific day. This method is intended to be called by a scheduled job
+    /// that runs every day at a specific time to populate the schedule of the vets for the next few days, so there are
+    /// always available appointments for the users to book. The number of days to populate can be configured in the app
+    /// settings, and if not set, it will default to a predefined value. The duration of each appointment can also be
+    /// configured in the app settings, and if not set, it will default to a predefined value. The method will check for
+    /// existing appointments before adding new ones to avoid duplicates, and it will only add appointments within the
+    /// active hours of the vets.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     public async Task<Result<int>> PopulateAppointments(AppointmetDayRequest request)
     {
         try
@@ -664,6 +675,15 @@ public class AppointmentService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Reserves an appointment for a user pet. This method will perform all the necessary validations to ensure that the
+    /// appointment can be reserved, such as checking if the appointment is still available, if the user pet relationship
+    /// exists and is valid, if the pet is active, and if the user is active. If all validations pass, the method will
+    /// update the appointment with the user pet ID and change its status to scheduled. The method will return the updated
+    /// appointment if the reservation is successful, or an error result if any.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     public async Task<Result<Appointment?>> ReserveAppointmentAsync(ReserveAppointmentRequest request)
     {
         try
@@ -893,7 +913,16 @@ public class AppointmentService(
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 }
-                : result;
+                : new Result<Appointment?>
+                {
+                    Success = true,
+                    Code = "APPOINTMENT_RESERVED_SUCCESSFULLY",
+                    Status = 200,
+                    Message = "The appointment was reserved successfully",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true,
+                    Data = result.Data
+                };
         }
         catch (Exception e)
         {
