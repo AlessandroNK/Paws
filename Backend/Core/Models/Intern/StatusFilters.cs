@@ -28,7 +28,7 @@ public class StatusFilters
 
     #region AppointmentsSpecific
 
-    public bool IncludeFree { get; set; } = true;
+    public bool IncludeAvailable { get; set; } = true;
     public bool IncludeCanceled { get; set; }
     public bool IncludeScheduled { get; set; }
     public bool IncludeCompleted { get; set; }
@@ -68,7 +68,7 @@ public class StatusFilters
         IncludeToDelete = true,
         IncludeUnverified = true,
         IncludeCanceled = true,
-        IncludeFree = true,
+        IncludeAvailable = true,
         IncludeCompleted = true,
         IncludeScheduled = true
     };
@@ -89,7 +89,7 @@ public class StatusFilters
         IncludeToDelete = false,
         IncludeUnverified = false,
         IncludeCanceled = false,
-        IncludeFree = false,
+        IncludeAvailable = false,
         IncludeCompleted = false,
         IncludeScheduled = false
     };
@@ -165,7 +165,7 @@ public class StatusFilters
     // -----------------------------------------------------------------------------------------------------------------
     public StatusFilters ThenIncludeFree()
     {
-        IncludeFree = true;
+        IncludeAvailable = true;
         return this;
     }
 
@@ -246,7 +246,7 @@ public class StatusFilters
     // -----------------------------------------------------------------------------------------------------------------
     public StatusFilters ThenExcludeFree()
     {
-        IncludeFree = false;
+        IncludeAvailable = false;
         return this;
     }
 

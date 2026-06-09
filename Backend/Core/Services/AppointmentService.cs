@@ -1,4 +1,3 @@
-using Backend.Core.Controllers.interfaces;
 using Backend.Core.Internal;
 using Backend.Core.Models.Appointments;
 using Backend.Core.Models.Enums;
@@ -612,7 +611,7 @@ public class AppointmentService(
             _logger.LogInformation("Getting all vets");
 
             // Creating day.
-            var dayResult = CreateDay(request, true);
+            var dayResult = CreateDay(request);
             if (!dayResult) return dayResult.ConvertTo<List<Appointment>>();
             var day = dayResult.Data;
 
@@ -646,7 +645,7 @@ public class AppointmentService(
             };
 
             // Search for those appointments
-            return await DbRetry.ExecuteWithRetry(
+            var result = await DbRetry.ExecuteWithRetry(
                 operation: () =>
                     _appointmentsRepo.GetAvailableAppointmentsAsync(
                         rage,
@@ -658,6 +657,42 @@ public class AppointmentService(
                 operationName: "Getting all vets",
                 logger: _logger
             );
+            if (
+                !result ||
+                result.Data is null ||
+                result.Data.Count == 0
+            )
+                return new Result<List<Appointment>>
+                {
+                    Success = false,
+                    Code = "NO_AVAILABLE_APPOINTMENTS_FOUND",
+                    Status = 404,
+                    Message = "No available appointments were found for the specified day",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var appointments =  result.Data.Where(a => a.StartTime > DateTime.UtcNow.AddMinutes(15)).ToList();
+            return appointments.Count == 0
+                ? new Result<List<Appointment>>
+                {
+                    Success = false,
+                    Code = "NO_AVAILABLE_APPOINTMENTS_FOUND",
+                    Status = 404,
+                    Message = "No available appointments were found for the specified day",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : new Result<List<Appointment>>
+                {
+                    Success = true,
+                    Code = "AVAILABLE_APPOINTMENTS_FOUND",
+                    Status = 200,
+                    Message = $"Available appointments were found for the specified day. Total available appointments: {appointments.Count}",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true,
+                    Data = appointments
+                };
         }
         catch (Exception e)
         {

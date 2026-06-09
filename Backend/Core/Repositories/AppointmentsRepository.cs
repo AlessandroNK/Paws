@@ -56,7 +56,7 @@ public class AppointmentsRepository(
     {
         filters ??= new StatusFilters();
 
-        if (!filters.IncludeFree) query = query.Where(i => i.Status != AppointmentStatus.Available);
+        if (!filters.IncludeAvailable) query = query.Where(i => i.Status != AppointmentStatus.Available);
         if (!filters.IncludeScheduled) query = query.Where(i => i.Status != AppointmentStatus.Scheduled);
         if (!filters.IncludeCompleted) query = query.Where(i => i.Status != AppointmentStatus.Completed);
         if (!filters.IncludeCanceled) query = query.Where(i => i.Status != AppointmentStatus.Canceled);
