@@ -3,6 +3,7 @@ using Backend.Core.Internal;
 using Backend.Core.Models.Appointments;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Intern;
+using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Vets;
 using Backend.Core.Policies;
@@ -16,6 +17,7 @@ public class AppointmentService(
     IAppointmentsRepository appointmentsRepo,
     IAppConfigService appConfigService,
     IVetRepository vetRepo,
+    IPetRepository petRepo,
     ILogger<PetService> logger
 ) : IAppointmentService
 {
@@ -35,6 +37,11 @@ public class AppointmentService(
     /// Provides functionality to access and manage vets.
     /// </summary>
     private readonly IVetRepository _vetRepo = vetRepo;
+
+    /// <summary>
+    /// Provides functionality to access and manage pets.
+    /// </summary>
+    private readonly IPetRepository _petRepo = petRepo;
 
     /// <summary>
     /// We wanna log!!!
@@ -131,7 +138,7 @@ public class AppointmentService(
                 activeHours.Start.Hour,
                 activeHours.Start.Minute,
                 0,
-                DateTimeKind.Utc
+                DateTimeKind.Unspecified
             );
 
             // Start populating
@@ -141,18 +148,18 @@ public class AppointmentService(
                 // Check for appointments inside active hours
                 // because, even when we are so abusive, we
                 // don't want to be sued xD
-                var endTime = appointmentStart.AddMinutes(appointmentDuration);
+                var appointmentEnd = appointmentStart.AddMinutes(appointmentDuration);
                 if (
                     TimeOnly.FromDateTime(appointmentStart) < activeHours.Start ||
-                    TimeOnly.FromDateTime(endTime) > activeHours.End
+                    TimeOnly.FromDateTime(appointmentEnd) > activeHours.End
                 ) break;
 
                 // Check for existing appointments
                 if (
                     existingAppointments.Any(a =>
                         (appointmentStart >= a.StartTime && appointmentStart < a.EndTime) ||
-                        (endTime > a.StartTime && endTime <= a.EndTime) ||
-                        (appointmentStart <= a.StartTime && endTime >= a.EndTime)
+                        (appointmentEnd > a.StartTime && appointmentEnd <= a.EndTime) ||
+                        (appointmentStart <= a.StartTime && appointmentEnd >= a.EndTime)
                     )
                 )
                 {
@@ -166,8 +173,14 @@ public class AppointmentService(
                 // If it fits, then add it
                 var appointment = new Appointment
                 {
-                    EndTime = endTime,
-                    StartTime = appointmentStart,
+                    StartTime = TimeZoneInfo.ConvertTimeToUtc(
+                        appointmentStart,
+                        Env.GetClinicTimeZone()
+                    ),
+                    EndTime = TimeZoneInfo.ConvertTimeToUtc(
+                        appointmentEnd,
+                        Env.GetClinicTimeZone()
+                    ),
                     Status = AppointmentStatus.Available,
                     UserPetId = null,
                     VetId = vet.Id,
@@ -278,15 +291,19 @@ public class AppointmentService(
                 };
         }
 
-        return new DateTime(
+        // Start with local date because user can be anywhere
+        var localDay = new DateTime(
             request.Year,
             request.Month,
             request.Day,
-            useCurrentTime ? DateTime.Now.Hour : 0,
-            useCurrentTime ? DateTime.Now.Minute : 0,
-            useCurrentTime ? DateTime.Now.Second : 0,
-            DateTimeKind.Utc
+            useCurrentTime ? DateTime.UtcNow.Hour : 0,
+            useCurrentTime ? DateTime.UtcNow.Minute : 0,
+            useCurrentTime ? DateTime.UtcNow.Second : 0,
+            DateTimeKind.Unspecified
         );
+
+        // Then I convert it to Utc so I can find things in my db
+        return TimeZoneInfo.ConvertTimeToUtc(localDay, Env.GetClinicTimeZone());
     }
 
 
@@ -375,6 +392,48 @@ public class AppointmentService(
                 Code = "ERROR_GETTING_EXISTING_APPOINTMENTS_BY_TIME_RANGE",
                 Status = 500,
                 Message = "An error occurred while getting existing appointments by time range",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets appointments that are scheduled between the specified start and end times.
+    /// </summary>
+    /// <param name="appointmentId">The appointment ID to search for</param>
+    /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeVet">Whether to include the vet in the response</param>
+    /// <param name="includeUser">Whether to include the user in the response</param>
+    /// <param name="includePet">Whether to include the pet in the response</param>
+    /// <returns></returns>
+    public async Task<Result<Appointment?>> GetByIdAsync(
+        int appointmentId,
+        StatusFilters? filters = null,
+        bool includeVet = false,
+        bool includeUser = false,
+        bool includePet = false
+    )
+    {
+        try
+        {
+            return await DbRetry.ExecuteWithRetry(
+                operation: () =>
+                    _appointmentsRepo.GetByIdAsync(appointmentId, filters, includeVet, includeUser, includePet),
+                operationName: "getting appointment by id",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error getting appointment by id");
+            return new Result<Appointment?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_APPOINTMENT_BY_ID",
+                Status = 500,
+                Message = "An error occurred while getting the appointment by id",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -598,6 +657,334 @@ public class AppointmentService(
                 Code = "ERROR_GETTING_APPOINTMENTS",
                 Status = 500,
                 Message = "An error occurred while getting the appointments",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<Appointment?>> ReserveAppointmentAsync(ReserveAppointmentRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Reserving appointment with id {AppointmentId} for user pet with id {UserPetId}",
+                request.AppointmentId, request.UserPetId);
+
+            // Get appointment
+            var filters = StatusFilters.IncludeAll();
+            var appointmentResul = await GetByIdAsync(request.AppointmentId, filters);
+            if (!appointmentResul || appointmentResul.Data is null)
+                return new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "APPOINTMENT_NOT_FOUND",
+                    Status = 404,
+                    Message = "The appointment was not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var appointment = appointmentResul.Data;
+
+            switch (appointment.Status)
+            {
+                // Validations
+                case AppointmentStatus.Scheduled:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "APPOINTMENT_ALREADY_SCHEDULED",
+                        Status = 400,
+                        Message = "The appointment is already scheduled",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case AppointmentStatus.Completed:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "APPOINTMENT_ALREADY_COMPLETED",
+                        Status = 400,
+                        Message = "The appointment is already completed",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+            }
+
+            if (appointment.StartTime < DateTime.UtcNow)
+                return new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "APPOINTMENT_IN_PAST",
+                    Status = 400,
+                    Message = "The appointment is in the past and cannot be reserved",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (appointment.StartTime <= DateTime.UtcNow.AddMinutes(15))
+                return new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "APPOINTMENT_TOO_CLOSE",
+                    Status = 400,
+                    Message =
+                        "The appointment is too close to be reserved. Appointments must be reserved at least 15 minutes in advance.",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Get user pet relationship
+            var userPet = await _petRepo.GetUserPetByIdAsync(
+                request.UserPetId,
+                filters,
+                includeUser: true,
+                includePet: true
+            );
+
+            if (!userPet || userPet.Data is null)
+                return new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "USER_PET_NOT_FOUND",
+                    Status = 404,
+                    Message = "The user pet was not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Check pet status
+            if (userPet.Data.Pet is null)
+                return new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "PET_NOT_FOUND",
+                    Status = 404,
+                    Message = "The pet was not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var pet = userPet.Data.Pet;
+
+            switch (pet.Status)
+            {
+                case EntityStatus.Inactive:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "PET_NOT_ACTIVE",
+                        Status = 400,
+                        Message = "The pet is not active and cannot be scheduled for an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Deleted:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "PET_DELETED",
+                        Status = 400,
+                        Message = "The pet is deleted and cannot be scheduled for an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Archived:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "PET_ARCHIVED",
+                        Status = 400,
+                        Message = "The pet is archived and cannot be scheduled for an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Banned:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "PET_BANNED",
+                        Status = 400,
+                        Message = "The pet is banned and cannot be scheduled for an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+            }
+
+            // Check user
+            if (userPet.Data.User is null)
+                return new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "USER_NOT_FOUND",
+                    Status = 404,
+                    Message = "The user was not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var user = userPet.Data.User;
+
+            switch (user.Status)
+            {
+                case EntityStatus.Inactive:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "USER_NOT_ACTIVE",
+                        Status = 400,
+                        Message = "The user is not active and cannot reserve an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Deleted:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "USER_DELETED",
+                        Status = 400,
+                        Message = "The user is deleted and cannot reserve an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Archived:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "USER_ARCHIVED",
+                        Status = 400,
+                        Message = "The user is archived and cannot reserve an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Banned:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "USER_BANNED",
+                        Status = 400,
+                        Message = "The user is banned and cannot reserve an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Unverified:
+                    return new Result<Appointment?>
+                    {
+                        Success = false,
+                        Code = "USER_UNVERIFIED",
+                        Status = 400,
+                        Message = "The user is unverified and cannot reserve an appointment",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+            }
+
+            // Update appointment
+            appointment.UserPetId = request.UserPetId;
+            appointment.Status = AppointmentStatus.Scheduled;
+            appointment.UpdatedAt = DateTime.UtcNow;
+            var result = await UpdateAsync(appointment);
+            if (!result || result.Data is null) result.Log(_logger, "Error reserving appointment");
+            return !result || result.Data is null
+                ? new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "ERROR_RESERVING_APPOINTMENT",
+                    Status = 500,
+                    Message = "An error occurred while reserving the appointment",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : result;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error reserving appointment");
+            return new Result<Appointment?>
+            {
+                Success = false,
+                Code = "ERROR_RESERVING_APPOINTMENT",
+                Status = 500,
+                Message = "An error occurred while reserving the appointment"
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<Appointment?>> UpdateAsync(Appointment appointment)
+    {
+        try
+        {
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _appointmentsRepo.UpdateAsync(appointment),
+                operationName: "updating appointment",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error updating appointment");
+            return new Result<Appointment?>
+            {
+                Success = false,
+                Code = "ERROR_UPDATING_APPOINTMENT",
+                Status = 500,
+                Message = "An error occurred while updating the appointment",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<UserPet?>> GetUserPetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting user pet by id {UserPetId}", id);
+
+            if (id <= 0)
+                return new Result<UserPet?>
+                {
+                    Success = false,
+                    Code = "INVALID_USER_PET_ID",
+                    Status = 400,
+                    Message = "The user pet ID is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var getResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.GetUserPetByIdAsync(id, filters, includeUser, includePet),
+                operationName: $"Getting user pet by id {id}",
+                logger: _logger
+            );
+
+            if (!getResult) return getResult;
+            if (getResult.Data is null)
+                return new Result<UserPet?>
+                {
+                    Success = false,
+                    Code = "USER_PET_NOT_FOUND",
+                    Status = 404,
+                    Message = "User pet not found"
+                };
+
+            _logger.LogInformation("User pet with id {UserPetId} retrieved successfully", id);
+            return getResult;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error getting user pet by id {id}");
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_USER_PET",
+                Status = 500,
+                Message = "An error occurred while getting the user pet. Please try again later.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

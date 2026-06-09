@@ -164,4 +164,12 @@ public interface IPetRepository
     /// <param name="filters">The filters to apply to the query</param>
     /// <returns></returns>
     public Task<Result<UserPet?>> UpdateUserPet(UserPet userPet, StatusFilters? filters = null);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<UserPet?>> GetUserPetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    );
 }

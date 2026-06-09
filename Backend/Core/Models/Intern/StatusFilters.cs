@@ -66,7 +66,11 @@ public class StatusFilters
         IncludeBanned = true,
         IncludeArchived = true,
         IncludeToDelete = true,
-        IncludeUnverified = true
+        IncludeUnverified = true,
+        IncludeCanceled = true,
+        IncludeFree = true,
+        IncludeCompleted = true,
+        IncludeScheduled = true
     };
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -83,7 +87,11 @@ public class StatusFilters
         IncludeBanned = false,
         IncludeArchived = false,
         IncludeToDelete = false,
-        IncludeUnverified = false
+        IncludeUnverified = false,
+        IncludeCanceled = false,
+        IncludeFree = false,
+        IncludeCompleted = false,
+        IncludeScheduled = false
     };
 
     // -----------------------------------------------------------------------------------------------------------------

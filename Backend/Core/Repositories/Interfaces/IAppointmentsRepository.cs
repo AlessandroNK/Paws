@@ -95,4 +95,7 @@ public interface IAppointmentsRepository
         bool includeUser = false,
         bool includePet = false
     );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<Appointment?>> UpdateAsync(Appointment appointment);
 }

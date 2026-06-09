@@ -53,6 +53,24 @@ public interface IAppointmentService
     );
 
     // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets appointments that are scheduled between the specified start and end times.
+    /// </summary>
+    /// <param name="appointmentId">The appointment ID to search for</param>
+    /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeVet">Whether to include the vet in the response</param>
+    /// <param name="includeUser">Whether to include the user in the response</param>
+    /// <param name="includePet">Whether to include the pet in the response</param
+    /// <returns></returns>
+    public Task<Result<Appointment?>> GetByIdAsync(
+        int appointmentId,
+        StatusFilters? filters = null,
+        bool includeVet = false,
+        bool includeUser = false,
+        bool includePet = false
+    );
+
+    // -----------------------------------------------------------------------------------------------------------------
     public Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
         AppointmetDayRequest request,
         StatusFilters? filters = null,
@@ -63,4 +81,7 @@ public interface IAppointmentService
 
     // -----------------------------------------------------------------------------------------------------------------
     public Task<Result<int>> PopulateAppointments(AppointmetDayRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<Appointment?>> ReserveAppointmentAsync(ReserveAppointmentRequest request);
 }

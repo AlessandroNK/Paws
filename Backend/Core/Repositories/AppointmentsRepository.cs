@@ -276,6 +276,7 @@ public class AppointmentsRepository(
         bool includePet = false
     )
     {
+
         if (id <= 0)
             return new Result<Appointment?>
             {
@@ -386,6 +387,61 @@ public class AppointmentsRepository(
             TraceCode = FileCodes.CallerIC(),
             Returnable = true,
             Data = appointments
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<Appointment?>> UpdateAsync(Appointment appointment)
+    {
+        if (appointment.Id <= 0)
+            return new Result<Appointment?>
+            {
+                Success = false,
+                Code = "INVALID_APPOINTMENT_ID",
+                Status = 400,
+                Message = "The provided appointment ID is invalid",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // Update the entity
+        _dbContext.Appointments.Update(appointment);
+        var saved = await _dbContext.SaveChangesAsync();
+        if (saved <= 0)
+            return new Result<Appointment?>
+            {
+                Success = false,
+                Code = "ERROR_UPDATING_APPOINTMENT",
+                Status = 500,
+                Message = "An error occurred while updating the appointment",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // Get the appointment back from the db
+        var filters = StatusFilters.IncludeAll();
+        Console.WriteLine(appointment.Id);
+        var getAppointmentResult = await GetByIdAsync(appointment.Id, filters);
+        if (!getAppointmentResult || getAppointmentResult.Data == null)
+            return new Result<Appointment?>
+            {
+                Success = false,
+                Code = "APPOINTMENT_UPDATED_BUT_NOT_FOUND",
+                Status = 500,
+                Message = "Appointment updated but not found when retrieving it",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        return new Result<Appointment?>
+        {
+            Success = true,
+            Code = "APPOINTMENT_UPDATED",
+            Status = 200,
+            Message = "Appointment updated successfully",
+            Data = getAppointmentResult.Data,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
         };
     }
 }

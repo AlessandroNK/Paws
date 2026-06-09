@@ -771,4 +771,62 @@ public class PetRepository(
             Returnable = true
         };
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<UserPet?>> GetUserPetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    )
+    {
+        if (id <= 0)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "INVALID_USER_PET_ID",
+                Status = 400,
+                Message = "The provided user-pet relationship ID is invalid",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // Find the user pet
+        var query = _dbContext.UserPets
+            .Where(up => up.Id == id);
+
+        // Apply status filters
+        query = ApplyStatusFilters(query, filters);
+
+        // Includes
+        if (includeUser) query = query.Include(p => p.User);
+        if (includePet) query = query.Include(p => p.Pet);
+
+        query = query.AsSplitQuery();
+
+        // Execute query
+        var userPet = await query.FirstOrDefaultAsync();
+        if (userPet is null)
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "USER_PET_RELATIONSHIP_NOT_FOUND",
+                Status = 404,
+                Message = "No user-pet relationship found with the provided id",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // Decrypt and return
+        return new Result<UserPet?>
+        {
+            Success = true,
+            Code = "USER_PET_RELATIONSHIP_FOUND",
+            Status = 200,
+            Message = "User-pet relationship found successfully",
+            Data = userPet,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
+    }
 }

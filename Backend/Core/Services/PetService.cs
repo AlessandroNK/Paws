@@ -947,7 +947,7 @@ public class PetService(
                     Returnable = true
                 };
 
-            if (userPet.Status ==  EntityStatus.Banned)
+            if (userPet.Status == EntityStatus.Banned)
                 return new Result
                 {
                     Success = false,
@@ -958,7 +958,7 @@ public class PetService(
                     Returnable = true
                 };
 
-            if (userPet.Status ==  EntityStatus.Deleted)
+            if (userPet.Status == EntityStatus.Deleted)
                 return new Result
                 {
                     Success = false,
@@ -1513,6 +1513,63 @@ public class PetService(
                 Code = "ERROR_REMOVING_PET_FROM_USER",
                 Status = 500,
                 Message = "An error occurred while removing pet from user",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<UserPet?>> GetUserPetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting user pet by id {UserPetId}", id);
+
+            if (id <= 0)
+                return new Result<UserPet?>
+                {
+                    Success = false,
+                    Code = "INVALID_USER_PET_ID",
+                    Status = 400,
+                    Message = "The user pet ID is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var getResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _petRepo.GetUserPetByIdAsync(id, filters, includeUser, includePet),
+                operationName: $"Getting user pet by id {id}",
+                logger: _logger
+            );
+
+            if (!getResult) return getResult;
+            if (getResult.Data is null)
+                return new Result<UserPet?>
+                {
+                    Success = false,
+                    Code = "USER_PET_NOT_FOUND",
+                    Status = 404,
+                    Message = "User pet not found"
+                };
+
+            _logger.LogInformation("User pet with id {UserPetId} retrieved successfully", id);
+            return getResult;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error getting user pet by id {id}");
+            return new Result<UserPet?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_USER_PET",
+                Status = 500,
+                Message = "An error occurred while getting the user pet. Please try again later.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

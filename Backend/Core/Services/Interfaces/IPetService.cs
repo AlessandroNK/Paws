@@ -1,5 +1,6 @@
 using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
+using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
 
@@ -121,4 +122,12 @@ public interface IPetService
     /// <param name="request"></param>
     /// <returns></returns>
     public Task<Result<Pet?>> RemovePetAsync(RemovePetRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<UserPet?>> GetUserPetByIdAsync(
+        int id,
+        StatusFilters? filters = null,
+        bool includeUser = false,
+        bool includePet = false
+    );
 }

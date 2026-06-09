@@ -75,8 +75,7 @@ public class AppointmentController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.Map(
-                    vets => vets.Select(a => a.ToScheduleDto()).ToList()
+                ? Ok(result.Map(vets => vets.Select(a => a.ToScheduleDto()).ToList()
                 ))
                 : BadRequest(result.ToDto());
         }
@@ -118,6 +117,45 @@ public class AppointmentController(
             return result
                 ? Ok(result.ToDto())
                 : BadRequest(result.ToDto());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return Ok(new Result
+            {
+                Success = false,
+                Code = "BAD_OPERATION",
+                Status = 500,
+                Message = "Something is breaking inside the API",
+                TraceCode = FileCodes.CallerIC()
+            });
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    [HttpPost]
+    [Route("reserve-appointment")]
+    public async Task<IActionResult> ReserveAppointmentAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] ReserveAppointmentRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Reserving appointment for device {DeviceId}", deviceId);
+
+            // Validations
+            Env.SetInteractionCode(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Reserve the appointment
+            var result = await _appointmentService.ReserveAppointmentAsync(request);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToDto<AppointmentResponse>())
+                : BadRequest(result.ToDto<AppointmentResponse>());
         }
         catch (Exception e)
         {

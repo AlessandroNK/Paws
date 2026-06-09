@@ -1,6 +1,6 @@
 namespace Backend.Core.Models.Appointments;
 
-public class AppointmetDayRequest
+public class ReserveAppointmentRequest
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -8,11 +8,9 @@ public class AppointmetDayRequest
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
-    public int Year { get; set; }
-    public int Month { get; set; }
-    public int Day { get; set; }
+    public int AppointmentId { get; set; }
 
-    // TODO add local Time Zone prop
+    public int UserPetId { get; set; }
 
 
     //                                                                                                         Operators

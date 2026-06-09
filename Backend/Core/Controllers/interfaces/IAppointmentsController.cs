@@ -42,4 +42,10 @@ public interface IAppointmentsController
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] AppointmetDayRequest request
     );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<IActionResult> ReserveAppointmentAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] ReserveAppointmentRequest request
+        );
 }

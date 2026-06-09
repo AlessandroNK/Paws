@@ -18,6 +18,8 @@ public static class Env
 
     private static string InteractionCode { get; set; }
 
+    private static readonly TimeZoneInfo ClinicTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Bogota");
+
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -116,5 +118,15 @@ public static class Env
             {
                 WriteIndented = true
             });
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static TimeZoneInfo GetClinicTimeZone() => ClinicTimeZone;
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static DateTime ToClinicLocal(DateTime utcTime)
+    {
+        var utc = DateTime.SpecifyKind(utcTime, DateTimeKind.Utc);
+        return TimeZoneInfo.ConvertTimeFromUtc(utc, ClinicTimeZone);
     }
 }
