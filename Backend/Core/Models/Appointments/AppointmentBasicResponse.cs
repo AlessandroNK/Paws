@@ -1,17 +1,28 @@
-using Backend.Core.Models.Appointments;
-using Backend.Core.Models.Results;
-using Microsoft.AspNetCore.Mvc;
+using Backend.Core.Models.Vets;
 
-namespace Backend.Core.Controllers.interfaces;
+namespace Backend.Core.Models.Appointments;
 
-public interface IAppointmentsController
+public class AppointmentBasicResponse
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
 
 
     //                                                                                                 Public Properties
-    // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------/// <summary>Gets or sets the appointment identifier.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Gets or sets the assigned veterinarian identifier.</summary>
+    public int VetId { get; set; }
+
+    /// <summary>Gets or sets the associated veterinarian.</summary>
+    public VetBasicResponse? Vet { get; set; }
+
+    /// <summary>Gets or sets the appointment start date and time.</summary>
+    public DateTime StartTime { get; set; }
+
+    /// <summary>Gets or sets the appointment end date and time.</summary>
+    public DateTime EndTime { get; set; }
 
 
     //                                                                                                         Operators
@@ -32,14 +43,5 @@ public interface IAppointmentsController
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<IActionResult> GetAvailableAppointmentsAsync(
-        [FromHeader(Name = "Device-Id")] string deviceId,
-        [FromBody] AppointmetDayRequest request
-    );
 
-    // -----------------------------------------------------------------------------------------------------------------
-    public Task<IActionResult> PopulateAppointments(
-        [FromHeader(Name = "Device-Id")] string deviceId,
-        [FromBody] AppointmetDayRequest request
-    );
 }

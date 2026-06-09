@@ -54,6 +54,7 @@ public interface IAppointmentService
 
     // -----------------------------------------------------------------------------------------------------------------
     public Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
+        AppointmetDayRequest request,
         StatusFilters? filters = null,
         bool includeVet = false,
         bool includeUser = false,
@@ -61,5 +62,5 @@ public interface IAppointmentService
     );
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<Result<int>> PopulateAppointments();
+    public Task<Result<int>> PopulateAppointments(AppointmetDayRequest request);
 }

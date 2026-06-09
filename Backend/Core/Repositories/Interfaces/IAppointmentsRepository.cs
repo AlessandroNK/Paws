@@ -67,6 +67,9 @@ public interface IAppointmentsRepository
     public Task<Result<Appointment?>> AddAsync(Appointment appointment);
 
     // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<int>> AddRangeAsync(List<Appointment> appointments);
+
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Gets an appointment by its ID.
     /// </summary>
@@ -86,6 +89,7 @@ public interface IAppointmentsRepository
 
     // -----------------------------------------------------------------------------------------------------------------
     public Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
+        TimeRange range,
         StatusFilters? filters = null,
         bool includeVet = false,
         bool includeUser = false,

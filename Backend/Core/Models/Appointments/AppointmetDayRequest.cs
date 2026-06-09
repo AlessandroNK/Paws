@@ -1,10 +1,6 @@
-using Backend.Core.Models.Appointments;
-using Backend.Core.Models.Results;
-using Microsoft.AspNetCore.Mvc;
+namespace Backend.Core.Models.Appointments;
 
-namespace Backend.Core.Controllers.interfaces;
-
-public interface IAppointmentsController
+public class AppointmetDayRequest
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -12,6 +8,9 @@ public interface IAppointmentsController
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
+    public int Year { get; set; }
+    public int Month { get; set; }
+    public int Day { get; set; }
 
 
     //                                                                                                         Operators
@@ -32,14 +31,5 @@ public interface IAppointmentsController
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<IActionResult> GetAvailableAppointmentsAsync(
-        [FromHeader(Name = "Device-Id")] string deviceId,
-        [FromBody] AppointmetDayRequest request
-    );
 
-    // -----------------------------------------------------------------------------------------------------------------
-    public Task<IActionResult> PopulateAppointments(
-        [FromHeader(Name = "Device-Id")] string deviceId,
-        [FromBody] AppointmetDayRequest request
-    );
 }

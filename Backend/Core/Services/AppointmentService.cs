@@ -79,6 +79,25 @@ public class AppointmentService(
     {
         try
         {
+            // Creating day time range to check for existing
+            var range = new TimeRange
+            {
+                Start = day,
+                End = day.AddDays(1)
+            };
+            var existingResult = await GetByVetIdAndTimeRangeAsync(vet.Id, range);
+            if (!existingResult)
+                return new Result<int>
+                {
+                    Success = false,
+                    Code = "ERROR_GETTING_EXISTING_APPOINTMENTS",
+                    Status = 500,
+                    Message = "An error occurred while getting existing appointments",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var existingAppointments = existingResult.Data ?? new List<Appointment>();
+
             // Validations
             if (day.DayOfWeek == DayOfWeek.Sunday)
                 return new Result<int>
@@ -105,7 +124,7 @@ public class AppointmentService(
             // First, we start the appointment date
             // to the exact hour the vet opens so
             // no time wasted xD
-            var appointmentDate = new DateTime(
+            var appointmentStart = new DateTime(
                 day.Year,
                 day.Month,
                 day.Day,
@@ -116,24 +135,39 @@ public class AppointmentService(
             );
 
             // Start populating
-            var totalNewAppointments = 0;
-            var errors = 0;
-            while (TimeOnly.FromDateTime(appointmentDate) < activeHours.End)
+            var appointments = new List<Appointment>();
+            while (TimeOnly.FromDateTime(appointmentStart) < activeHours.End)
             {
                 // Check for appointments inside active hours
                 // because, even when we are so abusive, we
                 // don't want to be sued xD
-                var endTime = appointmentDate.AddMinutes(appointmentDuration);
+                var endTime = appointmentStart.AddMinutes(appointmentDuration);
                 if (
-                    TimeOnly.FromDateTime(appointmentDate) < activeHours.Start ||
+                    TimeOnly.FromDateTime(appointmentStart) < activeHours.Start ||
                     TimeOnly.FromDateTime(endTime) > activeHours.End
                 ) break;
+
+                // Check for existing appointments
+                if (
+                    existingAppointments.Any(a =>
+                        (appointmentStart >= a.StartTime && appointmentStart < a.EndTime) ||
+                        (endTime > a.StartTime && endTime <= a.EndTime) ||
+                        (appointmentStart <= a.StartTime && endTime >= a.EndTime)
+                    )
+                )
+                {
+                    // If there is an existing appointment that
+                    // overlaps with the current appointment date,
+                    // we skip it. ANd yes, I almost lose my mind here
+                    appointmentStart = appointmentStart.AddMinutes(appointmentDuration);
+                    continue;
+                }
 
                 // If it fits, then add it
                 var appointment = new Appointment
                 {
                     EndTime = endTime,
-                    StartTime = appointmentDate,
+                    StartTime = appointmentStart,
                     Status = AppointmentStatus.Available,
                     UserPetId = null,
                     VetId = vet.Id,
@@ -142,11 +176,23 @@ public class AppointmentService(
                 };
 
                 // Save the appointment
-                var result = await AddAsync(appointment);
-                if (result) totalNewAppointments++;
-                else errors++;
-                appointmentDate = appointmentDate.AddMinutes(appointmentDuration);
+                appointments.Add(appointment);
+                appointmentStart = appointmentStart.AddMinutes(appointmentDuration);
             }
+
+            // Save them
+            var result = await AddRangeAsync(appointments);
+            if (!result)
+                return new Result<int>
+                {
+                    Success = false,
+                    Code = "ERROR_ADDING_NEW_APPOINTMENTS",
+                    Status = 500,
+                    Message = $"An error occurred while adding new appointments for vet {vet.Id}",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var errors = appointments.Count - result.Data;
 
             // Finished!!
             return errors == 0
@@ -156,10 +202,10 @@ public class AppointmentService(
                     Code = "SCHEDULE_POPULATED_SUCCESSFULLY_FOR_VET",
                     Status = 200,
                     Message =
-                        $"Schedule populated successfully for vet {vet.Id}. Total appointments added: {totalNewAppointments}",
+                        $"Schedule populated successfully for vet {vet.Id}. Total appointments added: {result.Data}",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
-                    Data = totalNewAppointments
+                    Data = result.Data
                 }
                 : new Result<int>
                 {
@@ -167,10 +213,10 @@ public class AppointmentService(
                     Code = "SCHEDULE_POPULATED_WITH_ERRORS_FOR_VET",
                     Status = 500,
                     Message =
-                        $"Schedule populated for vet {vet.Id} with {errors} errors. Total appointments added: {totalNewAppointments}. Check logs for more details.",
+                        $"Schedule populated for vet {vet.Id} with {errors} errors. Total appointments added: {result.Data}. Check logs for more details.",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
-                    Data = totalNewAppointments
+                    Data = result.Data
                 };
         }
         catch (Exception e)
@@ -187,6 +233,60 @@ public class AppointmentService(
                 Returnable = true
             };
         }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    private static Result<DateTime> CreateDay(AppointmetDayRequest request, bool useCurrentTime = false)
+    {
+        if (request.Day < 1 || request.Day > 31 || request.Month < 1 || request.Month > 12 || request.Year < 1)
+            return new Result<DateTime>
+            {
+                Success = false,
+                Code = "INVALID_DATE",
+                Status = 400,
+                Message = "The provided date is invalid",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        switch (request.Month)
+        {
+            case 2:
+            {
+                var isLeapYear = DateTime.IsLeapYear(request.Year);
+                if (request.Day > 29 || (request.Day == 29 && !isLeapYear))
+                    return new Result<DateTime>
+                    {
+                        Success = false,
+                        Code = "INVALID_DATE",
+                        Status = 400,
+                        Message = "The provided date is invalid",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                break;
+            }
+            case 4 or 6 or 9 or 11 when request.Day > 30:
+                return new Result<DateTime>
+                {
+                    Success = false,
+                    Code = "INVALID_DATE",
+                    Status = 400,
+                    Message = "The provided date is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+        }
+
+        return new DateTime(
+            request.Year,
+            request.Month,
+            request.Day,
+            useCurrentTime ? DateTime.Now.Hour : 0,
+            useCurrentTime ? DateTime.Now.Minute : 0,
+            useCurrentTime ? DateTime.Now.Second : 0,
+            DateTimeKind.Utc
+        );
     }
 
 
@@ -211,6 +311,32 @@ public class AppointmentService(
                 Code = "ERROR_ADDING_NEW_APPOINTMENT",
                 Status = 500,
                 Message = "An error occurred while adding a new appointment",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<int>> AddRangeAsync(List<Appointment> appointments)
+    {
+        try
+        {
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _appointmentsRepo.AddRangeAsync(appointments),
+                operationName: "adding new appointments",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error adding new appointments");
+            return new Result<int>
+            {
+                Success = false,
+                Code = "ERROR_ADDING_NEW_APPOINTMENTS",
+                Status = 500,
+                Message = "An error occurred while adding new appointments",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -301,7 +427,7 @@ public class AppointmentService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result<int>> PopulateAppointments()
+    public async Task<Result<int>> PopulateAppointments(AppointmetDayRequest request)
     {
         try
         {
@@ -316,19 +442,6 @@ public class AppointmentService(
             )
                 ? parsedAppointmentDurationInMinutes
                 : DefaultAppointmentDurationInMinutes;
-
-            // This is the period of time we will populate,
-            // meaning, this is the number of days we will
-            // populate starting now
-            var daysToPopulateAppointmentsResult = _appConfigService.GetConfig(
-                AppConfigKeys.DaysToPopulateAppointments
-            );
-            var daysToPopulateAppointments = int.TryParse(
-                daysToPopulateAppointmentsResult?.Data?.ToString(),
-                out var parsedTimePeriodInDays
-            )
-                ? parsedTimePeriodInDays
-                : DefaultDaysToPopulateAppointments;
 
             // Get vets from db to know for which vets we will populate the schedule
             var vetsResult = await _vetRepo.GetVetsAsync();
@@ -354,20 +467,18 @@ public class AppointmentService(
                     Returnable = true
                 };
 
-            var start = DateTime.UtcNow;
-            var end = DateTime.UtcNow.AddDays(daysToPopulateAppointments);
-            var timeRange = new TimeRange
-            {
-                Start = start,
-                End = end
-            };
+            // Creating day.
+            var dayResult = CreateDay(request);
+            if (!dayResult) return dayResult.ConvertTo<int>();
+            var day = dayResult.Data;
+
 
             // Iterate each vet
             var totalAppointmentsAdded = 0;
             var anyError = false;
             foreach (var vet in vets)
             {
-                var populateResult = await PopulateScheduleForVetAsync(vet, timeRange, appointmentDurationInMinutes);
+                var populateResult = await PopulateDayForVet(vet, day, appointmentDurationInMinutes);
                 if (populateResult)
                 {
                     totalAppointmentsAdded += populateResult.Data;
@@ -419,6 +530,7 @@ public class AppointmentService(
 
     // -----------------------------------------------------------------------------------------------------------------
     public async Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
+        AppointmetDayRequest request,
         StatusFilters? filters = null,
         bool includeVet = false,
         bool includeUser = false,
@@ -429,9 +541,50 @@ public class AppointmentService(
         {
             _logger.LogInformation("Getting all vets");
 
-            // Search for the user
+            // Creating day.
+            var dayResult = CreateDay(request, true);
+            if (!dayResult) return dayResult.ConvertTo<List<Appointment>>();
+            var day = dayResult.Data;
+
+            // Day validations
+            if (day < DateTime.UtcNow.Date)
+                return new Result<List<Appointment>>
+                {
+                    Success = false,
+                    Code = "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS",
+                    Status = 400,
+                    Message = "Cannot get available appointments for past days",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (day.DayOfWeek == DayOfWeek.Sunday)
+                return new Result<List<Appointment>>
+                {
+                    Success = false,
+                    Code = "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_SUNDAY",
+                    Status = 400,
+                    Message = "Cannot get available appointments for Sunday as the vets do not work on Sundays (yet).",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var rage = new TimeRange
+            {
+                Start = day,
+                End = day.AddDays(1)
+            };
+
+            // Search for those appointments
             return await DbRetry.ExecuteWithRetry(
-                operation: () => _appointmentsRepo.GetAvailableAppointmentsAsync(filters, includeVet, includeUser, includePet),
+                operation: () =>
+                    _appointmentsRepo.GetAvailableAppointmentsAsync(
+                        rage,
+                        filters,
+                        includeVet,
+                        includeUser,
+                        includePet
+                    ),
                 operationName: "Getting all vets",
                 logger: _logger
             );
@@ -439,56 +592,12 @@ public class AppointmentService(
         catch (Exception e)
         {
             LogHelpers.LogError(_logger, e, "Error getting all vets");
-            return new Result<List<Appointment?>>
+            return new Result<List<Appointment>>
             {
                 Success = false,
                 Code = "ERROR_GETTING_APPOINTMENTS",
                 Status = 500,
                 Message = "An error occurred while getting the appointments",
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            };
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result<int>> PopulateScheduleForVetAsync(Vet vet, TimeRange timeRange, int appointmentDuration)
-    {
-        try
-        {
-            var existingResult = await GetByVetIdAndTimeRangeAsync(vet.Id, timeRange);
-            if (!existingResult)
-                return new Result<int>
-                {
-                    Success = false,
-                    Code = "ERROR_GETTING_EXISTING_APPOINTMENTS",
-                    Status = 500,
-                    Message = "An error occurred while getting existing appointments",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            if (existingResult.Code == "NO_APPOINTMENTS_FOUND")
-                return await PopulateDayForVet(vet, DateTime.UtcNow.Date, appointmentDuration);
-
-            return new Result<int>
-            {
-                Success = false,
-                Code = "DEVELOPING",
-                Status = 200,
-                Message = "Developing...",
-                Returnable = true
-            };
-        }
-        catch (Exception e)
-        {
-            LogHelpers.LogError(_logger, e, "Error getting existing appointments by time range");
-            return new Result<int>
-            {
-                Success = false,
-                Code = "ERROR_GETTING_EXISTING_APPOINTMENTS_BY_TIME_RANGE",
-                Status = 500,
-                Message = "An error occurred while getting existing appointments by time range",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

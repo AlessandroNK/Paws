@@ -1,5 +1,6 @@
 using Backend.Core.Controllers.interfaces;
 using Backend.Core.Internal;
+using Backend.Core.Models.Appointments;
 using Backend.Core.Models.Results;
 using Backend.Core.Services;
 using Backend.Core.Services.Interfaces;
@@ -56,7 +57,8 @@ public class AppointmentController(
     [HttpGet]
     [Route("get-available-appointments")]
     public async Task<IActionResult> GetAvailableAppointmentsAsync(
-        [FromHeader(Name = "Device-Id")] string deviceId
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] AppointmetDayRequest request
     )
     {
         try
@@ -69,12 +71,12 @@ public class AppointmentController(
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the user up
-            var result = await _appointmentService.GetAvailableAppointmentsAsync(includeVet: true);
+            var result = await _appointmentService.GetAvailableAppointmentsAsync(request, includeVet: true);
 
             // Clean the response and convert it and its data to Dto
             return result
                 ? Ok(result.Map(
-                    vets => vets.Select(a => a.ToDto()).ToList()
+                    vets => vets.Select(a => a.ToScheduleDto()).ToList()
                 ))
                 : BadRequest(result.ToDto());
         }
@@ -96,7 +98,8 @@ public class AppointmentController(
     [HttpPost]
     [Route("populate")]
     public async Task<IActionResult> PopulateAppointments(
-        [FromHeader(Name = "Device-Id")] string deviceId
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] AppointmetDayRequest request
     )
     {
         try
@@ -109,7 +112,7 @@ public class AppointmentController(
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the user up
-            var result = await _appointmentService.PopulateAppointments();
+            var result = await _appointmentService.PopulateAppointments(request);
 
             // Clean the response and convert it and its data to Dto
             return result

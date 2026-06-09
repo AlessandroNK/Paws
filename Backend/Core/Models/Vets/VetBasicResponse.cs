@@ -2,7 +2,7 @@ using Backend.Core.Models.Enums;
 
 namespace Backend.Core.Models.Vets;
 
-public struct VetResponse
+public struct VetBasicResponse
 {
     //                                                                                                Private Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -16,30 +16,9 @@ public struct VetResponse
     public int Id  { get; init; }
 
     /// <summary>
-    /// The email in a readable string to return to the frontend
-    /// </summary>
-    public string Email { get; set; }
-
-    /// <summary>
-    /// The type of the document of the user.
-    /// </summary>
-    public DocumentType DocumentType { get; init; }
-
-    /// <summary>
-    /// The number of identification like we are simple elements named by random numbers
-    /// </summary>
-    public string DocumentNumber { get; set; }
-
-    /// <summary>
     /// The name of the user.
     /// </summary>
     public string Name { get; set; }
-
-    /// <summary>
-    /// The professional license number issued to the veterinarian by the
-    /// relevant authority or licensing board.
-    /// </summary>
-    public string ProfessionalLicenseNumber { get; set; }
 
     /// <summary>
     /// A file path to the veterinarian's profile picture. This can be used in the UI to display the veterinarian's

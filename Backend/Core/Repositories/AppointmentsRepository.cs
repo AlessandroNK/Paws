@@ -214,6 +214,51 @@ public class AppointmentsRepository(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<int>> AddRangeAsync(List<Appointment> appointments)
+    {
+        foreach (var appointment in appointments)
+        {
+            // Validations
+            if (appointment.VetId <= 0)
+                return new Result<int>
+                {
+                    Success = false,
+                    Code = "INVALID_VET_ID",
+                    Status = 400,
+                    Message = "Invalid veterinarian ID",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+        }
+
+        // Save those entities
+        _dbContext.Appointments.AddRange(appointments);
+        var saved = await _dbContext.SaveChangesAsync();
+        if (saved <= 0)
+            return new Result<int>
+            {
+                Success = false,
+                Code = "ERROR_CREATING_APPOINTMENTS",
+                Status = 500,
+                Message = "An error occurred while creating the appointments",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        return new Result<int>
+        {
+            Success = true,
+            Code = "APPOINTMENTS_CREATED",
+            Status = 201,
+            Message = "Appointments created successfully",
+            Data = saved,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
+    }
+
+
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Gets an appointment by its ID.
     /// </summary>
@@ -292,6 +337,7 @@ public class AppointmentsRepository(
 
     // -----------------------------------------------------------------------------------------------------------------
     public async Task<Result<List<Appointment>>> GetAvailableAppointmentsAsync(
+        TimeRange range,
         StatusFilters? filters = null,
         bool includeVet = false,
         bool includeUser = false,
@@ -299,9 +345,12 @@ public class AppointmentsRepository(
     )
     {
         // Find appointments
-        var time = DateTime.UtcNow;
         var query = _dbContext.Appointments.AsQueryable()
-            .Where(a => a.Status == AppointmentStatus.Available && a.StartTime >= time);
+            .Where(a =>
+                a.Status == AppointmentStatus.Available &&
+                a.StartTime >= range.Start &&
+                a.EndTime <= range.End
+            );
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);

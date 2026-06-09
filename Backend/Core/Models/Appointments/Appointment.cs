@@ -95,4 +95,17 @@ public class Appointment : IDtoConvertible<AppointmentResponse>
             UpdatedAt = UpdatedAt
         };
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public AppointmentBasicResponse ToScheduleDto()
+    {
+        return new AppointmentBasicResponse
+        {
+            Id = Id,
+            VetId = VetId,
+            Vet = Vet?.ToBasicDto(),
+            StartTime = StartTime,
+            EndTime = EndTime
+        };
+    }
 }

@@ -36,6 +36,21 @@ public class Vet : User, IDtoConvertible<VetResponse>, IEncryptable
     public DateTime VetSince { get; set; }
 
     /// <summary>
+    /// A file path to the veterinarian's profile picture. This can be used in the UI to display the veterinarian's
+    /// image, making their profile more personalized and recognizable to users.
+    /// </summary>
+    [EncryptProperty]
+    public string ProfilePicture { get; set; }
+
+    /// <summary>
+    /// Any interesting or fun fact about the veterinarian that can be displayed in the UI to make their profile more
+    /// engaging and personable. This could include hobbies, unique experiences, or any other information that adds a
+    /// personal touch to their profile.
+    /// </summary>
+    [EncryptProperty]
+    public string FunFact { get; set; }
+
+    /// <summary>
     /// A list of appointments associated with this veterinarian. The list is
     /// initialized to an empty collection to avoid null reference issues.
     /// </summary>
@@ -70,7 +85,9 @@ public class Vet : User, IDtoConvertible<VetResponse>, IEncryptable
             DocumentNumber = DocumentNumber,
             Name = Name,
             ProfessionalLicenseNumber = ProfessionalLicenseNumber,
-            VetSince = VetSince
+            VetSince = VetSince,
+            ProfilePicture = ProfilePicture,
+            FunFact = FunFact
         };
     }
 
@@ -85,6 +102,21 @@ public class Vet : User, IDtoConvertible<VetResponse>, IEncryptable
             DocumentNumber = DocumentNumber,
             Name = Name,
             ProfessionalLicenseNumber = ProfessionalLicenseNumber,
+            VetSince = VetSince,
+            ProfilePicture = ProfilePicture,
+            FunFact = FunFact
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public VetBasicResponse ToBasicDto()
+    {
+        return new VetBasicResponse
+        {
+            Id = Id,
+            Name = Name,
+            ProfilePicture = ProfilePicture,
+            FunFact = FunFact,
             VetSince = VetSince
         };
     }
