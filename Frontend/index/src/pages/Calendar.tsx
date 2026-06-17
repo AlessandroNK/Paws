@@ -1,3 +1,4 @@
+import "./Calendar.css"
 import {useEffect, useRef, useState} from "react";
 import {Components, Day, Result} from "../types/CommonTypes.ts";
 import * as LanguageService from "../services/LanguageService.ts";
@@ -27,8 +28,8 @@ function Calendar() {
             uiMessage.type = result.success ? MessageType.SUCCESS : MessageType.ERROR;
             uiMessage.mood = result.success ? MessageMood.HAPPY : MessageMood.SAD;
             uiMessage.duration = MessageDuration.MEDIUM;
+            uiMessage.component = result.component;
             uiMessage.code = result.code;
-            uiMessage.component = Components.CALENDAR;
             pushMessages.push(uiMessage);
         }
 
@@ -62,9 +63,23 @@ function Calendar() {
             const result = await AppointmentsService.getAvailableAppointmentsApi(selectedDate);
             isFetchingApi.current = false;
 
-            // Show errors up
+            console.log("===============")
+            console.log(result)
+            console.log("===============")
             showErrorsAsPushMessages(result);
-            if (result.code === "NO_AVAILABLE_APPOINTMENTS_FOUND") return
+            // Validations
+            if (
+                result.code === "NO_AVAILABLE_APPOINTMENTS_FOUND" ||
+                result.code === "INVALID_DATE" ||
+                result.code === "APPOINTMENTS_FETCH_ERROR" ||
+                result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS"
+            ) return
+
+            // Show errors up
+            // if (!result.data)
+            console.log(result)
+
+
             // // Response codes
             // if (result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS")
             //

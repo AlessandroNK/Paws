@@ -1,5 +1,6 @@
 using Backend.Core.Controllers.interfaces;
 using Backend.Core.Internal;
+using Backend.Core.Models.Enums;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
 using Backend.Core.Services;
@@ -97,14 +98,16 @@ public class UserController(
         catch (Exception e)
         {
             LogHelpers.LogError(_logger, e);
-            return Ok(new Result
-            {
-                Success = false,
-                Code = "BAD_OPERATION",
-                Status = 500,
-                Title = "Something is breaking inside the API",
-                TraceCode = FileCodes.CallerIC()
-            });
+            return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Kind = ApiResponseKind.Error,
+                    Code = "BAD_OPERATION",
+                    Status = 500,
+                    Title = "Something is breaking inside the API",
+                    TraceCode = FileCodes.CallerIC()
+                }
+            );
         }
     }
 
@@ -146,14 +149,16 @@ public class UserController(
         catch (Exception e)
         {
             LogHelpers.LogError(_logger, e);
-            return Ok(new Result
-            {
-                Success = false,
-                Code = "BAD_OPERATION",
-                Status = 500,
-                Title = "Something is breaking inside the API",
-                TraceCode = FileCodes.CallerIC()
-            });
+            return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Kind = ApiResponseKind.Error,
+                    Code = "BAD_OPERATION",
+                    Status = 500,
+                    Title = "Something is breaking inside the API",
+                    TraceCode = FileCodes.CallerIC()
+                }
+            );
         }
     }
 
@@ -194,14 +199,16 @@ public class UserController(
         catch (Exception e)
         {
             LogHelpers.LogError(_logger, e);
-            return Ok(new Result
-            {
-                Success = false,
-                Code = "BAD_OPERATION",
-                Status = 500,
-                Title = "Something is breaking inside the API",
-                TraceCode = FileCodes.CallerIC()
-            });
+            return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Kind = ApiResponseKind.Error,
+                    Code = "BAD_OPERATION",
+                    Status = 500,
+                    Title = "Something is breaking inside the API",
+                    TraceCode = FileCodes.CallerIC()
+                }
+            );
         }
     }
 

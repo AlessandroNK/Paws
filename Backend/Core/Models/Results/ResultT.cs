@@ -193,18 +193,18 @@ public class Result<T> : Result
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Result<TU> Map<TU>(Func<T, TU> mapper)
+    public ApiResponseT<TU> Map<TU>(Func<T, TU> mapper)
     {
-        return new Result<TU>
+        return new ApiResponseT<TU>
         {
             Success = Success,
+            Kind = Success ? ApiResponseKind.Success : ApiResponseKind.Error,
             Code = Code,
             Status = Status,
             Title = Title,
             Data = mapper(Data),
             Errors = Errors,
-            TraceCode = TraceCode,
-            Returnable = Returnable,
+            TraceCode = TraceCode
         };
     }
 }

@@ -22,6 +22,7 @@ export async function getAvailableAppointmentsApi(request: Day): Promise<Result<
             body: JSON.stringify(request)
         }
         const result = await HelperFunctions.ExecuteFetchWithTimeout(url, options);
+        if (result.code) result.component = Components.APPOINTMENT_SERVICE;
         if (!result.success || !result.data) return result.convertTo<Appointment[]>();
 
         // Process response

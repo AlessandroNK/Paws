@@ -91,10 +91,10 @@ export async function ExecuteFetchWithTimeout(
             result.success = response.ok;
             result.status = response.status;
             result.title = json.title || json.message;
-        }
 
-        // Add local error
-        result.addError(ApiCodeToUiMessage(response.status));
+            // Add local error
+            result.addError(ApiCodeToUiMessage(response.status));
+        }
 
         // Extract errors if present
         if (json.errors && typeof json.errors === "object") {

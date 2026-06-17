@@ -1,0 +1,6 @@
+{
+  "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS": "Como vas a pedir citas para días pasados? ni que fueras Dr. Strange.",
+  "NO_AVAILABLE_APPOINTMENTS_FOUND": "No hay citas disponibles para esta fecha",
+  "APPOINTMENTS_FETCH_ERROR": "Error al obtener las citas",
+  "INVALID_DATE": "Fecha no válida"
+}
