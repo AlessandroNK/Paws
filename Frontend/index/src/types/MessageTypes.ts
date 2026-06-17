@@ -1,4 +1,6 @@
 // ---------------------------------------------------------------------------------------------------------------------
+import {Components} from "./CommonTypes.ts";
+
 export const MessageType = {
     INFO: 'information',
     WARNING: 'warning',
@@ -42,7 +44,7 @@ export class Message {
     public message: string | null;
     status: number | null = null;
     public type: MessageType;
-    public component: string | null;
+    public component: Components;
     public id: number | null;
 
     // ------------------------------------------------------------------------
@@ -51,7 +53,7 @@ export class Message {
         message: string | null = null,
         status: number | null = null,
         type: MessageType = MessageType.INFO,
-        component: string | null = null,
+        component: Components = Components.NONE,
     ) {
         this.code = code;
         this.message = message;
@@ -70,7 +72,7 @@ export class UiMessage extends Message {
 
     // ------------------------------------------------------------------------
     constructor(
-        component: string | null = null,
+        component: Components = Components.NONE,
         code: string | null = null,
         message: string | null = null,
         status: number | null = null,

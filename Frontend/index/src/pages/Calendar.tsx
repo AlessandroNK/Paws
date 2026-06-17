@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {Components, Day} from "../types/CommonTypes.ts";
+import {Components, Day, Result} from "../types/CommonTypes.ts";
 import * as LanguageService from "../services/LanguageService.ts";
 import {type Appointment} from "../types/SystemTypes.ts";
 import * as AppointmentsService from "../services/AppointmentService.ts";
@@ -18,6 +18,29 @@ function Calendar() {
     const [setAppointments] = useState([] as Appointment[]);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
 
+
+    // -----------------------------------------------------------------------------------------------------------------
+    async function showErrorsAsPushMessages(result: Result<unknown>) {
+        const pushMessages: UiMessage[] = [];
+        if (result.code) {
+            const uiMessage = new UiMessage();
+            uiMessage.type = result.success ? MessageType.SUCCESS : MessageType.ERROR;
+            uiMessage.mood = result.success ? MessageMood.HAPPY : MessageMood.SAD;
+            uiMessage.duration = MessageDuration.MEDIUM;
+            uiMessage.code = result.code;
+            uiMessage.component = Components.CALENDAR;
+            pushMessages.push(uiMessage);
+        }
+
+        if (result.errors.length > 0) {
+            result.errors.forEach(error => {
+                for (const message of error.messages) {
+                    pushMessages.push(message);
+                }
+            });
+        }
+        setPushMessages(pushMessages);
+    }
 
     // -----------------------------------------------------------------------------------------------------------------
     useEffect(() => {
@@ -40,26 +63,8 @@ function Calendar() {
             isFetchingApi.current = false;
 
             // Show errors up
-            const pushMessages: UiMessage[] = [];
-            if (result.code) {
-                const uiMessage = new UiMessage();
-                const messageResult = await LanguageService.getTranslation(Components.CALENDAR, result.code);
-                uiMessage.type = result.success ? MessageType.SUCCESS : MessageType.ERROR;
-                uiMessage.mood = result.success ? MessageMood.HAPPY : MessageMood.SAD;
-                uiMessage.duration = MessageDuration.MEDIUM;
-                uiMessage.message = messageResult.data ?? `Unable to decode ${result.code} from ${Components.CALENDAR} component`;
-                pushMessages.push(uiMessage);
-            }
-
-            if (result.errors.length > 0) {
-                result.errors.forEach(error => {
-                    for (const message of error.messages) {
-                        pushMessages.push(message);
-                    }
-                });
-            }
-            setPushMessages(pushMessages);
-
+            showErrorsAsPushMessages(result);
+            if (result.code === "NO_AVAILABLE_APPOINTMENTS_FOUND") return
             // // Response codes
             // if (result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS")
             //

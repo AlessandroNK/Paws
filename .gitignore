@@ -75,5 +75,37 @@ Desktop.ini
 # appsettings.*.json
 # secrets.json
 
+## Frontend / Node.js (WebStorm)
+**/node_modules/
+**/npm-debug.log
+**/yarn-error.log
+**/.pnp
+**/.pnp.js
+
+## Vite / Build outputs
+**/dist/
+**/dist-ssr/
+**/*.local
+
+## Frontend environment files
+**/.env.local
+**/.env.*.local
+
+## IDE - WebStorm specific
+.idea/
+*.idea
+*.iml
+**/*.iml
+.DS_Store
+.AppleDouble
+.LSOverride
+*.sublime-workspace
+*.sublime-project
+
+## Node version files
+.nvmrc
+.node-version
+.npmrc
+
 # End of file
 

@@ -9,5 +9,6 @@
   "APPOINTMENT_DOCTOR": "Doctor",
   "APPOINTMENT_ACTIONS": "Acciones",
   "OF": "de",
-  "NO_AVAILABLE_APPOINTMENTS_FOUND": "No hay citas disponibles para esa fecha"
+  "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS": "Como vas a pedir citas para días pasados? ni que fueras Dr. Strange.",
+  "NO_AVAILABLE_APPOINTMENTS_FOUND": "No hay citas disponibles para esta fecha"
 }
