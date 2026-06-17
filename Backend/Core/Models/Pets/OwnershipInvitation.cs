@@ -117,7 +117,7 @@ public class OwnershipInvitation : IEncryptable
                 Success = false,
                 Code = "INVALID_INVITATION_CODE",
                 Status = 400,
-                Message = "Invitation code cannot be null or empty.",
+                Title = "Invitation code cannot be null or empty.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -129,7 +129,7 @@ public class OwnershipInvitation : IEncryptable
                 Success = false,
                 Code = "HASHING_ERROR",
                 Status = 500,
-                Message = "An error occurred while hashing the invitation code.",
+                Title = "An error occurred while hashing the invitation code.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -140,7 +140,7 @@ public class OwnershipInvitation : IEncryptable
             Success = true,
             Code = "SUCCESS",
             Status = 200,
-            Message = "Invitation code hashed successfully.",
+            Title = "Invitation code hashed successfully.",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };

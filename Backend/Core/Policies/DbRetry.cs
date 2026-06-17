@@ -100,7 +100,7 @@ public class DbRetry
             Success = false,
             Code = "DB_ERROR",
             Status = 500,
-            Message = $"{operationName} DB operation failed after {maxRetries + 1} attempts.",
+            Title = $"{operationName} DB operation failed after {maxRetries + 1} attempts.",
             TraceCode = $"{FileCodes.CallerIC()}-{operationName}",
             Returnable = false
         };
@@ -145,7 +145,7 @@ public class DbRetry
             Success = false,
             Code = "DB_ERROR",
             Status = 500,
-            Message = $"{operationName} DB operation failed after {maxRetries + 1} attempts.",
+            Title = $"{operationName} DB operation failed after {maxRetries + 1} attempts.",
             TraceCode = $"{FileCodes.CallerIC()}-{operationName}",
             Returnable = false
         };

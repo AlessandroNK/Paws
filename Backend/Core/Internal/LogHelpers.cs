@@ -155,7 +155,7 @@ public static class LogHelpers
         if (!string.IsNullOrWhiteSpace(result.TraceCode)) yield return result.TraceCode;
         if (!string.IsNullOrWhiteSpace(message)) yield return message;
         if (!string.IsNullOrWhiteSpace(result.Code)) yield return result.Code;
-        if (!string.IsNullOrWhiteSpace(result.Message)) yield return result.Message;
+        if (!string.IsNullOrWhiteSpace(result.Title)) yield return result.Title;
 
         if (result.Errors.Count > 0)
         {

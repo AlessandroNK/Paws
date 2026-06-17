@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Backend.Core.Internal;
+using Backend.Core.Models.Enums;
 
 namespace Backend.Core.Models.Results;
 
@@ -37,9 +38,9 @@ public class Result
     public required int Status { get; set; }
 
     /// <summary>
-    /// A custom message to show to the user
+    /// A custom title to show to the user
     /// </summary>
-    public string? Message { get; set; }
+    public string? Title { get; set; }
 
     /// <summary>
     /// Any validation errors associated with the result.
@@ -70,7 +71,7 @@ public class Result
             Success = result,
             Code = result ? "SUCCESS" : "FAILURE",
             Status = result ? 200 : 400,
-            Message = result ? "Operation completed successfully" : "Operation failed",
+            Title = result ? "Operation completed successfully" : "Operation failed",
             Returnable = true
         };
     }
@@ -115,7 +116,7 @@ public class Result
             Success = success,
             Code = code,
             Status = status,
-            Message = message,
+            Title = message,
             TraceCode = $"{Path.GetFileName(file)}:{line}",
             Returnable = returnable,
         };
@@ -133,7 +134,7 @@ public class Result
             Success = true,
             Code = "DEFAULT_SUCCESS_RESULT",
             Status = 500,
-            Message = "This is a default result with no data"
+            Title = "This is a default result with no data"
         };
     }
 
@@ -158,7 +159,7 @@ public class Result
             Success = Success,
             Code = Code,
             Status = Status,
-            Message = Message,
+            Title = Title,
             Errors = Errors,
             TraceCode = TraceCode,
             Returnable = Returnable,
@@ -182,17 +183,17 @@ public class Result
     /// Cleans and hides internal information when the result is not returnable to keep intern info secure
     /// </summary>
     /// <returns></returns>
-    public Result ToDto()
+    public ApiResponse ToApiResponse()
     {
-        return new Result
+        return new ApiResponse
         {
             Success = Success,
+            Kind = Success ? ApiResponseKind.Success : ApiResponseKind.Error,
             Code = Returnable ? Code : "INTERNAL_ERROR",
             Status = Status,
-            Message = Returnable ? Message : "An error occurred in the API",
+            Title = Returnable ? Title : "An error occurred in the API",
             Errors = Returnable ? Errors : new Dictionary<string, string[]>(),
             TraceCode = TraceCode,
-            Returnable = Returnable,
         };
     }
 }

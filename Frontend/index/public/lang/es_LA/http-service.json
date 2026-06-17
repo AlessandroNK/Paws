@@ -1,0 +1,15 @@
+{
+  "200": "OK",
+  "201": "Creado",
+  "202": "Aceptado",
+  "204": "Sin contenido",
+  "400": "Solicitud incorrecta",
+  "401": "No autorizado",
+  "403": "Prohibido",
+  "404": "No encontrado",
+  "422": "Entidad no procesable",
+  "500": "Error interno del servidor",
+  "502": "Puerta de enlace incorrecta",
+  "503": "Servicio no disponible",
+  "504": "Tiempo de espera de la puerta de enlace agotado"
+}

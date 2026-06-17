@@ -58,7 +58,7 @@ public class NotificationService(
             {
                 Success = false,
                 Status = 500,
-                Message = "Email service is misconfigured: One or more required environment variables are not set.",
+                Title = "Email service is misconfigured: One or more required environment variables are not set.",
                 Code = "ENVIRONMENT_VARIABLES_NOT_SET",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
@@ -75,7 +75,7 @@ public class NotificationService(
         {
             Success = true,
             Status = 200,
-            Message = "Environment variables retrieved successfully.",
+            Title = "Environment variables retrieved successfully.",
             Code = "SUCCESS",
             TraceCode = FileCodes.CallerIC(),
             Returnable = false,
@@ -136,7 +136,7 @@ public class NotificationService(
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Verification code sent successfully.",
+                    Title = "Verification code sent successfully.",
                     Code = "VERIFICATION_CODE_SENT",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -151,7 +151,7 @@ public class NotificationService(
             {
                 Success = false,
                 Status = (int)response.StatusCode,
-                Message = "Failed to send verification code.",
+                Title = "Failed to send verification code.",
                 Code = "VERIFICATION_CODE_NOT_SENT",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -164,7 +164,7 @@ public class NotificationService(
             {
                 Success = false,
                 Status = 500,
-                Message = "An error occurred while sending the verification code.",
+                Title = "An error occurred while sending the verification code.",
                 Code = "VERIFICATION_CODE_SEND_FAILED",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -202,7 +202,7 @@ public class NotificationService(
                 {
                     Success = false,
                     Status = 400,
-                    Message = "Invalid ownership invitation.",
+                    Title = "Invalid ownership invitation.",
                     Code = "INVALID_OWNERSHIP_INVITATION",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -257,7 +257,7 @@ public class NotificationService(
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Verification code sent successfully.",
+                    Title = "Verification code sent successfully.",
                     Code = "VERIFICATION_CODE_SENT",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -272,7 +272,7 @@ public class NotificationService(
             {
                 Success = false,
                 Status = (int)response.StatusCode,
-                Message = "Failed to send verification code.",
+                Title = "Failed to send verification code.",
                 Code = "VERIFICATION_CODE_NOT_SENT",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -285,7 +285,7 @@ public class NotificationService(
             {
                 Success = false,
                 Status = 500,
-                Message = "An error occurred while sending the ownership share code.",
+                Title = "An error occurred while sending the ownership share code.",
                 Code = "OWNERSHIP_SHARE_CODE_SEND_FAILED",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true

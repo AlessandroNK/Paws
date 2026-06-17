@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Backend.Core.Internal;
+using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
 
 namespace Backend.Core.Models.Results;
@@ -31,7 +32,7 @@ public class Result<T> : Result
             Success = true,
             Code = "SUCCESS",
             Status = 200,
-            Message = "Operation completed successfully",
+            Title = "Operation completed successfully",
             Data = data
         };
     }
@@ -44,7 +45,7 @@ public class Result<T> : Result
             Success = result,
             Code = result ? "SUCCESS" : "FAILURE",
             Status = result ? 200 : 400,
-            Message = result ? "Operation completed successfully" : "Operation failed",
+            Title = result ? "Operation completed successfully" : "Operation failed",
             Data = default(T),
             Returnable = true
         };
@@ -91,7 +92,7 @@ public class Result<T> : Result
             Success = success,
             Code = code,
             Status = status,
-            Message = message,
+            Title = message,
             TraceCode = $"{Path.GetFileName(file)}:{line}",
             Returnable = returnable,
             Data = data,
@@ -110,7 +111,7 @@ public class Result<T> : Result
             Success = true,
             Code = "DEFAULT_SUCCESS_RESULT",
             Status = 500,
-            Message = "This is a default result with no data",
+            Title = "This is a default result with no data",
             Data = default(T),
         };
     }
@@ -130,7 +131,7 @@ public class Result<T> : Result
                 Success = Success,
                 Code = Code,
                 Status = Status,
-                Message = Message,
+                Title = Title,
                 Data = data,
                 Errors = Errors,
                 TraceCode = TraceCode,
@@ -141,7 +142,7 @@ public class Result<T> : Result
                 Success = Success,
                 Code = Code,
                 Status = Status,
-                Message = Message,
+                Title = Title,
                 Data = default(TU),
                 Errors = Errors,
                 TraceCode = TraceCode,
@@ -154,16 +155,17 @@ public class Result<T> : Result
     /// Cleans and hides internal information when the result is not returnable to keep internal info secure
     /// </summary>
     /// <returns></returns>
-    public ResultDtoT<TU> ToDto<TU>()
+    public ApiResponseT<TU> ToApiResponse<TU>()
     {
         // We will filter info as we need so we can
         // return this result to the frontend securely
-        var result = new ResultDtoT<TU>
+        var result = new ApiResponseT<TU>
         {
             Success = Success,
+            Kind = Success ? ApiResponseKind.Success : ApiResponseKind.Error,
             Code = Returnable ? Code : "INTERNAL_ERROR",
             Status = Status,
-            Message = Returnable ? Message : "An error occurred in the API",
+            Title = Returnable ? Title : "An error occurred in the API",
             Data = default(TU),
             Errors = Returnable ? Errors : new Dictionary<string, string[]>(),
             TraceCode = TraceCode
@@ -183,7 +185,7 @@ public class Result<T> : Result
             LogHelpers.LogError(e, "Error converting the data to a DTO");
             result.Data = default(TU);
             result.Code = "DATA_CONVERSION_ERROR";
-            result.Message = "An error occurred while converting the data";
+            result.Title = "An error occurred while converting the data";
             result.Status = 500;
         }
 
@@ -198,7 +200,7 @@ public class Result<T> : Result
             Success = Success,
             Code = Code,
             Status = Status,
-            Message = Message,
+            Title = Title,
             Data = mapper(Data),
             Errors = Errors,
             TraceCode = TraceCode,

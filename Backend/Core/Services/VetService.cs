@@ -67,7 +67,7 @@ public class VetService(
                 Success = false,
                 Code = "ERROR_GETTING_VETS",
                 Status = 500,
-                Message = "An error occurred while getting the vets",
+                Title = "An error occurred while getting the vets",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

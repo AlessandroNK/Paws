@@ -118,7 +118,7 @@ public class ApiController(
                                  }
                                  
                                  The mood field MUST be one of these exact strings (not numbers):
-                                 Happy, Sad, Playful, Hungry, Sleepy, Excited, Calm, Chill, Confident.
+                                 HAPPY, SAD, PLAYFUL, HUNGRY, SLEEPY, EXCITED, CALM, CHILL, CONFIDENT, ANGRY, CRAZY.
                                  
                                  Choose the mood that genuinely reflects how you feel while generating this response.
                                  No markdown, no extra text — raw JSON only.
@@ -162,7 +162,7 @@ public class ApiController(
             Code = "CHAT_RESPONSE",
             Status = 200,
             Data = pawsResponse,
-            Message = "Chat response generated successfully",
+            Title = "Chat response generated successfully",
             TraceCode = FileCodes.CallerIC()
         };
         return Ok(result);
@@ -183,7 +183,7 @@ public class ApiController(
             Status = 200,
             Code = "API_VERSION",
             Data = Env.GetVersion(),
-            Message = "API version retrieved successfully",
+            Title = "API version retrieved successfully",
             TraceCode = FileCodes.CallerIC()
         });
 

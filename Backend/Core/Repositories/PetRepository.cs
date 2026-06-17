@@ -124,7 +124,7 @@ public class PetRepository(
                 Success = false,
                 Code = "ERROR_CREATING_PET",
                 Status = 500,
-                Message = "An error occurred while creating the pet",
+                Title = "An error occurred while creating the pet",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -137,7 +137,7 @@ public class PetRepository(
                 Success = false,
                 Code = "PET_CREATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "Pet created but not found when retrieving it",
+                Title = "Pet created but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -147,7 +147,7 @@ public class PetRepository(
             Success = true,
             Code = "PET_CREATED",
             Status = 201,
-            Message = "Pet created successfully",
+            Title = "Pet created successfully",
             Data = getPetResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -176,7 +176,7 @@ public class PetRepository(
                 Success = false,
                 Code = "INVALID_PET_ID",
                 Status = 400,
-                Message = "The provided pet ID is invalid",
+                Title = "The provided pet ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -206,7 +206,7 @@ public class PetRepository(
                 Success = false,
                 Code = "PET_NOT_FOUND",
                 Status = 404,
-                Message = "No pet found with the provided id",
+                Title = "No pet found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             }
@@ -215,7 +215,7 @@ public class PetRepository(
                 Success = true,
                 Code = "PET_FOUND",
                 Status = 200,
-                Message = "Pet found successfully",
+                Title = "Pet found successfully",
                 Data = pet,
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
@@ -237,7 +237,7 @@ public class PetRepository(
                 Success = false,
                 Code = "INVALID_PET_ID",
                 Status = 400,
-                Message = "The provided pet ID is invalid for update",
+                Title = "The provided pet ID is invalid for update",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -249,7 +249,7 @@ public class PetRepository(
                 Success = false,
                 Code = "ERROR_UPDATING_PET",
                 Status = 500,
-                Message = "An error occurred while updating the pet",
+                Title = "An error occurred while updating the pet",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -261,7 +261,7 @@ public class PetRepository(
                 Success = false,
                 Code = "PET_UPDATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "Pet updated but not found when retrieving it",
+                Title = "Pet updated but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -271,7 +271,7 @@ public class PetRepository(
             Success = true,
             Code = "PET_UPDATED",
             Status = 200,
-            Message = "Pet updated successfully",
+            Title = "Pet updated successfully",
             Data = getPetResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -295,7 +295,7 @@ public class PetRepository(
                 Success = false,
                 Code = "PET_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "Pet id not provided for ownership invitation",
+                Title = "Pet id not provided for ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -306,7 +306,7 @@ public class PetRepository(
                 Success = false,
                 Code = "USER_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "User id not provided for ownership invitation",
+                Title = "User id not provided for ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -320,7 +320,7 @@ public class PetRepository(
                 Success = false,
                 Code = "ERROR_CREATING_OWNERSHIP_INVITATION",
                 Status = 500,
-                Message = "An error occurred while creating the ownership invitation",
+                Title = "An error occurred while creating the ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -333,7 +333,7 @@ public class PetRepository(
                 Success = false,
                 Code = "OWNERSHIP_INVITATION_CREATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "Ownership invitation created but not found when retrieving it",
+                Title = "Ownership invitation created but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -343,7 +343,7 @@ public class PetRepository(
             Success = true,
             Code = "OWNERSHIP_INVITATION_CREATED",
             Status = 201,
-            Message = "Ownership invitation created successfully",
+            Title = "Ownership invitation created successfully",
             Data = getResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -372,7 +372,7 @@ public class PetRepository(
                 Success = false,
                 Code = "INVALID_OWNERSHIP_INVITATION_ID",
                 Status = 400,
-                Message = "The provided ownership invitation ID is invalid",
+                Title = "The provided ownership invitation ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -399,7 +399,7 @@ public class PetRepository(
                 Success = false,
                 Code = "SHARE_INVITATION_NOT_FOUND",
                 Status = 404,
-                Message = "No ownership invitation found with the provided id",
+                Title = "No ownership invitation found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -409,7 +409,7 @@ public class PetRepository(
             Success = true,
             Code = "OWNERSHIP_INVITATION_FOUND",
             Status = 200,
-            Message = "Ownership invitation found successfully",
+            Title = "Ownership invitation found successfully",
             Data = invitation,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -444,7 +444,7 @@ public class PetRepository(
                 Success = false,
                 Code = "INVALID_OWNERSHIP_INVITATION_NONCE",
                 Status = 400,
-                Message = "The provided ownership invitation invitation code is invalid",
+                Title = "The provided ownership invitation invitation code is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -473,7 +473,7 @@ public class PetRepository(
                 Success = false,
                 Code = "OWNERSHIP_INVITATION_NOT_FOUND",
                 Status = 404,
-                Message = "No ownership invitation found with the provided invitation code",
+                Title = "No ownership invitation found with the provided invitation code",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -484,7 +484,7 @@ public class PetRepository(
             Success = true,
             Code = "OWNERSHIP_INVITATION_FOUND",
             Status = 200,
-            Message = "Ownership invitation found successfully",
+            Title = "Ownership invitation found successfully",
             Data = invitation,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -512,7 +512,7 @@ public class PetRepository(
                 Success = false,
                 Code = "INVALID_OWNERSHIP_INVITATION_ID",
                 Status = 400,
-                Message = "The provided ownership invitation ID is invalid",
+                Title = "The provided ownership invitation ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -527,7 +527,7 @@ public class PetRepository(
                 Success = false,
                 Code = "OWNERSHIP_INVITATION_NOT_FOUND",
                 Status = 404,
-                Message = "No ownership invitation found with the provided id",
+                Title = "No ownership invitation found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -541,7 +541,7 @@ public class PetRepository(
                 Success = false,
                 Code = "ERROR_DELETING_OWNERSHIP_INVITATION",
                 Status = 500,
-                Message = "An error occurred while deleting the ownership invitation",
+                Title = "An error occurred while deleting the ownership invitation",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -551,7 +551,7 @@ public class PetRepository(
             Success = true,
             Code = "OWNERSHIP_INVITATION_DELETED",
             Status = 200,
-            Message = "Ownership invitation deleted successfully",
+            Title = "Ownership invitation deleted successfully",
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
         };
@@ -573,7 +573,7 @@ public class PetRepository(
                 Success = false,
                 Code = "USER_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "User id not provided for user-pet relationship",
+                Title = "User id not provided for user-pet relationship",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -584,7 +584,7 @@ public class PetRepository(
                 Success = false,
                 Code = "PET_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "Pet id not provided for user-pet relationship",
+                Title = "Pet id not provided for user-pet relationship",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -598,7 +598,7 @@ public class PetRepository(
                 Success = false,
                 Code = "ERROR_CREATING_USER_PET_RELATIONSHIP",
                 Status = 500,
-                Message = "An error occurred while creating the user-pet relationship",
+                Title = "An error occurred while creating the user-pet relationship",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -611,7 +611,7 @@ public class PetRepository(
                 Success = false,
                 Code = "USER_PET_RELATIONSHIP_CREATED_BUT_PET_NOT_FOUND",
                 Status = 500,
-                Message = "User-pet relationship created but pet not found when retrieving it",
+                Title = "User-pet relationship created but pet not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -621,7 +621,7 @@ public class PetRepository(
             Success = true,
             Code = "USER_PET_RELATIONSHIP_CREATED",
             Status = 201,
-            Message = "User-pet relationship created successfully",
+            Title = "User-pet relationship created successfully",
             Data = userResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -654,7 +654,7 @@ public class PetRepository(
                 Success = false,
                 Code = "USER_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "User id not provided for user-pet relationship lookup",
+                Title = "User id not provided for user-pet relationship lookup",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -665,7 +665,7 @@ public class PetRepository(
                 Success = false,
                 Code = "PET_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "Pet id not provided for user-pet relationship lookup",
+                Title = "Pet id not provided for user-pet relationship lookup",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -691,7 +691,7 @@ public class PetRepository(
                 Success = false,
                 Code = "PET_NOT_FOUND",
                 Status = 404,
-                Message = "No pet found with the provided id",
+                Title = "No pet found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -702,7 +702,7 @@ public class PetRepository(
             Success = true,
             Code = "USER_PET_RELATIONSHIP_FOUND",
             Status = 200,
-            Message = "User-pet relationship found successfully",
+            Title = "User-pet relationship found successfully",
             Data = userPet,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -730,7 +730,7 @@ public class PetRepository(
                 Success = false,
                 Code = "USER_PET_ID_NOT_PROVIDED",
                 Status = 400,
-                Message = "User pet id not provided for update",
+                Title = "User pet id not provided for update",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -743,7 +743,7 @@ public class PetRepository(
                 Success = false,
                 Code = "ERROR_UPDATING_USER_PET_RELATIONSHIP",
                 Status = 500,
-                Message = "An error occurred while updating the user-pet relationship",
+                Title = "An error occurred while updating the user-pet relationship",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -755,7 +755,7 @@ public class PetRepository(
                 Success = false,
                 Code = "USER_PET_RELATIONSHIP_UPDATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "User-pet relationship updated but not found when retrieving it",
+                Title = "User-pet relationship updated but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -765,7 +765,7 @@ public class PetRepository(
             Success = true,
             Code = "USER_PET_RELATIONSHIP_UPDATED",
             Status = 200,
-            Message = "User-pet relationship updated successfully",
+            Title = "User-pet relationship updated successfully",
             Data = getResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -786,7 +786,7 @@ public class PetRepository(
                 Success = false,
                 Code = "INVALID_USER_PET_ID",
                 Status = 400,
-                Message = "The provided user-pet relationship ID is invalid",
+                Title = "The provided user-pet relationship ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -812,7 +812,7 @@ public class PetRepository(
                 Success = false,
                 Code = "USER_PET_RELATIONSHIP_NOT_FOUND",
                 Status = 404,
-                Message = "No user-pet relationship found with the provided id",
+                Title = "No user-pet relationship found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -823,7 +823,7 @@ public class PetRepository(
             Success = true,
             Code = "USER_PET_RELATIONSHIP_FOUND",
             Status = 200,
-            Message = "User-pet relationship found successfully",
+            Title = "User-pet relationship found successfully",
             Data = userPet,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true

@@ -76,7 +76,7 @@ public partial class SecurityService
                     Success = true,
                     Code = "NULL_STRING",
                     Status = 200,
-                    Message = "The string to encrypt is null or whitespace, returning null",
+                    Title = "The string to encrypt is null or whitespace, returning null",
                     Data = string.Empty,
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -86,7 +86,7 @@ public partial class SecurityService
                     Success = false,
                     Code = "EMPTY_STRING",
                     Status = 400,
-                    Message = "The string to hash cannot be empty",
+                    Title = "The string to hash cannot be empty",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = false
                 };
@@ -97,7 +97,7 @@ public partial class SecurityService
                 Success = false,
                 Code = "NO_ENCRYPTION_KEY",
                 Status = 500,
-                Message = "No encryption key found",
+                Title = "No encryption key found",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -131,7 +131,7 @@ public partial class SecurityService
                     Success = true,
                     Code = "NULL_STRING",
                     Status = 200,
-                    Message = "The string to encrypt is null or whitespace, returning null",
+                    Title = "The string to encrypt is null or whitespace, returning null",
                     Data = string.Empty,
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -141,7 +141,7 @@ public partial class SecurityService
                     Success = false,
                     Code = "EMPTY_STRING",
                     Status = 400,
-                    Message = "The string to encrypt cannot be empty",
+                    Title = "The string to encrypt cannot be empty",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = false
                 };
@@ -152,7 +152,7 @@ public partial class SecurityService
                 Success = false,
                 Code = "NO_ENCRYPTION_KEY",
                 Status = 500,
-                Message = "No encryption key found",
+                Title = "No encryption key found",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -243,7 +243,7 @@ public partial class SecurityService
                 Success = false,
                 Code = "EMPTY_STRING",
                 Status = 400,
-                Message = "The string to decrypt cannot be empty",
+                Title = "The string to decrypt cannot be empty",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -254,7 +254,7 @@ public partial class SecurityService
                 Success = false,
                 Code = "NO_ENCRYPTION_KEY",
                 Status = 500,
-                Message = "No encryption key found",
+                Title = "No encryption key found",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = false
             };
@@ -338,7 +338,7 @@ public partial class SecurityService
             Success = true,
             Code = "VALID_PASSWORD",
             Status = 200,
-            Message = "Password is valid",
+            Title = "Password is valid",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };
@@ -419,7 +419,7 @@ public partial class SecurityService
 
         result.Code = "INVALID_PASSWORD";
         result.Status = 400;
-        result.Message = "Password is invalid";
+        result.Title = "Password is invalid";
         return result;
     }
 
@@ -453,7 +453,7 @@ public partial class SecurityService
                 Success = false,
                 Code = "MISSING_DEVICE_ID",
                 Status = 400,
-                Message = "Device id is required",
+                Title = "Device id is required",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -464,7 +464,7 @@ public partial class SecurityService
             Success = true,
             Code = "VALID_DEVICE_ID",
             Status = 200,
-            Message = "Device id is valid",
+            Title = "Device id is valid",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };
@@ -483,7 +483,7 @@ public partial class SecurityService
                 Success = false,
                 Code = "MISSING_EMAIL_ADDRESS",
                 Status = 400,
-                Message = "Email address is required",
+                Title = "Email address is required",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -494,7 +494,7 @@ public partial class SecurityService
                 Success = false,
                 Code = "INVALID_EMAIL_ADDRESS",
                 Status = 400,
-                Message = "Email address is invalid",
+                Title = "Email address is invalid",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -504,7 +504,7 @@ public partial class SecurityService
             Success = true,
             Code = "VALID_EMAIL_ADDRESS",
             Status = 200,
-            Message = "Email address is valid",
+            Title = "Email address is valid",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };

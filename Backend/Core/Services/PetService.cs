@@ -77,7 +77,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_USER_ID",
                 Status = 400,
-                Message = "The user ID is invalid",
+                Title = "The user ID is invalid",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -88,7 +88,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_PET_ID",
                 Status = 400,
-                Message = "The pet ID is invalid",
+                Title = "The pet ID is invalid",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -99,7 +99,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_EMAIL",
                 Status = 400,
-                Message = "The email is required",
+                Title = "The email is required",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -110,7 +110,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_EMAIL",
                 Status = 400,
-                Message = "The email must be less than 100 characters",
+                Title = "The email must be less than 100 characters",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -123,7 +123,7 @@ public class PetService(
             Success = true,
             Code = "SUCCESS",
             Status = 200,
-            Message = "Share pet ownership request is valid",
+            Title = "Share pet ownership request is valid",
             TraceCode = FileCodes.CallerIC(),
             Returnable = false
         };
@@ -155,7 +155,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_ADDING_PET",
                 Status = 500,
-                Message = "An error occurred while adding the pet",
+                Title = "An error occurred while adding the pet",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -233,7 +233,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_CREATING_OWNERSHIP_INVITATION",
                 Status = 500,
-                Message = "An error occurred while creating the ownership invitation",
+                Title = "An error occurred while creating the ownership invitation",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -292,7 +292,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_PET",
                 Status = 400,
-                Message = "Invalid pet in the invitation.",
+                Title = "Invalid pet in the invitation.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -305,7 +305,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_USER",
                 Status = 400,
-                Message = "Invalid user in the invitation.",
+                Title = "Invalid user in the invitation.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -346,7 +346,7 @@ public class PetService(
                 Success = true,
                 Code = "OWNERSHIP_INVITATION_SENT",
                 Status = 200,
-                Message = "Ownership invitation sent successfully.",
+                Title = "Ownership invitation sent successfully.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             }
@@ -355,7 +355,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_SENDING_NOTIFICATION",
                 Status = 500,
-                Message = "An error occurred while sending the notification email.",
+                Title = "An error occurred while sending the notification email.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -398,7 +398,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_ADDING_PET_TO_USER",
                 Status = 500,
-                Message = "An error occurred while adding pet to user"
+                Title = "An error occurred while adding pet to user"
             };
         }
     }
@@ -421,7 +421,7 @@ public class PetService(
                 Success = false,
                 Code = "USER_ALREADY_OWNER",
                 Status = 400,
-                Message = "The user is already a owner of the pet",
+                Title = "The user is already a owner of the pet",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -433,7 +433,7 @@ public class PetService(
                 Success = false,
                 Code = "USER_BANNED_FROM_PET",
                 Status = 403,
-                Message = "The user is banned from being owner of the pet",
+                Title = "The user is banned from being owner of the pet",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -444,7 +444,7 @@ public class PetService(
                 Success = false,
                 Code = "USER_PET_RELATIONSHIP_PENDING_DELETION",
                 Status = 400,
-                Message = "The user pet relationship is pending deletion, please try again later",
+                Title = "The user pet relationship is pending deletion, please try again later",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -464,7 +464,7 @@ public class PetService(
             Success = true,
             Code = "OWNERSHIP_INVITATION_ACCEPTED",
             Status = 200,
-            Message = "Ownership invitation accepted successfully.",
+            Title = "Ownership invitation accepted successfully.",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };
@@ -480,7 +480,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_INVITATION_CODE",
                 Status = 400,
-                Message = "The invitation code is invalid",
+                Title = "The invitation code is invalid",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -514,7 +514,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_CREATING_OWNERSHIP_INVITATION",
                 Status = 500,
-                Message = "An error occurred while creating the ownership invitation",
+                Title = "An error occurred while creating the ownership invitation",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -542,7 +542,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_DELETING_OWNERSHIP_INVITATION",
                 Status = 500,
-                Message = "An error occurred while deleting the ownership invitation",
+                Title = "An error occurred while deleting the ownership invitation",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -570,7 +570,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_UPDATING_PET",
                 Status = 500,
-                Message = "An error occurred while updating the pet",
+                Title = "An error occurred while updating the pet",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -610,7 +610,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_USER_ID",
                     Status = 400,
-                    Message = "User id must be greater than 0",
+                    Title = "User id must be greater than 0",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -621,7 +621,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_PET_ID",
                     Status = 400,
-                    Message = "Pet id must be greater than 0",
+                    Title = "Pet id must be greater than 0",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -647,7 +647,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_GETTING_USER_PET",
                 Status = 500,
-                Message = "An error occurred while getting the user pet relationship",
+                Title = "An error occurred while getting the user pet relationship",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -677,7 +677,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_EMAIL",
                     Status = 400,
-                    Message = "Email is required",
+                    Title = "Email is required",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -700,7 +700,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_GETTING_USER",
                 Status = 500,
-                Message = "An error occurred while getting the user",
+                Title = "An error occurred while getting the user",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -734,7 +734,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_PET_ID",
                     Status = 400,
-                    Message = "The pet ID is invalid",
+                    Title = "The pet ID is invalid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -752,7 +752,7 @@ public class PetService(
                     Success = false,
                     Code = "PET_NOT_FOUND",
                     Status = 404,
-                    Message = "Pet not found"
+                    Title = "Pet not found"
                 };
 
             _logger.LogInformation("Pet with id {PetId} retrieved successfully", id);
@@ -766,7 +766,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_GETTING_PET",
                 Status = 500,
-                Message = "An error occurred while getting the pet. Please try again later.",
+                Title = "An error occurred while getting the pet. Please try again later.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -814,7 +814,7 @@ public class PetService(
                 Success = true,
                 Code = "PET_CREATED",
                 Status = 201,
-                Message = "Pet created successfully",
+                Title = "Pet created successfully",
                 Data = pet,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -828,7 +828,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_ADDING_PET",
                 Status = 500,
-                Message = "An error occurred while adding the pet. Please try again later."
+                Title = "An error occurred while adding the pet. Please try again later."
             };
         }
     }
@@ -852,7 +852,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_PET_ID",
                     Status = 400,
-                    Message = "The pet ID is invalid",
+                    Title = "The pet ID is invalid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -871,7 +871,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_ADDING_PET",
                 Status = 500,
-                Message = "An error occurred while adding the pet",
+                Title = "An error occurred while adding the pet",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -917,7 +917,7 @@ public class PetService(
                     Success = false,
                     Code = "PET_BANNED",
                     Status = 403,
-                    Message = "This pet is banned and cannot be used",
+                    Title = "This pet is banned and cannot be used",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -928,7 +928,7 @@ public class PetService(
                     Success = false,
                     Code = "PET_DELETED",
                     Status = 403,
-                    Message = "This pet was deleted from this user and cannot be used",
+                    Title = "This pet was deleted from this user and cannot be used",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -942,7 +942,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_NOT_OWNER",
                     Status = 403,
-                    Message = "The user is not the owner of the pet",
+                    Title = "The user is not the owner of the pet",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -953,7 +953,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_BANNED_FROM_PET",
                     Status = 403,
-                    Message = "The user is banned from being owner of the pet",
+                    Title = "The user is banned from being owner of the pet",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -964,7 +964,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_DELETED_FROM_PET",
                     Status = 403,
-                    Message = "The user is not longer the owner of this pet",
+                    Title = "The user is not longer the owner of this pet",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -978,7 +978,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_OWNERSHIP",
                     Status = 403,
-                    Message = "Your ownership of the pet is invalid",
+                    Title = "Your ownership of the pet is invalid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -990,7 +990,7 @@ public class PetService(
                     Success = false,
                     Code = "CANNOT_SHARE_WITH_SELF",
                     Status = 400,
-                    Message = "You cannot share ownership with yourself",
+                    Title = "You cannot share ownership with yourself",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1003,7 +1003,7 @@ public class PetService(
                     Success = false,
                     Code = "CANNOT_SHARE_WITH_EXISTING_OWNER",
                     Status = 400,
-                    Message = "The user is already a co-owner of the pet",
+                    Title = "The user is already a co-owner of the pet",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1034,7 +1034,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_SHARING_PET_OWNERSHIP",
                 Status = 500,
-                Message = "An error occurred while sharing pet ownership",
+                Title = "An error occurred while sharing pet ownership",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1056,7 +1056,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_PET_NAME",
                 Status = 400,
-                Message = "The pet name is required",
+                Title = "The pet name is required",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1067,7 +1067,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_PET_NAME",
                 Status = 400,
-                Message = "The pet name must be less than 100 characters",
+                Title = "The pet name must be less than 100 characters",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1078,7 +1078,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_PET_BREED",
                 Status = 400,
-                Message = "The pet breed must be less than 100 characters",
+                Title = "The pet breed must be less than 100 characters",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1089,7 +1089,7 @@ public class PetService(
                 Success = false,
                 Code = "INVALID_PET_SPECIES",
                 Status = 400,
-                Message = "The pet species is invalid",
+                Title = "The pet species is invalid",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1099,7 +1099,7 @@ public class PetService(
             Success = true,
             Code = "SUCCESS",
             Status = 200,
-            Message = "Pet added successfully",
+            Title = "Pet added successfully",
             TraceCode = FileCodes.CallerIC(),
             Returnable = false
         };
@@ -1129,7 +1129,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_INVITATION_CODE",
                     Status = 400,
-                    Message = "The invitation code is required",
+                    Title = "The invitation code is required",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1144,7 +1144,7 @@ public class PetService(
                     Success = false,
                     Code = "INVITATION_EXPIRED",
                     Status = 400,
-                    Message = "The invitation has expired",
+                    Title = "The invitation has expired",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1155,7 +1155,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_INVITATION",
                     Status = 400,
-                    Message = "The invitation is invalid",
+                    Title = "The invitation is invalid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1166,7 +1166,7 @@ public class PetService(
                     Success = false,
                     Code = "EMAIL_MISMATCH",
                     Status = 400,
-                    Message = "The email in the invitation does not match the email in the request",
+                    Title = "The email in the invitation does not match the email in the request",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1177,7 +1177,7 @@ public class PetService(
                     Success = false,
                     Code = "CANNOT_ACCEPT_OWN_INVITATION",
                     Status = 400,
-                    Message = "You cannot accept an invitation that you sent",
+                    Title = "You cannot accept an invitation that you sent",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1190,7 +1190,7 @@ public class PetService(
                     Success = false,
                     Code = "NEW_OWNER_NOT_FOUND",
                     Status = 404,
-                    Message = "The new owner user was not found",
+                    Title = "The new owner user was not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1218,7 +1218,7 @@ public class PetService(
                 Success = true,
                 Code = "OWNERSHIP_INVITATION_ACCEPTED",
                 Status = 200,
-                Message = "Ownership invitation accepted successfully.",
+                Title = "Ownership invitation accepted successfully.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1231,7 +1231,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_ACCEPTING_PET_OWNERSHIP",
                 Status = 500,
-                Message = "An error occurred while accepting pet ownership",
+                Title = "An error occurred while accepting pet ownership",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1261,7 +1261,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_USER_ID",
                     Status = 400,
-                    Message = "User id must be greater than 0",
+                    Title = "User id must be greater than 0",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1277,7 +1277,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_NOT_FOUND",
                     Status = 404,
-                    Message = "User not found",
+                    Title = "User not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1290,7 +1290,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_BANNED",
                     Status = 400,
-                    Message = "User is banned",
+                    Title = "User is banned",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1301,7 +1301,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_NOT_VERIFIED",
                     Status = 400,
-                    Message = "User is not verified",
+                    Title = "User is not verified",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1329,7 +1329,7 @@ public class PetService(
                     Success = true,
                     Code = "PET_ADDED_TO_USER",
                     Status = 200,
-                    Message = "Pet added to user successfully",
+                    Title = "Pet added to user successfully",
                     Data = addResult.Data,
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -1339,7 +1339,7 @@ public class PetService(
                     Success = false,
                     Code = "ERROR_ADDING_PET_TO_USER",
                     Status = 500,
-                    Message = "An error occurred while adding pet to user",
+                    Title = "An error occurred while adding pet to user",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1352,7 +1352,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_ADDING_PET_TO_USER",
                 Status = 500,
-                Message = "An error occurred while adding pet to user"
+                Title = "An error occurred while adding pet to user"
             };
         }
     }
@@ -1391,7 +1391,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_PET_RELATIONSHIP_NOT_FOUND",
                     Status = 404,
-                    Message = "The relationship between the user and the pet was not found",
+                    Title = "The relationship between the user and the pet was not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1404,7 +1404,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_NOT_FOUND",
                     Status = 404,
-                    Message = "User not found",
+                    Title = "User not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1416,7 +1416,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_BANNED",
                     Status = 400,
-                    Message = "User is banned",
+                    Title = "User is banned",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1427,7 +1427,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_NOT_VERIFIED",
                     Status = 400,
-                    Message = "User is not verified",
+                    Title = "User is not verified",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1439,7 +1439,7 @@ public class PetService(
                     Success = false,
                     Code = "PET_NOT_FOUND",
                     Status = 404,
-                    Message = "Pet not found",
+                    Title = "Pet not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1451,7 +1451,7 @@ public class PetService(
                     Success = false,
                     Code = "PET_BANNED",
                     Status = 400,
-                    Message = "Pet is banned",
+                    Title = "Pet is banned",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1462,7 +1462,7 @@ public class PetService(
                     Success = false,
                     Code = "PET_DELETED",
                     Status = 400,
-                    Message = "Pet was already deleted",
+                    Title = "Pet was already deleted",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1479,7 +1479,7 @@ public class PetService(
                     Success = false,
                     Code = "ERROR_DELETING_USER_PET",
                     Status = 500,
-                    Message = "An error occurred while deleting user pet",
+                    Title = "An error occurred while deleting user pet",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1490,7 +1490,7 @@ public class PetService(
                     Success = true,
                     Code = "PET_REMOVED_FROM_USER",
                     Status = 200,
-                    Message = "Pet removed from user successfully",
+                    Title = "Pet removed from user successfully",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 }
@@ -1499,7 +1499,7 @@ public class PetService(
                     Success = false,
                     Code = "ERROR_REMOVING_PET_FROM_USER",
                     Status = 500,
-                    Message = "An error occurred while removing pet from user",
+                    Title = "An error occurred while removing pet from user",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1512,7 +1512,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_REMOVING_PET_FROM_USER",
                 Status = 500,
-                Message = "An error occurred while removing pet from user",
+                Title = "An error occurred while removing pet from user",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1537,7 +1537,7 @@ public class PetService(
                     Success = false,
                     Code = "INVALID_USER_PET_ID",
                     Status = 400,
-                    Message = "The user pet ID is invalid",
+                    Title = "The user pet ID is invalid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1555,7 +1555,7 @@ public class PetService(
                     Success = false,
                     Code = "USER_PET_NOT_FOUND",
                     Status = 404,
-                    Message = "User pet not found"
+                    Title = "User pet not found"
                 };
 
             _logger.LogInformation("User pet with id {UserPetId} retrieved successfully", id);
@@ -1569,7 +1569,7 @@ public class PetService(
                 Success = false,
                 Code = "ERROR_GETTING_USER_PET",
                 Status = 500,
-                Message = "An error occurred while getting the user pet. Please try again later.",
+                Title = "An error occurred while getting the user pet. Please try again later.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

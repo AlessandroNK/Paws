@@ -84,7 +84,7 @@ public class VetRepository(
                 Success = true,
                 Status = 200,
                 Code = "VETS_FOUND",
-                Message = $"Found {vets.Count} vets matching the specified filters",
+                Title = $"Found {vets.Count} vets matching the specified filters",
                 Data = vets,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -94,7 +94,7 @@ public class VetRepository(
                 Success = false,
                 Status = 404,
                 Code = "VETS_NOT_FOUND",
-                Message = "No vets found matching the specified filters",
+                Title = "No vets found matching the specified filters",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

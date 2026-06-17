@@ -90,7 +90,7 @@ public class VetController(
                 ? Ok(result.Map(
                     vets => vets.Select(v => v.ToDto()).ToList()
                 ))
-                : BadRequest(result.ToDto());
+                : BadRequest(result.ToApiResponse());
         }
         catch (Exception e)
         {
@@ -100,7 +100,7 @@ public class VetController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }

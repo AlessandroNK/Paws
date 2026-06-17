@@ -1,0 +1,31 @@
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.ui-message {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    animation: fadeIn 1s ease-in-out;
+}
+
+.ui-message-error {
+    border: 1px solid #ff7777;
+    background: #ffeeee;
+}
+
+.ui-message-success {
+    border: 1px solid #77ff77;
+    background: #eeffee;
+}

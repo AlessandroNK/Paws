@@ -1,0 +1,13 @@
+{
+  "APPOINTMENTS_TITLE": "Calendario de citas",
+  "APPOINTMENT_DATE_PHAR": "Estás programando una cita para el",
+  "APPOINTMENT_DATE": "Fecha de la cita",
+  "APPOINTMENT_TIME": "Hora de la cita",
+  "APPOINTMENT_TYPE": "Tipo de cita",
+  "APPOINTMENT_STATUS": "Estado de la cita",
+  "APPOINTMENT_PATIENT": "Paciente",
+  "APPOINTMENT_DOCTOR": "Doctor",
+  "APPOINTMENT_ACTIONS": "Acciones",
+  "OF": "de",
+  "NO_AVAILABLE_APPOINTMENTS_FOUND": "No hay citas disponibles para esa fecha"
+}

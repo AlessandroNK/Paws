@@ -111,7 +111,7 @@ public class Pet : IDtoConvertible<PetResponse>, IEncryptable
                 Success = false,
                 Code = "NAME_NOT_PROVIDED",
                 Status = 400,
-                Message = "Name not provided for pet hashing",
+                Title = "Name not provided for pet hashing",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -123,7 +123,7 @@ public class Pet : IDtoConvertible<PetResponse>, IEncryptable
                 Success = false,
                 Code = "NAME_HASHING_FAILED",
                 Status = 500,
-                Message = "Failed to hash pet name",
+                Title = "Failed to hash pet name",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -134,7 +134,7 @@ public class Pet : IDtoConvertible<PetResponse>, IEncryptable
             Success = true,
             Code = "PET_HASHED",
             Status = 200,
-            Message = "Pet hashed successfully",
+            Title = "Pet hashed successfully",
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = false
         };

@@ -68,7 +68,7 @@ public class AppConfigRepository(
                 Success = true,
                 Code = "CONFIGS_RETRIEVED",
                 Status = 200,
-                Message = "App configs retrieved successfully",
+                Title = "App configs retrieved successfully",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true,
                 Data = configs
@@ -80,7 +80,7 @@ public class AppConfigRepository(
             Success = false,
             Code = "NO_APP_CONFIGS_FOUND",
             Status = 404,
-            Message = "No app configs found in the database",
+            Title = "No app configs found in the database",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };
@@ -115,7 +115,7 @@ public class AppConfigRepository(
             Success = true,
             Code = "CONFIG_SET",
             Status = 200,
-            Message = $"Config {key} set successfully",
+            Title = $"Config {key} set successfully",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };

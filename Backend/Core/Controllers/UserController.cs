@@ -91,8 +91,8 @@ public class UserController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToDto<BasicUserResponse>())
-                : BadRequest(result.ToDto<BasicUserResponse>());
+                ? Ok(result.ToApiResponse<BasicUserResponse>())
+                : BadRequest(result.ToApiResponse<BasicUserResponse>());
         }
         catch (Exception e)
         {
@@ -102,7 +102,7 @@ public class UserController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }
@@ -140,8 +140,8 @@ public class UserController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToDto<BasicUserResponse>())
-                : BadRequest(result.ToDto<BasicUserResponse>());
+                ? Ok(result.ToApiResponse<BasicUserResponse>())
+                : BadRequest(result.ToApiResponse<BasicUserResponse>());
         }
         catch (Exception e)
         {
@@ -151,7 +151,7 @@ public class UserController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }
@@ -188,8 +188,8 @@ public class UserController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToDto<OnlyEmailUserResponse>())
-                : BadRequest(result.ToDto<OnlyEmailUserResponse>());
+                ? Ok(result.ToApiResponse<OnlyEmailUserResponse>())
+                : BadRequest(result.ToApiResponse<OnlyEmailUserResponse>());
         }
         catch (Exception e)
         {
@@ -199,7 +199,7 @@ public class UserController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }

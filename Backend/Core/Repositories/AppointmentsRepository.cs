@@ -100,7 +100,7 @@ public class AppointmentsRepository(
             Success = true,
             Code = appointments.Count != 0 ? "APPOINTMENTS_FOUND" : "NO_APPOINTMENTS_FOUND",
             Status = 200,
-            Message = appointments.Count != 0
+            Title = appointments.Count != 0
                 ? "Appointments found successfully"
                 : "No appointments found between the specified start and end times",
             TraceCode = FileCodes.CallerIC(),
@@ -147,7 +147,7 @@ public class AppointmentsRepository(
             Success = true,
             Code = appointments.Count != 0 ? "APPOINTMENTS_FOUND" : "NO_APPOINTMENTS_FOUND",
             Status = 200,
-            Message = appointments.Count != 0
+            Title = appointments.Count != 0
                 ? "Appointments found successfully"
                 : "No appointments found between the specified start and end times",
             TraceCode = FileCodes.CallerIC(),
@@ -167,7 +167,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "INVALID_VET_ID",
                 Status = 400,
-                Message = "Invalid veterinarian ID",
+                Title = "Invalid veterinarian ID",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true,
                 Data = null
@@ -183,7 +183,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "ERROR_CREATING_PET",
                 Status = 500,
-                Message = "An error occurred while creating the pet",
+                Title = "An error occurred while creating the pet",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -196,7 +196,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "APPOINTMENT_CREATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "Appointment created but not found when retrieving it",
+                Title = "Appointment created but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -206,7 +206,7 @@ public class AppointmentsRepository(
             Success = true,
             Code = "APPOINTMENT_CREATED",
             Status = 201,
-            Message = "Appointment created successfully",
+            Title = "Appointment created successfully",
             Data = getAppointmentResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -225,7 +225,7 @@ public class AppointmentsRepository(
                     Success = false,
                     Code = "INVALID_VET_ID",
                     Status = 400,
-                    Message = "Invalid veterinarian ID",
+                    Title = "Invalid veterinarian ID",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -240,7 +240,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "ERROR_CREATING_APPOINTMENTS",
                 Status = 500,
-                Message = "An error occurred while creating the appointments",
+                Title = "An error occurred while creating the appointments",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -250,7 +250,7 @@ public class AppointmentsRepository(
             Success = true,
             Code = "APPOINTMENTS_CREATED",
             Status = 201,
-            Message = "Appointments created successfully",
+            Title = "Appointments created successfully",
             Data = saved,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -283,7 +283,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "INVALID_APPOINTMENT_ID",
                 Status = 400,
-                Message = "The provided appointment ID is invalid",
+                Title = "The provided appointment ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -320,7 +320,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "APPOINTMENT_NOT_FOUND",
                 Status = 404,
-                Message = "No appointment found with the provided id",
+                Title = "No appointment found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             }
@@ -329,7 +329,7 @@ public class AppointmentsRepository(
                 Success = true,
                 Code = "APPOINTMENT_FOUND",
                 Status = 200,
-                Message = "Appointment found successfully",
+                Title = "Appointment found successfully",
                 Data = appointment,
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
@@ -381,7 +381,7 @@ public class AppointmentsRepository(
             Success = true,
             Code = appointments.Count != 0 ? "APPOINTMENTS_FOUND" : "NO_APPOINTMENTS_FOUND",
             Status = 200,
-            Message = appointments.Count != 0
+            Title = appointments.Count != 0
                 ? "Appointments found successfully"
                 : "No appointments found",
             TraceCode = FileCodes.CallerIC(),
@@ -399,7 +399,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "INVALID_APPOINTMENT_ID",
                 Status = 400,
-                Message = "The provided appointment ID is invalid",
+                Title = "The provided appointment ID is invalid",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -413,7 +413,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "ERROR_UPDATING_APPOINTMENT",
                 Status = 500,
-                Message = "An error occurred while updating the appointment",
+                Title = "An error occurred while updating the appointment",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -428,7 +428,7 @@ public class AppointmentsRepository(
                 Success = false,
                 Code = "APPOINTMENT_UPDATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "Appointment updated but not found when retrieving it",
+                Title = "Appointment updated but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -438,7 +438,7 @@ public class AppointmentsRepository(
             Success = true,
             Code = "APPOINTMENT_UPDATED",
             Status = 200,
-            Message = "Appointment updated successfully",
+            Title = "Appointment updated successfully",
             Data = getAppointmentResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true

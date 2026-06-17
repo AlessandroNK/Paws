@@ -98,7 +98,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "ERROR_GETTING_EXISTING_APPOINTMENTS",
                     Status = 500,
-                    Message = "An error occurred while getting existing appointments",
+                    Title = "An error occurred while getting existing appointments",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -111,7 +111,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "CANNOT_POPULATE_SCHEDULE_FOR_VET_ON_SUNDAY",
                     Status = 400,
-                    Message =
+                    Title =
                         $"Cannot populate schedule for vet {vet.Id} on Sunday as the vet does not work on Sundays (yet).",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -200,7 +200,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "ERROR_ADDING_NEW_APPOINTMENTS",
                     Status = 500,
-                    Message = $"An error occurred while adding new appointments for vet {vet.Id}",
+                    Title = $"An error occurred while adding new appointments for vet {vet.Id}",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -213,7 +213,7 @@ public class AppointmentService(
                     Success = true,
                     Code = "SCHEDULE_POPULATED_SUCCESSFULLY_FOR_VET",
                     Status = 200,
-                    Message =
+                    Title =
                         $"Schedule populated successfully for vet {vet.Id}. Total appointments added: {result.Data}",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
@@ -224,7 +224,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "SCHEDULE_POPULATED_WITH_ERRORS_FOR_VET",
                     Status = 500,
-                    Message =
+                    Title =
                         $"Schedule populated for vet {vet.Id} with {errors} errors. Total appointments added: {result.Data}. Check logs for more details.",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
@@ -239,7 +239,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_POPULATING_SCHEDULE_FOR_VET",
                 Status = 500,
-                Message =
+                Title =
                     $"An error occurred while populating the schedule for vet {vet.Id}. Check logs for more details.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -256,7 +256,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "INVALID_DATE",
                 Status = 400,
-                Message = "The provided date is invalid",
+                Title = "The provided date is invalid",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -272,7 +272,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "INVALID_DATE",
                         Status = 400,
-                        Message = "The provided date is invalid",
+                        Title = "The provided date is invalid",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -284,7 +284,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "INVALID_DATE",
                     Status = 400,
-                    Message = "The provided date is invalid",
+                    Title = "The provided date is invalid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -326,7 +326,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_ADDING_NEW_APPOINTMENT",
                 Status = 500,
-                Message = "An error occurred while adding a new appointment",
+                Title = "An error occurred while adding a new appointment",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -352,7 +352,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_ADDING_NEW_APPOINTMENTS",
                 Status = 500,
-                Message = "An error occurred while adding new appointments",
+                Title = "An error occurred while adding new appointments",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -390,7 +390,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_GETTING_EXISTING_APPOINTMENTS_BY_TIME_RANGE",
                 Status = 500,
-                Message = "An error occurred while getting existing appointments by time range",
+                Title = "An error occurred while getting existing appointments by time range",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -432,7 +432,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_GETTING_APPOINTMENT_BY_ID",
                 Status = 500,
-                Message = "An error occurred while getting the appointment by id",
+                Title = "An error occurred while getting the appointment by id",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -477,7 +477,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_GETTING_EXISTING_APPOINTMENTS_BY_TIME_RANGE",
                 Status = 500,
-                Message = "An error occurred while getting existing appointments by time range",
+                Title = "An error occurred while getting existing appointments by time range",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -520,7 +520,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "ERROR_GETTING_VETS",
                     Status = 500,
-                    Message = "An error occurred while getting vets",
+                    Title = "An error occurred while getting vets",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -531,7 +531,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "NO_VETS_FOUND",
                     Status = 404,
-                    Message = "No vets were found to populate the schedule for",
+                    Title = "No vets were found to populate the schedule for",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -564,7 +564,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "ERROR_POPULATING_SCHEDULE_FOR_ONE_OR_MORE_VETS",
                     Status = 500,
-                    Message =
+                    Title =
                         "An error occurred while populating the schedule for one or more vets. Check logs for more details.",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
@@ -575,7 +575,7 @@ public class AppointmentService(
                     Success = true,
                     Code = "SCHEDULE_POPULATED_SUCCESSFULLY",
                     Status = 200,
-                    Message =
+                    Title =
                         $"Schedule populated successfully for all vets. Total appointments added: {totalAppointmentsAdded}",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
@@ -590,7 +590,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_ACCEPTING_PET_OWNERSHIP",
                 Status = 500,
-                Message = "An error occurred while accepting pet ownership",
+                Title = "An error occurred while accepting pet ownership",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -622,7 +622,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS",
                     Status = 400,
-                    Message = "Cannot get available appointments for past days",
+                    Title = "Cannot get available appointments for past days",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -633,7 +633,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_SUNDAY",
                     Status = 400,
-                    Message = "Cannot get available appointments for Sunday as the vets do not work on Sundays (yet).",
+                    Title = "Cannot get available appointments for Sunday as the vets do not work on Sundays (yet).",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -667,7 +667,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "NO_AVAILABLE_APPOINTMENTS_FOUND",
                     Status = 404,
-                    Message = "No available appointments were found for the specified day",
+                    Title = "No available appointments were found for the specified day",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -679,7 +679,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "NO_AVAILABLE_APPOINTMENTS_FOUND",
                     Status = 404,
-                    Message = "No available appointments were found for the specified day",
+                    Title = "No available appointments were found for the specified day",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 }
@@ -688,7 +688,7 @@ public class AppointmentService(
                     Success = true,
                     Code = "AVAILABLE_APPOINTMENTS_FOUND",
                     Status = 200,
-                    Message = $"Available appointments were found for the specified day. Total available appointments: {appointments.Count}",
+                    Title = $"Available appointments were found for the specified day. Total available appointments: {appointments.Count}",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
                     Data = appointments
@@ -702,7 +702,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_GETTING_APPOINTMENTS",
                 Status = 500,
-                Message = "An error occurred while getting the appointments",
+                Title = "An error occurred while getting the appointments",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -735,7 +735,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "APPOINTMENT_NOT_FOUND",
                     Status = 404,
-                    Message = "The appointment was not found",
+                    Title = "The appointment was not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -750,7 +750,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "APPOINTMENT_ALREADY_SCHEDULED",
                         Status = 400,
-                        Message = "The appointment is already scheduled",
+                        Title = "The appointment is already scheduled",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -760,7 +760,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "APPOINTMENT_ALREADY_COMPLETED",
                         Status = 400,
-                        Message = "The appointment is already completed",
+                        Title = "The appointment is already completed",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -772,7 +772,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "APPOINTMENT_IN_PAST",
                     Status = 400,
-                    Message = "The appointment is in the past and cannot be reserved",
+                    Title = "The appointment is in the past and cannot be reserved",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -783,7 +783,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "APPOINTMENT_TOO_CLOSE",
                     Status = 400,
-                    Message =
+                    Title =
                         "The appointment is too close to be reserved. Appointments must be reserved at least 15 minutes in advance.",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -803,7 +803,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "USER_PET_NOT_FOUND",
                     Status = 404,
-                    Message = "The user pet was not found",
+                    Title = "The user pet was not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -815,7 +815,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "PET_NOT_FOUND",
                     Status = 404,
-                    Message = "The pet was not found",
+                    Title = "The pet was not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -829,7 +829,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "PET_NOT_ACTIVE",
                         Status = 400,
-                        Message = "The pet is not active and cannot be scheduled for an appointment",
+                        Title = "The pet is not active and cannot be scheduled for an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -839,7 +839,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "PET_DELETED",
                         Status = 400,
-                        Message = "The pet is deleted and cannot be scheduled for an appointment",
+                        Title = "The pet is deleted and cannot be scheduled for an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -849,7 +849,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "PET_ARCHIVED",
                         Status = 400,
-                        Message = "The pet is archived and cannot be scheduled for an appointment",
+                        Title = "The pet is archived and cannot be scheduled for an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -859,7 +859,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "PET_BANNED",
                         Status = 400,
-                        Message = "The pet is banned and cannot be scheduled for an appointment",
+                        Title = "The pet is banned and cannot be scheduled for an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -872,7 +872,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "USER_NOT_FOUND",
                     Status = 404,
-                    Message = "The user was not found",
+                    Title = "The user was not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -886,7 +886,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "USER_NOT_ACTIVE",
                         Status = 400,
-                        Message = "The user is not active and cannot reserve an appointment",
+                        Title = "The user is not active and cannot reserve an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -896,7 +896,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "USER_DELETED",
                         Status = 400,
-                        Message = "The user is deleted and cannot reserve an appointment",
+                        Title = "The user is deleted and cannot reserve an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -906,7 +906,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "USER_ARCHIVED",
                         Status = 400,
-                        Message = "The user is archived and cannot reserve an appointment",
+                        Title = "The user is archived and cannot reserve an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -916,7 +916,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "USER_BANNED",
                         Status = 400,
-                        Message = "The user is banned and cannot reserve an appointment",
+                        Title = "The user is banned and cannot reserve an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -926,7 +926,7 @@ public class AppointmentService(
                         Success = false,
                         Code = "USER_UNVERIFIED",
                         Status = 400,
-                        Message = "The user is unverified and cannot reserve an appointment",
+                        Title = "The user is unverified and cannot reserve an appointment",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -944,7 +944,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "ERROR_RESERVING_APPOINTMENT",
                     Status = 500,
-                    Message = "An error occurred while reserving the appointment",
+                    Title = "An error occurred while reserving the appointment",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 }
@@ -953,7 +953,7 @@ public class AppointmentService(
                     Success = true,
                     Code = "APPOINTMENT_RESERVED_SUCCESSFULLY",
                     Status = 200,
-                    Message = "The appointment was reserved successfully",
+                    Title = "The appointment was reserved successfully",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
                     Data = result.Data
@@ -967,7 +967,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_RESERVING_APPOINTMENT",
                 Status = 500,
-                Message = "An error occurred while reserving the appointment"
+                Title = "An error occurred while reserving the appointment"
             };
         }
     }
@@ -991,7 +991,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_UPDATING_APPOINTMENT",
                 Status = 500,
-                Message = "An error occurred while updating the appointment",
+                Title = "An error occurred while updating the appointment",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1016,7 +1016,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "INVALID_USER_PET_ID",
                     Status = 400,
-                    Message = "The user pet ID is invalid",
+                    Title = "The user pet ID is invalid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -1034,7 +1034,7 @@ public class AppointmentService(
                     Success = false,
                     Code = "USER_PET_NOT_FOUND",
                     Status = 404,
-                    Message = "User pet not found"
+                    Title = "User pet not found"
                 };
 
             _logger.LogInformation("User pet with id {UserPetId} retrieved successfully", id);
@@ -1048,7 +1048,7 @@ public class AppointmentService(
                 Success = false,
                 Code = "ERROR_GETTING_USER_PET",
                 Status = 500,
-                Message = "An error occurred while getting the user pet. Please try again later.",
+                Title = "An error occurred while getting the user pet. Please try again later.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

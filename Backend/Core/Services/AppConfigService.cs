@@ -81,7 +81,7 @@ public class AppConfigService(
                 Success = true,
                 Code = "APP_CONFIG_INITIALIZED",
                 Status = 200,
-                Message = "App config initialized successfully",
+                Title = "App config initialized successfully",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -94,7 +94,7 @@ public class AppConfigService(
                 Success = false,
                 Code = "ERROR_INITIALIZING_APP_CONFIG",
                 Status = 500,
-                Message = "An error occurred while initializing app config",
+                Title = "An error occurred while initializing app config",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -119,7 +119,7 @@ public class AppConfigService(
                     Success = false,
                     Code = "INVALID_CONFIG_KEY",
                     Status = 400,
-                    Message = "Config key is not valid",
+                    Title = "Config key is not valid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -132,7 +132,7 @@ public class AppConfigService(
                     Success = false,
                     Code = "INVALID_CONFIG_VALUE",
                     Status = 400,
-                    Message = "Config value cannot be null or whitespace",
+                    Title = "Config value cannot be null or whitespace",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -152,7 +152,7 @@ public class AppConfigService(
                     Success = false,
                     Code = "INVALID_CONFIG_KEY",
                     Status = 400,
-                    Message = "Config key is not valid",
+                    Title = "Config key is not valid",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -176,7 +176,7 @@ public class AppConfigService(
                 Success = true,
                 Code = "APP_CONFIG_SET",
                 Status = 200,
-                Message = $"App config {key} set successfully",
+                Title = $"App config {key} set successfully",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -189,7 +189,7 @@ public class AppConfigService(
                 Success = false,
                 Code = "ERROR_SETTING_APP_CONFIG",
                 Status = 500,
-                Message = "An error occurred while setting app config",
+                Title = "An error occurred while setting app config",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -212,7 +212,7 @@ public class AppConfigService(
                 Success = true,
                 Code = "CONFIG_FOUND",
                 Status = 200,
-                Message = "Config found",
+                Title = "Config found",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true,
                 Data = value
@@ -224,7 +224,7 @@ public class AppConfigService(
             Success = false,
             Code = "CONFIG_NOT_FOUND",
             Status = 404,
-            Message = "Config not found",
+            Title = "Config not found",
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };

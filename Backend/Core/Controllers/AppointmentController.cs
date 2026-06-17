@@ -54,7 +54,7 @@ public class AppointmentController(
 
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
-    [HttpGet]
+    [HttpPost]
     [Route("get-available-appointments")]
     public async Task<IActionResult> GetAvailableAppointmentsAsync(
         [FromHeader(Name = "Device-Id")] string deviceId,
@@ -77,7 +77,7 @@ public class AppointmentController(
             return result
                 ? Ok(result.Map(vets => vets.Select(a => a.ToScheduleDto()).ToList()
                 ))
-                : BadRequest(result.ToDto());
+                : BadRequest(result.ToApiResponse());
         }
         catch (Exception e)
         {
@@ -87,7 +87,7 @@ public class AppointmentController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }
@@ -126,8 +126,8 @@ public class AppointmentController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToDto())
-                : BadRequest(result.ToDto());
+                ? Ok(result.ToApiResponse())
+                : BadRequest(result.ToApiResponse());
         }
         catch (Exception e)
         {
@@ -137,7 +137,7 @@ public class AppointmentController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }
@@ -174,8 +174,8 @@ public class AppointmentController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToDto<AppointmentResponse>())
-                : BadRequest(result.ToDto<AppointmentResponse>());
+                ? Ok(result.ToApiResponse<AppointmentResponse>())
+                : BadRequest(result.ToApiResponse<AppointmentResponse>());
         }
         catch (Exception e)
         {
@@ -185,7 +185,7 @@ public class AppointmentController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }

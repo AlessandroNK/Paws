@@ -155,8 +155,8 @@ public class PetController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToDto<PetResponse>())
-                : BadRequest(result.ToDto<PetResponse>());
+                ? Ok(result.ToApiResponse<PetResponse>())
+                : BadRequest(result.ToApiResponse<PetResponse>());
         }
         catch (Exception e)
         {
@@ -166,7 +166,7 @@ public class PetController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }
@@ -205,8 +205,8 @@ public class PetController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToDto<PetResponse>())
-                : BadRequest(result.ToDto<PetResponse>());
+                ? Ok(result.ToApiResponse<PetResponse>())
+                : BadRequest(result.ToApiResponse<PetResponse>());
         }
         catch (Exception e)
         {
@@ -216,7 +216,7 @@ public class PetController(
                 Success = false,
                 Code = "BAD_OPERATION",
                 Status = 500,
-                Message = "Something is breaking inside the API",
+                Title = "Something is breaking inside the API",
                 TraceCode = FileCodes.CallerIC()
             });
         }

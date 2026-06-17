@@ -190,7 +190,7 @@ public class User : IDtoConvertible<UserResponse>,
                 Success = false,
                 Code = "PASSWORD_NOT_PROVIDED",
                 Status = 400,
-                Message = "Password not provided for user hash",
+                Title = "Password not provided for user hash",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -206,7 +206,7 @@ public class User : IDtoConvertible<UserResponse>,
                 Success = false,
                 Code = "PASSWORD_HASHING_FAILED",
                 Status = 500,
-                Message = "Password hashing failed for user hash",
+                Title = "Password hashing failed for user hash",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -219,7 +219,7 @@ public class User : IDtoConvertible<UserResponse>,
                 Success = false,
                 Code = "DOCUMENT_NOT_PROVIDED",
                 Status = 400,
-                Message = "Document not provided for user hash",
+                Title = "Document not provided for user hash",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -231,7 +231,7 @@ public class User : IDtoConvertible<UserResponse>,
                 Success = false,
                 Code = "DOCUMENT_HASHING_FAILED",
                 Status = 500,
-                Message = "Document hashing failed for user hash",
+                Title = "Document hashing failed for user hash",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -244,7 +244,7 @@ public class User : IDtoConvertible<UserResponse>,
                 Success = false,
                 Code = "EMAIL_NOT_PROVIDED",
                 Status = 400,
-                Message = "Email not provided for user hash",
+                Title = "Email not provided for user hash",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -256,7 +256,7 @@ public class User : IDtoConvertible<UserResponse>,
                 Success = false,
                 Code = "EMAIL_HASHING_FAILED",
                 Status = 500,
-                Message = "Email hashing failed for user hash",
+                Title = "Email hashing failed for user hash",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = false
             };
@@ -267,7 +267,7 @@ public class User : IDtoConvertible<UserResponse>,
             Success = true,
             Code = "USER_HASHED",
             Status = 200,
-            Message = "User hashed successfully",
+            Title = "User hashed successfully",
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = false
         };

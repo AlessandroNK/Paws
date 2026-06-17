@@ -117,7 +117,7 @@ public class UserRepository(
                 Success = false,
                 Code = "USER_NOT_FOUND",
                 Status = 404,
-                Message = "No user found with the provided email",
+                Title = "No user found with the provided email",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -128,7 +128,7 @@ public class UserRepository(
             Success = true,
             Code = "USER_FOUND",
             Status = 200,
-            Message = "User found successfully",
+            Title = "User found successfully",
             Data = user,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -154,7 +154,7 @@ public class UserRepository(
         if (!hashedDocumentResult || hashedDocumentResult.Data == null)
         {
             _logger.LogError("Failed to encrypt document for user lookup: {ErrorMessage}",
-                hashedDocumentResult.Message);
+                hashedDocumentResult.Title);
             return hashedDocumentResult.ConvertTo<User?>();
         }
 
@@ -181,7 +181,7 @@ public class UserRepository(
                 Success = false,
                 Code = "USER_NOT_FOUND",
                 Status = 404,
-                Message = "No user found with the provided document",
+                Title = "No user found with the provided document",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -192,7 +192,7 @@ public class UserRepository(
             Success = true,
             Code = "USER_FOUND",
             Status = 200,
-            Message = "User found successfully",
+            Title = "User found successfully",
             Data = user,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -218,7 +218,7 @@ public class UserRepository(
                 Success = false,
                 Code = "INVALID_USER_ID",
                 Status = 400,
-                Message = "Invalid user ID provided",
+                Title = "Invalid user ID provided",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -246,7 +246,7 @@ public class UserRepository(
                 Success = false,
                 Code = "USER_NOT_FOUND",
                 Status = 404,
-                Message = "No user found with the provided id",
+                Title = "No user found with the provided id",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -257,7 +257,7 @@ public class UserRepository(
             Success = true,
             Code = "USER_FOUND",
             Status = 200,
-            Message = "User found successfully",
+            Title = "User found successfully",
             Data = user,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -282,7 +282,7 @@ public class UserRepository(
                 Success = false,
                 Code = "ERROR_CREATING_USER",
                 Status = 500,
-                Message = "An error occurred while creating the user",
+                Title = "An error occurred while creating the user",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -296,7 +296,7 @@ public class UserRepository(
                 Success = false,
                 Code = "USER_CREATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "User created but not found when retrieving it",
+                Title = "User created but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -307,7 +307,7 @@ public class UserRepository(
             Success = true,
             Code = "USER_CREATED",
             Status = 201,
-            Message = "User created successfully",
+            Title = "User created successfully",
             Data = user,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
@@ -334,7 +334,7 @@ public class UserRepository(
                 Success = false,
                 Code = "ERROR_UPDATING_USER",
                 Status = 500,
-                Message = "An error occurred while updating the user",
+                Title = "An error occurred while updating the user",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -346,7 +346,7 @@ public class UserRepository(
                 Success = false,
                 Code = "USER_UPDATED_BUT_NOT_FOUND",
                 Status = 500,
-                Message = "User updated but not found when retrieving it",
+                Title = "User updated but not found when retrieving it",
                 TraceCode = $"{FileCodes.CallerIC()}",
                 Returnable = true
             };
@@ -356,7 +356,7 @@ public class UserRepository(
             Success = true,
             Code = "USER_UPDATED",
             Status = 200,
-            Message = "User updated successfully",
+            Title = "User updated successfully",
             Data = getUserResult.Data,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true

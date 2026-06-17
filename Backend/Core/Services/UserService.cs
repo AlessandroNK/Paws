@@ -100,7 +100,7 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_ADDING_USER",
                 Status = 500,
-                Message = "An error occurred while adding the user",
+                Title = "An error occurred while adding the user",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -124,7 +124,7 @@ public class UserService(
                 Success = false,
                 Code = "INVALID_EMAIL",
                 Status = 400,
-                Message = "Email is required",
+                Title = "Email is required",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -138,7 +138,7 @@ public class UserService(
                 Success = false,
                 Code = "INVALID_DOCUMENT_TYPE",
                 Status = 400,
-                Message = "Document type must be between 1 and 5",
+                Title = "Document type must be between 1 and 5",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -149,7 +149,7 @@ public class UserService(
                 Success = false,
                 Code = "INVALID_DOCUMENT_NUMBER",
                 Status = 400,
-                Message = "Document number must be between 1 and 15 characters",
+                Title = "Document number must be between 1 and 15 characters",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -163,7 +163,7 @@ public class UserService(
                 Success = false,
                 Code = "INVALID_NAME",
                 Status = 400,
-                Message =
+                Title =
                     "The name must be between 1 and 200 characters and can only contain letters, spaces, hyphens, apostrophes, and dots",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -192,7 +192,7 @@ public class UserService(
                 Success = false,
                 Code = "INVALID_EMAIL",
                 Status = 400,
-                Message = "Email is required",
+                Title = "Email is required",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -203,7 +203,7 @@ public class UserService(
                 Success = false,
                 Code = "INVALID_VERIFICATION_CODE",
                 Status = 400,
-                Message = "Verification code must be 6 characters and cannot contain spaces",
+                Title = "Verification code must be 6 characters and cannot contain spaces",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -247,7 +247,7 @@ public class UserService(
                     Success = false,
                     Code = "INVALID_EMAIL",
                     Status = 400,
-                    Message = "Email is required",
+                    Title = "Email is required",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -270,7 +270,7 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_GETTING_USER",
                 Status = 500,
-                Message = "An error occurred while getting the user",
+                Title = "An error occurred while getting the user",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -300,7 +300,7 @@ public class UserService(
                     Success = false,
                     Code = "INVALID_DOCUMENT",
                     Status = 400,
-                    Message = "Document is required",
+                    Title = "Document is required",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -320,7 +320,7 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_GETTING_USER",
                 Status = 500,
-                Message = "An error occurred while getting the user",
+                Title = "An error occurred while getting the user",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -350,7 +350,7 @@ public class UserService(
                     Success = false,
                     Code = "INVALID_ID",
                     Status = 400,
-                    Message = "ID is required",
+                    Title = "ID is required",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -373,7 +373,7 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_GETTING_USER",
                 Status = 500,
-                Message = "An error occurred while getting the user",
+                Title = "An error occurred while getting the user",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -408,7 +408,7 @@ public class UserService(
                     Success = false,
                     Code = "USER_ALREADY_EXISTS",
                     Status = 400,
-                    Message = "A user with the same email or document already exists",
+                    Title = "A user with the same email or document already exists",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -448,7 +448,7 @@ public class UserService(
                     Success = true,
                     Code = "VERIFICATION_CODE_SENT",
                     Status = 201,
-                    Message = "User signed up successfully",
+                    Title = "User signed up successfully",
                     Data = user,
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
@@ -468,7 +468,7 @@ public class UserService(
                 Success = true,
                 Code = "VERIFICATION_CODE_SENT",
                 Status = 201,
-                Message = "User signed up successfully",
+                Title = "User signed up successfully",
                 Data = user,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -483,7 +483,7 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_SIGNING_UP_USER",
                 Status = 500,
-                Message = "An error occurred while signing up the user"
+                Title = "An error occurred while signing up the user"
             };
         }
     }
@@ -515,7 +515,7 @@ public class UserService(
                     Success = false,
                     Code = "USER_NOT_FOUND",
                     Status = 404,
-                    Message = "User not found",
+                    Title = "User not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -528,7 +528,7 @@ public class UserService(
                     Success = false,
                     Code = "USER_BANNED",
                     Status = 403,
-                    Message = "User is banned",
+                    Title = "User is banned",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -539,7 +539,7 @@ public class UserService(
                     Success = false,
                     Code = "USER_ALREADY_VERIFIED",
                     Status = 400,
-                    Message = "User is already verified",
+                    Title = "User is already verified",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -551,7 +551,7 @@ public class UserService(
                     Success = false,
                     Code = "INVALID_VERIFICATION_CODE",
                     Status = 400,
-                    Message = "Invalid verification code",
+                    Title = "Invalid verification code",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -578,7 +578,7 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_VERIFYING_ACCOUNT",
                 Status = 500,
-                Message = "An error occurred while verifying the account"
+                Title = "An error occurred while verifying the account"
             };
         }
     }
@@ -602,7 +602,7 @@ public class UserService(
                     Success = false,
                     Code = "INVALID_EMAIL",
                     Status = 400,
-                    Message = "Email is required",
+                    Title = "Email is required",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -620,7 +620,7 @@ public class UserService(
                     Success = false,
                     Code = "USER_NOT_FOUND",
                     Status = 404,
-                    Message = "User not found",
+                    Title = "User not found",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -633,7 +633,7 @@ public class UserService(
                     Success = false,
                     Code = "USER_BANNED",
                     Status = 403,
-                    Message = "User is banned",
+                    Title = "User is banned",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -644,7 +644,7 @@ public class UserService(
                     Success = false,
                     Code = "USER_ALREADY_VERIFIED",
                     Status = 400,
-                    Message = "User is already verified",
+                    Title = "User is already verified",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -660,7 +660,7 @@ public class UserService(
                     Success = false,
                     Code = "TOO_MANY_REQUESTS",
                     Status = 429,
-                    Message = "You can only request a new verification code every 1 minute",
+                    Title = "You can only request a new verification code every 1 minute",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
                 };
@@ -680,7 +680,7 @@ public class UserService(
                         Success = false,
                         Code = "ERROR_UPDATING_VERIFICATION_CODE",
                         Status = 500,
-                        Message = "An error occurred while updating the verification code",
+                        Title = "An error occurred while updating the verification code",
                         TraceCode = FileCodes.CallerIC(),
                         Returnable = true
                     };
@@ -701,7 +701,7 @@ public class UserService(
                 Success = true,
                 Code = "VERIFICATION_CODE_SENT",
                 Status = 201,
-                Message = "User verification code sent successfully",
+                Title = "User verification code sent successfully",
                 Data = user,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
@@ -715,7 +715,7 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_VERIFYING_ACCOUNT",
                 Status = 500,
-                Message = "An error occurred while verifying the account"
+                Title = "An error occurred while verifying the account"
             };
         }
     }

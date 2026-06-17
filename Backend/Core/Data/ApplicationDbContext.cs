@@ -92,7 +92,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             var hashResult = encryptable.Hash();
             if (!hashResult)
                 throw new Exception(
-                    $"{hashResult.Code} Failed to hash entity of type {entry.Entity.GetType().Name}: {hashResult.Message}");
+                    $"{hashResult.Code} Failed to hash entity of type {entry.Entity.GetType().Name}: {hashResult.Title}");
         }
     }
 
