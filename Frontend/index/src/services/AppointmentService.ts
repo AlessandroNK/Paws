@@ -2,6 +2,7 @@ import {Appointment} from "../types/SystemTypes.ts";
 import {Components, Day, FetchOptions, Result} from "../types/CommonTypes.ts";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
 import type {AppointmentResponse} from "../types/ResponseTypes.ts";
+import * as VetService from "./VetService.ts";
 
 //                                                                                                             FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------------
@@ -88,12 +89,25 @@ function createAppointmentFromApiResponse(apiResponse: AppointmentResponse): Res
     const endTime: Date = new Date(apiResponse.endTime);
 
     // Create appointment
-    return Result.ok(new Appointment(
+    const appointment = new Appointment(
         apiResponse.id,
         apiResponse.vetId,
         startTime,
         endTime,
         null,
         null
-    ));
+    );
+
+    const vetResult = VetService.createVetFromApiResponse(apiResponse.vet);
+    if (!vetResult.success || !vetResult.data) {
+        return Result.fail<Appointment>(
+            "Error processing API response: invalid vet data",
+            500,
+            Components.API_RESPONSE_PROCESSING,
+            "INVALID_VET_DATA"
+        ).log();
+    }
+
+    appointment.vet = vetResult.data;
+    return Result.ok(appointment);
 }

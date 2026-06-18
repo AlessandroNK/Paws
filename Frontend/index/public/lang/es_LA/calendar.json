@@ -1,8 +1,10 @@
 {
-  "APPOINTMENTS_TITLE": "Calendario de citas",
+  "APPOINTMENTS_TITLE": "Citas para el",
   "APPOINTMENT_DATE_PHAR": "Estás programando una cita para el",
   "APPOINTMENT_DATE": "Fecha de la cita",
   "APPOINTMENT_TIME": "Hora de la cita",
+  "NO_AVAILABLE_APPOINTMENTS_FOUND": "Nada por aquí...",
+  "ERROR_GETTING_APPOINTMENTS": "No pudimos obtener las citas, por favor intenta de nuevo más tarde.",
   "APPOINTMENT_TYPE": "Tipo de cita",
   "APPOINTMENT_STATUS": "Estado de la cita",
   "APPOINTMENT_PATIENT": "Paciente",

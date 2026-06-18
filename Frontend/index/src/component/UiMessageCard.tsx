@@ -23,7 +23,7 @@ function UiMessageCard(props: Props) {
                 setMessage(props.message.message);
             } else if (props.message.code) {
                 // If not, then use the code to translate the message
-                const result = await LanguageService.getTranslation(
+                const result = await LanguageService.getTranslationAsync(
                     props.message.component,
                     props.message.code
                 );

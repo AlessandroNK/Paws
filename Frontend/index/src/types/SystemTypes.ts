@@ -93,11 +93,15 @@ export class Appointment {
 
 // ---------------------------------------------------------------------------------------------------------------------
 export class TimePeriod {
+    public id: string
     public startTime: Date
     public endTime: Date
+    public appointments: Appointment[] = []
 
-    constructor(startTime: Date, endTime: Date) {
+    constructor(id: string, startTime: Date, endTime: Date) {
+        this.id = id;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.appointments = [];
     }
 }

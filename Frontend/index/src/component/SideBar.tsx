@@ -15,7 +15,7 @@ function SideBar() {
     // -----------------------------------------------------------------------------------------------------------------
     useEffect(() => {
         async function loadTranslation() {
-            const result = await LanguageService.getTranslation(Components.SIDEBAR, "APPOINTMENTS");
+            const result = await LanguageService.getTranslationAsync(Components.SIDEBAR, "APPOINTMENTS");
             setAppointmentsText(result.data ?? "Appointments");
         }
 

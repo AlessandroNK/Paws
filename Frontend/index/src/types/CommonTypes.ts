@@ -258,6 +258,26 @@ export class Day {
     }
 
     // ------------------------------------------------------------------------
+    public getDayOfWeekName(): string {
+        return LanguageService.getDayOfWeek(this.getDayOfWeek());
+    }
+
+    // ------------------------------------------------------------------------
+    public getMonth(): number {
+        return this.Month;
+    }
+
+    // ------------------------------------------------------------------------
+    public getMonthName(): string{
+        return LanguageService.getMonth(this.Month);
+    }
+
+    // ------------------------------------------------------------------------
+    public getYear(): number {
+        return this.Year;
+    }
+
+    // ------------------------------------------------------------------------
     public isSameDay(other: Day): boolean {
         return this.Year === other.Year && this.Month === other.Month && this.Day === other.Day;
     }
@@ -265,7 +285,7 @@ export class Day {
     // ------------------------------------------------------------------------
     public async printFormated(): Promise<string> {
         const monthString = LanguageService.getMonth(this.Month);
-        const ofResult = await LanguageService.getTranslation(Components.CALENDAR, "OF");
+        const ofResult = await LanguageService.getTranslationAsync(Components.CALENDAR, "OF");
         if (!ofResult.success) return `${LanguageService.getDayOfWeek(this.getDayOfWeek())} ${this.Day} ${monthString} ${this.Year}`;
         const of = ofResult.data ?? "of";
         return `${LanguageService.getDayOfWeek(this.getDayOfWeek())} ${this.Day} ${of} ${monthString} ${of} ${this.Year}`;

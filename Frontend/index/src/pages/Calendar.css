@@ -1,48 +1,49 @@
 .calendar-page {
-    height: 100vh;
+    min-height: 100vh;
     width: 100%;
     display: flex;
     align-items: center;
-}
-
-.calendar-content {
-    width: 100%;
-    height: 100%;
-    margin: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f3f3f3;
-}
-
-.calendar-section {
-    flex: 0 1;
-    height: 100%;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-}
-
-.hours-section {
-    width: 20px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #ee4723;
-    padding: 5px;
 }
 
 .appointments-section {
-    flex: 1 1;
-    height: 100%;
+    width: 100%;
+    background: #3a1933;
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+}
+
+.appointments-section-container {
+    max-width: 1500px;
+    display: flex;
+    gap: 100px;
+}
+
+.appointments-header {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.appointments-header h1 {
+    line-height: 0.7;
+}
+
+.appointments-container {
+    min-width: 500px;
+    height: 200px;
+    background: white;
+    border-radius: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.no-appointments {
     display: flex;
     align-items: center;
-    flex-direction: column;
-    background: #f3f3f3;
-    padding: 30px;
+    justify-content: center;
+    height: 100%;
+    color: #666;
+    font-size: 1.2em;
 }

@@ -13,8 +13,11 @@ function AppointmentCard(props: Props) {
     // Return
     // -----------------------------------------------------------------------------------------------------------------
     return (
-        <div className="appointment-card">
-            <h3>{props.appointment?.startTime.getHours().toString()}:{props.appointment?.startTime.getMinutes().toString()}</h3>
+        <div className="appointment-card"
+            // onClick={() => props.onClick?.(props.appointment)}
+             onClick={() => console.log("Clicked appointment with id: " + props.appointment.id)}
+        >
+            <h3>{props.appointment?.startTime.getHours().toString().padStart(2, "0")}:{props.appointment?.startTime.getMinutes().toString().padStart(2, "0")}</h3>
             <p>{props.appointment?.vet?.name.toString()}</p>
         </div>
     );

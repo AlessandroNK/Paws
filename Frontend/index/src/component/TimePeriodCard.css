@@ -1,0 +1,24 @@
+.time-period-card {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    padding: 10px;
+}
+
+.time-period-card:hover {
+    color: var(--main-color);
+    background-color: #f9f9f9;
+}
+
+.time-period-card .time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.time-period-card .appointments {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 5px;
+}

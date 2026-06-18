@@ -79,7 +79,7 @@ export function setLanguage(language: Languages): void {
  * message code "APPOINTMENTS_TITLE":
  * getTranslation(Components.CALENDAR, "APPOINTMENTS_TITLE"); // returns Result.ok("Título de las citas")
  */
-export async function getTranslation(component: Components, code: string): Promise<Result<string>> {
+export async function getTranslationAsync(component: Components, code: string): Promise<Result<string>> {
     try {
         const languageFile = await fetch(`./lang/${currentLanguage}/${component}.json`);
         if (!languageFile.ok) {

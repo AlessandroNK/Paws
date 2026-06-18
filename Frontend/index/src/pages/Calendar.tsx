@@ -2,21 +2,22 @@ import "./Calendar.css"
 import {useEffect, useRef, useState} from "react";
 import {Components, Day, Result} from "../types/CommonTypes.ts";
 import * as LanguageService from "../services/LanguageService.ts";
-import {type Appointment} from "../types/SystemTypes.ts";
+import {type Appointment, TimePeriod} from "../types/SystemTypes.ts";
 import * as AppointmentsService from "../services/AppointmentService.ts";
-import SideBar from "../component/SideBar.tsx";
 import PushMessagesUi from "../component/PushMessagesUi.tsx";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
-import AppointmentCard from "../component/AppointmentCard.tsx";
+import TimePeriodCard from "../component/TimePeriodCard.tsx";
 
 function Calendar() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const isFetchingApi = useRef(false);
     const [selectedDate] = useState(new Day(2026, 6, 18));
-    const [selectedDateString, setSelectedDateString] = useState("");
     const [appointmentsTitle, setAppointmentsTitle] = useState("");
-    const [appointmentDatePhar, setAppointmentDatePhar] = useState("");
+    const [appointmentDay, setAppointmentDay] = useState("");
+    const [appointmentConnector, setAppointmentConnector] = useState("");
+    const [appointmentsYear, setAppointmentsYear] = useState("");
+    const [appointmentsError, setAppointmentsError] = useState("");
     const [appointments, setAppointments] = useState([] as Appointment[]);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
 
@@ -47,13 +48,13 @@ function Calendar() {
     // -----------------------------------------------------------------------------------------------------------------
     useEffect(() => {
         async function loadTranslation() {
-            let result = await LanguageService.getTranslation(Components.CALENDAR, "APPOINTMENTS_TITLE");
-            setAppointmentsTitle(result.data ?? "Appointments' calendar");
+            let result = await LanguageService.getTranslationAsync(Components.CALENDAR, "APPOINTMENTS_TITLE");
+            setAppointmentsTitle(result.data ?? "Available appointments for");
 
-            result = await LanguageService.getTranslation(Components.CALENDAR, "APPOINTMENT_DATE_PHAR");
-            setAppointmentDatePhar(result.data ?? "You are selecting an appointment for the");
-
-            setSelectedDateString(await selectedDate.printFormated());
+            result = await LanguageService.getTranslationAsync(Components.CALENDAR, "OF");
+            setAppointmentDay(`${selectedDate.getDayOfWeekName()} ${selectedDate.getDayOfWeek()}`);
+            setAppointmentConnector(result.data ?? "of");
+            setAppointmentsYear(`${selectedDate.getMonthName()} ${result.data ?? "of"} ${selectedDate.getYear()}`);
         }
 
         async function getAppointmentsApi() {
@@ -73,8 +74,17 @@ function Calendar() {
                 result.code === "INVALID_DATE" ||
                 result.code === "APPOINTMENTS_FETCH_ERROR" ||
                 result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS"
-            ) return
-            if (!result.data) return;
+            ) {
+                const errorResult = await LanguageService.getTranslationAsync(Components.CALENDAR, "ERROR_GETTING_APPOINTMENTS");
+                setAppointmentsError(errorResult.data ?? "Error getting appointments");
+                return
+            }
+
+            if (!result.data || result.data.length <= 0) {
+                const errorResult = await LanguageService.getTranslationAsync(Components.CALENDAR, "NO_AVAILABLE_APPOINTMENTS_FOUND");
+                setAppointmentsError(errorResult.data ?? "No available appointments found");
+                return;
+            }
 
             // Push amount message
             const uiMessage = new UiMessage();
@@ -98,13 +108,36 @@ function Calendar() {
 
     // -----------------------------------------------------------------------------------------------------------------
     function generateAppointments() {
-        if (appointments.length <= 0) return null;
+        if (appointments.length <= 0) return (
+            <div className={"no-appointments"}>
+                <h2>{appointmentsError}</h2>
+            </div>
+        );
+
+        const periods: TimePeriod[] = []
+        appointments.forEach(appointment => {
+            // Find the time period
+            const targetHour = appointment.startTime;
+            let timePeriod = periods.find(
+                period => period.startTime.getHours() === targetHour.getHours()
+            );
+            if (!timePeriod) {
+                timePeriod = new TimePeriod(
+                    `${appointment.startTime.getHours()}:00 - ${appointment.startTime.getHours() + 1}:00`,
+                    appointment.startTime,
+                    appointment.startTime
+                )
+                periods.push(timePeriod)
+            }
+
+            timePeriod.appointments.push(appointment);
+        });
 
         // First, we need to group
         return (
-            <div className="appointment-time-period">
-            {appointments.map((appointment) => (
-                    <AppointmentCard key={appointment.id} appointment={appointment}/>
+            <div className={"appointments-container"}>
+                {periods.map((period) => (
+                    <TimePeriodCard key={period.id} timePeriod={period}/>
                 ))}
             </div>
         )
@@ -115,24 +148,21 @@ function Calendar() {
     return (
         <>
             <div className={"calendar-page"}>
-                <SideBar/>
-                <div className="calendar-content">
-                    <section className="calendar-section">
+                <div className="appointments-section">
+                    <div className={"appointments-section-container"}>
+                        <div className={"appointments-header"}>
+                            <h1>{appointmentsTitle}</h1>
+                            <h1>
+                                <span
+                                    className={"font-bold font-main-color"}>{appointmentDay}</span> {appointmentConnector}
+                            </h1>
+                            <h1>{appointmentsYear}</h1>
+                        </div>
 
-                    </section>
-
-                    <section className="hours-section">
-
-                    </section>
-
-                    <section className="appointments-section">
-                        <h1>{appointmentsTitle}</h1>
-                        <h2>
-                            {appointmentDatePhar} <span
-                            className={"font-bold font-main-color"}>{selectedDateString}</span>
-                        </h2>
-                        {generateAppointments()}
-                    </section>
+                        <div className={"appointments-container"}>
+                            {generateAppointments()}
+                        </div>
+                    </div>
                 </div>
             </div>
             <PushMessagesUi messages={pushMessages}/>
