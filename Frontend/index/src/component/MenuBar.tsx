@@ -1,9 +1,9 @@
 import "./MenuBar.css";
 import Logo from "./Logo.tsx";
 
-interface Props {
-    selected: string
-}
+// interface Props {
+//     selected: string
+// }
 
 function MenuBar() {
 

@@ -105,3 +105,30 @@ export class TimePeriod {
         this.appointments = [];
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+export class user {
+    public id: number
+    public email: string
+    public documentType: number
+    public documentNumber: string
+    public name: string
+    // public pets: PetResponse[]
+
+    constructor(
+        id: number,
+        email: string,
+        documentType: number,
+        documentNumber: string,
+        name: string,
+        // pets: Pet[],
+    ) {
+        this.id = id;
+        this.email = email;
+        this.documentType = documentType;
+        this.documentNumber = documentNumber;
+        this.name = name;
+        // this.pets = pets;
+    }
+
+}

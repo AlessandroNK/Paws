@@ -2,8 +2,9 @@
     /* Colors */
     --main-color: #7060f7;
     --sec-color: #ee0097;
-    --back-color: #19014f;
+    --back-color: #1c0f33;
     --main-gradient: linear-gradient(135deg, var(--main-color) 0%, var(--sec-color) 100%);
+    --soft-gradient: linear-gradient(135deg, #fff 0%, #e1d4ee 30%, #ffe6f8 50%, #d9e4ff 70%, #fff 100%);
 
     /* Font */
     --main-font: 'Poppins';
