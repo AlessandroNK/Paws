@@ -13,10 +13,10 @@ export type MessageType = typeof MessageType[keyof typeof MessageType];
 // ---------------------------------------------------------------------------------------------------------------------
 export const MessageDuration = {
     SHORT: 0,
-    MEDIUM: 5,
-    LONG: 10,
-    VERY_LONG: 20,
-    INTERMINABLE: 30
+    MEDIUM: 5000,
+    LONG: 10000,
+    VERY_LONG: 20000,
+    INTERMINABLE: 30000
 } as const;
 
 export type MessageDuration = typeof MessageDuration[keyof typeof MessageDuration];

@@ -10,6 +10,19 @@ export class Vet {
     public funFact: string
     public vetSince: Date
 
+    /**
+     * Creates an instance of the Vet class.
+     * @param id The unique identifier for the veterinarian.
+     * @param email The email address of the veterinarian.
+     * @param documentType The type of document used for identification (e.g., passport, driver's license).
+     * @param documentNumber The number associated with the identification document.
+     * @param name The full name of the veterinarian.
+     * @param professionalLicenseNumber The professional license number of the veterinarian, which is typically issued by
+     * a regulatory body to certify that the veterinarian is qualified to practice.
+     * @param profilePicture A URL or path to the profile picture of the veterinarian.
+     * @param funFact A fun fact about the veterinarian, which can be used to add a personal touch to their profile.
+     * @param vetSince The date when the veterinarian started practicing, which can be used to calculate their experience in the field.
+     */
     constructor(
         id: number,
         email: string,
@@ -41,16 +54,29 @@ export class Appointment {
     public userPetId?: number | null
     public startTime: Date
     public endTime: Date
-    public createdAt: Date
-    public updatedAt: Date
+    public createdAt: Date | null
+    public updatedAt: Date | null
 
+    /**
+     * Creates an instance of the Appointment class.
+     * @param id The unique identifier for the appointment.
+     * @param vetId The unique identifier for the veterinarian associated with the appointment.
+     * @param startTime The starting time of the appointment.
+     * @param endTime The ending time of the appointment.
+     * @param createdAt The date and time when the appointment was created.
+     * @param updatedAt The date and time when the appointment was last updated.
+     * @param vet (Optional) The veterinarian associated with the appointment. This can be provided if the vet details
+     * are available at the time of creating the appointment instance.
+     * @param userPetId (Optional) The unique identifier for the user's pet associated with the appointment. This can be
+     * null if no pet is associated or if the information is not available at the time of creating the appointment instance.
+     */
     constructor(
         id: number,
         vetId: number,
         startTime: Date,
         endTime: Date,
-        createdAt: Date,
-        updatedAt: Date,
+        createdAt: Date | null,
+        updatedAt: Date | null,
         vet?: Vet,
         userPetId?: number | null,
     ) {
@@ -62,5 +88,16 @@ export class Appointment {
         this.updatedAt = updatedAt;
         this.vet = vet;
         this.userPetId = userPetId ?? null;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+export class TimePeriod {
+    public startTime: Date
+    public endTime: Date
+
+    constructor(startTime: Date, endTime: Date) {
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 }

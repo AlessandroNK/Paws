@@ -39,6 +39,14 @@ function UiMessageCard(props: Props) {
                 // Then hide the card
                 setShowCard(false);
             }
+
+            // Disappear the card after
+            const timeout = (message.length * 100 + 5000) + (props.message.duration ?? 2000);
+            if (showCard) {
+                setTimeout(() => {
+                    setShowCard(false);
+                }, timeout);
+            }
         }
 
         loadTranslation();
@@ -46,11 +54,15 @@ function UiMessageCard(props: Props) {
 
     // Return
     // -----------------------------------------------------------------------------------------------------------------
-    if (!showCard) return null;
+    if (!showCard) return (
+        <div className={"ui-message " + "ui-message-" + props.message.type + " disappear"}>
+            {message}
+        </div>
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     return (
-        <div className={"ui-message " + "ui-message-" + props.message.type}>
+        <div className={"ui-message " + "ui-message-" + props.message.type + " text-5lvl"}>
             {message}
         </div>
     );

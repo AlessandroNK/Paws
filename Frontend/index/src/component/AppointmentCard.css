@@ -1,0 +1,16 @@
+.appointment-card {
+    border-radius: 8px;
+    background: #e6e6e6;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.appointment-card:hover {
+    cursor: pointer;
+    background-color: var(--main-color);
+    color: white;
+}

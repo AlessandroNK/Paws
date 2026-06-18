@@ -20,12 +20,20 @@
     animation: fadeIn 1s ease-in-out;
 }
 
+.disappear {
+    opacity: 0;
+    transform: translateX(100px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
 .ui-message-error {
     border: 1px solid #ff7777;
     background: #ffeeee;
+    color: #510d00;
 }
 
 .ui-message-success {
     border: 1px solid #77ff77;
     background: #eeffee;
+    color: #104900;
 }

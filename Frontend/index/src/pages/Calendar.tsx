@@ -7,16 +7,17 @@ import * as AppointmentsService from "../services/AppointmentService.ts";
 import SideBar from "../component/SideBar.tsx";
 import PushMessagesUi from "../component/PushMessagesUi.tsx";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
+import AppointmentCard from "../component/AppointmentCard.tsx";
 
 function Calendar() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const isFetchingApi = useRef(false);
-    const [selectedDate] = useState(new Day(2026, 6, 17));
+    const [selectedDate] = useState(new Day(2026, 6, 18));
     const [selectedDateString, setSelectedDateString] = useState("");
     const [appointmentsTitle, setAppointmentsTitle] = useState("");
     const [appointmentDatePhar, setAppointmentDatePhar] = useState("");
-    const [setAppointments] = useState([] as Appointment[]);
+    const [appointments, setAppointments] = useState([] as Appointment[]);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
 
 
@@ -63,10 +64,9 @@ function Calendar() {
             const result = await AppointmentsService.getAvailableAppointmentsApi(selectedDate);
             isFetchingApi.current = false;
 
-            console.log("===============")
-            console.log(result)
-            console.log("===============")
+            // Show errors up
             showErrorsAsPushMessages(result);
+
             // Validations
             if (
                 result.code === "NO_AVAILABLE_APPOINTMENTS_FOUND" ||
@@ -74,43 +74,21 @@ function Calendar() {
                 result.code === "APPOINTMENTS_FETCH_ERROR" ||
                 result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS"
             ) return
+            if (!result.data) return;
 
-            // Show errors up
-            // if (!result.data)
-            console.log(result)
+            // Push amount message
+            const uiMessage = new UiMessage();
+            uiMessage.message = `Encontramos ${result.data?.length} citas disponibles para que escojas la que quieras!`;
+            uiMessage.type = MessageType.SUCCESS;
+            uiMessage.duration = MessageDuration.LONG;
 
+            // Push message
+            const pushMessages: UiMessage[] = [];
+            pushMessages.push(uiMessage);
+            setPushMessages(pushMessages);
 
-            // // Response codes
-            // if (result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS")
-            //
-            //
-            //     console.log(result);
-            //
-            //
-            //
-            //
-            // setAppointments([
-            //     new Appointment(
-            //         2,
-            //         2,
-            //         new Date(),
-            //         new Date(),
-            //         new Date(),
-            //         new Date(),
-            //         new Vet(
-            //             2,
-            //             "test@gmail.com",
-            //             1,
-            //             "123456789",
-            //             "Dr. John Doe",
-            //             "PLN123456",
-            //             "https://example.com/profile.jpg",
-            //             "I love animals!",
-            //             new Date(),
-            //         ),
-            //         undefined,
-            //     )
-            // ]);
+            // Set appointments
+            setAppointments(result.data);
         }
 
         loadTranslation();
@@ -119,9 +97,18 @@ function Calendar() {
 
 
     // -----------------------------------------------------------------------------------------------------------------
-    // function genAppointments() {
-    //     ret
-    // }
+    function generateAppointments() {
+        if (appointments.length <= 0) return null;
+
+        // First, we need to group
+        return (
+            <div className="appointment-time-period">
+            {appointments.map((appointment) => (
+                    <AppointmentCard key={appointment.id} appointment={appointment}/>
+                ))}
+            </div>
+        )
+    }
 
     // Return
     // -----------------------------------------------------------------------------------------------------------------
@@ -144,7 +131,7 @@ function Calendar() {
                             {appointmentDatePhar} <span
                             className={"font-bold font-main-color"}>{selectedDateString}</span>
                         </h2>
-                        {/*{genAppointments()}*/}
+                        {generateAppointments()}
                     </section>
                 </div>
             </div>

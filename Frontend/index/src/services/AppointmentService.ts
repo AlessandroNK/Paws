@@ -1,6 +1,7 @@
-import type {Appointment} from "../types/SystemTypes.ts";
+import {Appointment} from "../types/SystemTypes.ts";
 import {Components, Day, FetchOptions, Result} from "../types/CommonTypes.ts";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
+import type {AppointmentResponse} from "../types/ResponseTypes.ts";
 
 //                                                                                                             FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------------
@@ -71,9 +72,28 @@ function createAppointmentsFromApiResponse(apiResponse: object): Result<Appointm
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-function createAppointmentFromApiResponse(apiResponse: any): Result<Appointment> {
+function createAppointmentFromApiResponse(apiResponse: AppointmentResponse): Result<Appointment> {
+    // Validate API response format
+    if (typeof apiResponse !== "object" || apiResponse === null) {
+        return Result.fail<Appointment>(
+            "Invalid API response format: expected an object",
+            500,
+            Components.API_RESPONSE_PROCESSING,
+            "INVALID_APPOINTMENT_ITEM_RESPONSE"
+        ).log();
+    }
+
+    // Create dates
+    const startTime: Date = new Date(apiResponse.startTime);
+    const endTime: Date = new Date(apiResponse.endTime);
+
+    // Create appointment
     return Result.ok(new Appointment(
         apiResponse.id,
-        apiResponse.petId
+        apiResponse.vetId,
+        startTime,
+        endTime,
+        null,
+        null
     ));
 }
