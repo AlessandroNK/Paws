@@ -1,6 +1,9 @@
 :root {
     /* Colors */
-    --main-color: #ee4723;
+    --main-color: #7060f7;
+    --sec-color: #ee0097;
+    --back-color: #19014f;
+    --main-gradient: linear-gradient(135deg, var(--main-color) 0%, var(--sec-color) 100%);
 
     /* Font */
     --main-font: 'Poppins';
@@ -16,6 +19,13 @@
     --font-size-head: 24px;
     --font-size-sub: 16px;
     --font-size-phar: 12px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
 }
 
 body {
@@ -110,4 +120,11 @@ a {
 .erase-list-style {
     list-style-type: none;
     padding-left: 0;
+}
+
+.main-gradient-text {
+    background: var(--main-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }

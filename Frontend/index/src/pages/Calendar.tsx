@@ -7,6 +7,7 @@ import * as AppointmentsService from "../services/AppointmentService.ts";
 import PushMessagesUi from "../component/PushMessagesUi.tsx";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
 import TimePeriodCard from "../component/TimePeriodCard.tsx";
+import MenuBar from "../component/MenuBar.tsx";
 
 function Calendar() {
     // Variables
@@ -148,13 +149,16 @@ function Calendar() {
     return (
         <>
             <div className={"calendar-page"}>
+                <section className={"calendar-header"}>
+                    <MenuBar/>
+                </section>
                 <div className="appointments-section">
                     <div className={"appointments-section-container"}>
                         <div className={"appointments-header"}>
                             <h1>{appointmentsTitle}</h1>
                             <h1>
                                 <span
-                                    className={"font-bold font-main-color"}>{appointmentDay}</span> {appointmentConnector}
+                                    className={"font-bold main-gradient-text"}>{appointmentDay}</span> {appointmentConnector}
                             </h1>
                             <h1>{appointmentsYear}</h1>
                         </div>

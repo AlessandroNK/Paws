@@ -1,13 +1,12 @@
 .time-period-card {
     width: 100%;
     display: grid;
-    grid-template-columns: 60px 1fr;
-    padding: 10px;
+    grid-template-columns: 80px 1fr;
+    padding: 20px;
 }
 
 .time-period-card:hover {
     color: var(--main-color);
-    background-color: #f9f9f9;
 }
 
 .time-period-card .time {
