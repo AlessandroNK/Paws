@@ -32,10 +32,11 @@
     max-width: 1300px;
     width: 100%;
     display: flex;
+    gap: 80px;
 }
 
 .appointments-header {
-    min-width: 220px;
+    min-width: 210px;
     font-size: 1.2em;
     font-weight: bold;
     color: white;

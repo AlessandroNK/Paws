@@ -2,7 +2,7 @@
     /* Colors */
     --main-color: #7060f7;
     --sec-color: #ee0097;
-    --back-color: #1c0f33;
+    --back-color: #210f40;
     --main-gradient: linear-gradient(135deg, var(--main-color) 0%, var(--sec-color) 100%);
     --soft-gradient: linear-gradient(135deg, #fff 0%, #e1d4ee 30%, #ffe6f8 50%, #d9e4ff 70%, #fff 100%);
 
@@ -113,9 +113,16 @@ a {
     color: var(--main-color);
 }
 
-.icon-small {
+.icon-main-color {
     fill: var(--main-color);
+}
+
+.icon-small {
     width: 15px;
+}
+
+.icon-medium {
+    width: 25px;
 }
 
 .erase-list-style {

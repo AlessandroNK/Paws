@@ -10,5 +10,6 @@
   "APPOINTMENT_PATIENT": "Paciente",
   "APPOINTMENT_DOCTOR": "Doctor",
   "APPOINTMENT_ACTIONS": "Acciones",
+  "FETCHING_AVAILABLE_APPOINTMENTS": "Obteniendo citas disponibles...",
   "OF": "de"
 }

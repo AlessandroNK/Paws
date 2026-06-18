@@ -1,8 +1,9 @@
 .time-period-card {
     width: 100%;
     display: grid;
-    grid-template-columns: 80px 1fr;
+    grid-template-columns: auto 1fr;
     padding: 20px;
+    gap: 20px;
 }
 
 .time-period-card:hover {
@@ -14,6 +15,7 @@
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    margin: 0 20px;
 }
 
 .time-period-card .appointments {

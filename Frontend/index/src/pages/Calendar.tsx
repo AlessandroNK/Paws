@@ -48,6 +48,9 @@ function Calendar() {
 
     // -----------------------------------------------------------------------------------------------------------------
     useEffect(() => {
+        // User and log-in
+
+        // UI texts
         async function loadTranslation() {
             let result = await LanguageService.getTranslationAsync(Components.CALENDAR, "APPOINTMENTS_TITLE");
             setAppointmentsTitle(result.data ?? "Available appointments for");
@@ -58,8 +61,19 @@ function Calendar() {
             setAppointmentsYear(`${selectedDate.getMonthName()} ${result.data ?? "of"} ${selectedDate.getYear()}`);
         }
 
+        // Appointments from API
         async function getAppointmentsApi() {
-            if (isFetchingApi.current) return;
+            // Push amount message
+            let uiMessage = new UiMessage();
+            uiMessage.code = "FETCHING_AVAILABLE_APPOINTMENTS";
+            uiMessage.component = Components.CALENDAR;
+            uiMessage.type = MessageType.INFO;
+            uiMessage.duration = MessageDuration.LONG;
+
+            // Push message
+            let pushMessages: UiMessage[] = [];
+            pushMessages.push(uiMessage);
+            setPushMessages(pushMessages);
 
             // Get appointments from API
             isFetchingApi.current = true;
@@ -88,13 +102,13 @@ function Calendar() {
             }
 
             // Push amount message
-            const uiMessage = new UiMessage();
+            uiMessage = new UiMessage();
             uiMessage.message = `Encontramos ${result.data?.length} citas disponibles para que escojas la que quieras!`;
             uiMessage.type = MessageType.SUCCESS;
             uiMessage.duration = MessageDuration.LONG;
 
             // Push message
-            const pushMessages: UiMessage[] = [];
+            pushMessages = [];
             pushMessages.push(uiMessage);
             setPushMessages(pushMessages);
 
@@ -149,7 +163,7 @@ function Calendar() {
         <>
             <div className={"calendar-page"}>
                 <section className={"calendar-header"}>
-                    <MenuBar/>
+                    <MenuBar user={null}/>
                     <svg className={"banner-logo"} data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"
                          viewBox="0 0 381.81 116.11">
                         <defs>

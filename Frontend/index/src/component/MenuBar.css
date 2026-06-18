@@ -38,14 +38,41 @@
     height: 100%;
     aspect-ratio: 1 / 1;
     border-radius: 50%;
-    background-color: var(--main-color);
+    background-color: #dcdcdc;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    transition: background 0.3s;
+    transition: background 0.5s;
 }
 
-.menu-bar-profile:hover {
+.menu-bar-profile.logged-in {
+    background-color: var(--main-color);
+}
+
+.menu-bar-profile.logged-in:hover {
     background: var(--sec-color);
+}
+
+.menu-bar-profile.logged-out {
+    border: 2px solid var(--main-color);
+    background-color: white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(146, 123, 211, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(146, 123, 211, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(146, 123, 211, 0);
+    }
+
+}
+
+.menu-bar-profile.logged-out:hover {
+    background: #dedbff;
 }

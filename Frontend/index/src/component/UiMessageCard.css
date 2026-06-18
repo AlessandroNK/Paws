@@ -37,3 +37,10 @@
     background: #eeffee;
     color: #104900;
 }
+
+.ui-message-information {
+    border: 1px solid #7777ff;
+    background: #eeeeff;
+    color: #000051;
+}
+

@@ -10,12 +10,19 @@ interface Props {
 function TimePeriodCard(props: Props) {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
+    const to12HourFormat = (date: Date): string => {
+        let hours = date.getHours();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        return `${hours} ${ampm}`;
+    }
 
     // Return
     // -----------------------------------------------------------------------------------------------------------------
     return (
         <div className="time-period-card">
-            <h2 className={"time"}>{props.timePeriod.startTime.getHours().toString()}</h2>
+            <h2 className={"time"}>{to12HourFormat(props.timePeriod.startTime)}</h2>
             <div className={"appointments"}>
                 {props.timePeriod.appointments.map((appointment) => (
                     <AppointmentCard key={appointment.id} appointment={appointment}/>

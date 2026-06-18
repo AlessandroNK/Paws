@@ -107,7 +107,7 @@ export class TimePeriod {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-export class user {
+export class User {
     public id: number
     public email: string
     public documentType: number
@@ -131,4 +131,15 @@ export class user {
         // this.pets = pets;
     }
 
+    // ------------------------------------------------------------------------
+    public getInitials(): string {
+        const nameParts = this.name.split(" ");
+        let initials = "";
+        for (const part of nameParts) {
+            if (part.length > 0) {
+                initials += part[0].toUpperCase();
+            }
+        }
+        return initials;
+    }
 }
