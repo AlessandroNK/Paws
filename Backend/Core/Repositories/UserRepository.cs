@@ -74,6 +74,23 @@ public class UserRepository(
         return query;
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    private static IQueryable<SessionToken> ApplyStatusFilters(
+        IQueryable<SessionToken> query,
+        StatusFilters? filters = null
+    )
+    {
+        filters ??= new StatusFilters();
+
+        if (!filters.IncludeActive) query = query.Where(t => t.Status != EntityStatus.Active);
+        if (!filters.IncludeInactive) query = query.Where(t => t.Status != EntityStatus.Inactive);
+        if (!filters.IncludeDeleted) query = query.Where(t => t.Status != EntityStatus.Deleted);
+        if (!filters.IncludeBanned) query = query.Where(t => t.Status != EntityStatus.Banned);
+        if (!filters.IncludeUnverified) query = query.Where(t => t.Status != EntityStatus.Unverified);
+
+        return query;
+    }
+
     //                                                                                                    Public Methods
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -358,6 +375,56 @@ public class UserRepository(
             Status = 200,
             Title = "User updated successfully",
             Data = getUserResult.Data,
+            TraceCode = $"{FileCodes.CallerIC()}",
+            Returnable = true
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<SessionToken?>> GetSessionTokenByTokenAsync(
+        string token,
+        StatusFilters? filters = null,
+        bool includeUser = false
+    )
+    {
+        // Hash token
+        var tokenResult = SecurityService.HashWithSalt(token);
+        if (!tokenResult)
+            return tokenResult.Log(_logger).ConvertTo<SessionToken?>();
+
+        // Find this token
+        var query = _dbContext.SessionTokens
+            .Where(st => st.TokenHash == tokenResult.Data);
+
+        // Apply status filters
+        query = ApplyStatusFilters(query, filters);
+
+        // Includes
+        if (includeUser) query = query.Include(p => p.User);
+
+        query = query.AsSplitQuery();
+
+        // Execute query
+        var sessionToken = await query.FirstOrDefaultAsync();
+        if (sessionToken is null)
+            return new Result<SessionToken?>
+            {
+                Success = false,
+                Code = "SESSION_TOKEN_NOT_FOUND",
+                Status = 404,
+                Title = "No session token found with the provided id",
+                TraceCode = $"{FileCodes.CallerIC()}",
+                Returnable = true
+            };
+
+        // Decrypt and return
+        return new Result<SessionToken?>
+        {
+            Success = true,
+            Code = "SESSION_TOKEN_FOUND",
+            Status = 200,
+            Title = "Session token found successfully",
+            Data = sessionToken,
             TraceCode = $"{FileCodes.CallerIC()}",
             Returnable = true
         };

@@ -11,7 +11,7 @@ public struct BasicUserResponse
     /// <summary>
     /// The id of the user in the database
     /// </summary>
-    public int Id  { get; init; }
+    public int Id { get; init; }
 
     /// <summary>
     /// The email in a readable string to return to the frontend
@@ -32,4 +32,10 @@ public struct BasicUserResponse
     /// The name of the user.
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    /// User's session token, this is used to authenticate the user in the frontend and to authorize the user to access
+    /// certain endpoints in the backend.
+    /// </summary>
+    public SessionToken SessionToken { get; set; }
 }

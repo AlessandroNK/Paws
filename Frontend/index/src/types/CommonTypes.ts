@@ -11,6 +11,7 @@ export const Components = {
     HTTP_SERVICE: 'http-service',
     APPOINTMENT_SERVICE: 'appointment-service',
     API_RESPONSE_PROCESSING: 'api-response-processing',
+    USER_SERVICE: 'user-service',
 } as const;
 
 export type Components = typeof Components[keyof typeof Components];

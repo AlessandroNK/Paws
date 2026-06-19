@@ -84,7 +84,7 @@ public class UserController(
 
             // Validations
             Env.SetInteractionCode(deviceId);
-        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the user up
@@ -135,7 +135,7 @@ public class UserController(
 
             // Validations
             Env.SetInteractionCode(deviceId);
-        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the user up
@@ -185,7 +185,7 @@ public class UserController(
 
             // Validations
             Env.SetInteractionCode(deviceId);
-        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Resend the verification code
@@ -212,6 +212,52 @@ public class UserController(
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Checks a providen token to validate the user's session
+    /// </summary>
+    /// <param name="deviceId">The ID of the device sending the request</param>
+    /// <param name="sessionToken">The session token to be validated</param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("validate-session-token")]
+    public async Task<IActionResult> ValidateSessionTokenAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromHeader(Name = "Session-Token")] string sessionToken
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Checking session token for user");
+
+            // Validations
+            Env.SetInteractionCode(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Check the session token
+            var result = await _userService.ValidateSessionTokenAsync(deviceId, sessionToken);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToApiResponse<BasicUserResponse>())
+                : BadRequest(result.ToApiResponse<BasicUserResponse>());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Kind = ApiResponseKind.Error,
+                    Code = "BAD_OPERATION",
+                    Status = 500,
+                    Title = "Something is breaking inside the API",
+                    TraceCode = FileCodes.CallerIC()
+                }
+            );
+        }
+    }
 
     #endregion
 }

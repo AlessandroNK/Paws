@@ -715,11 +715,123 @@ public class UserService(
                 Success = false,
                 Code = "ERROR_VERIFYING_ACCOUNT",
                 Status = 500,
-                Title = "An error occurred while verifying the account"
+                Title = "An error occurred while verifying the account",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
             };
         }
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<SessionToken?>> GetSessionTokenByTokenAsync(
+        string token,
+        StatusFilters? filters = null,
+        bool includeUser = false
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting session token by token");
+
+            // Validations
+            if (string.IsNullOrWhiteSpace(token))
+                return new Result<SessionToken?>
+                {
+                    Success = false,
+                    Code = "INVALID_TOKEN",
+                    Status = 400,
+                    Title = "Token is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Search for the session token
+            return await DbRetry.ExecuteWithRetry(
+                operation: () => _userRepo.GetSessionTokenByTokenAsync(token, filters, includeUser),
+                operationName: "Getting session token by token",
+                logger: _logger
+            );
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error getting session token by token");
+            return new Result<SessionToken?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_SESSION_TOKEN",
+                Status = 500,
+                Title = "An error occurred while getting the session token",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<User?>> ValidateSessionTokenAsync(string deviceId, string requestToken)
+    {
+        try
+        {
+            _logger.LogInformation("Validating session token");
+
+            // Validations
+            if (string.IsNullOrWhiteSpace(requestToken))
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_TOKEN",
+                    Status = 400,
+                    Title = "Token is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Find the token
+            var filters = StatusFilters.Create()
+                .ThenIncludeUnverified()
+                .ThenIncludeBanned()
+                .ThenIncludeInactive()
+                .ThenIncludeArchived();
+            var tokenResult = await GetSessionTokenByTokenAsync(requestToken, filters, true);
+            if (tokenResult.Data is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "TOKEN_NOT_FOUND",
+                    Status = 404,
+                    Title = "Token not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var token = tokenResult.Data;
+
+            var tokenValidationResult = SecurityService.IsSessionTokenValid(deviceId, token);
+            if (!tokenValidationResult) return tokenValidationResult.ConvertTo<User?>();
+
+            // Return user data
+            return new Result<User?>
+            {
+                Success = true,
+                Code = "SESSION_TOKEN_VALID",
+                Status = 200,
+                Title = "Session token is valid",
+                Data = token.User,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error signing up user");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_VALIDATING_SESSION_TOKEN",
+                Status = 400,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
     #endregion
 }

@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Backend.Core.Internal;
 using Backend.Core.Models.Results;
+using Backend.Core.Models.Users;
 
 namespace Backend.Core.Services;
 
@@ -505,6 +506,96 @@ public partial class SecurityService
             Code = "VALID_EMAIL_ADDRESS",
             Status = 200,
             Title = "Email address is valid",
+            TraceCode = FileCodes.CallerIC(),
+            Returnable = true
+        };
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Result<SessionToken> CreateSessionToken(User user)
+    {
+        try
+        {
+            var token = new SessionToken
+            {
+                UserId = user.Id,
+                Token = $"{user.Id}::{Guid.NewGuid().ToString()}",
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
+            };
+
+            return new Result<SessionToken>
+            {
+                Success = true,
+                Code = "TOKEN_CREATED",
+                Status = 201,
+                Title = "Token created successfully",
+                Data = token,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(e, "Error creating token");
+            return new Result<SessionToken>
+            {
+                Success = false,
+                Code = "ERROR_CREATING_TOKEN",
+                Status = 500,
+                Title = "An error occurred while creating the token",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public static Result<bool> IsSessionTokenValid(string deviceId, SessionToken token)
+    {
+        // Check if the user associated with the token exists
+        if (token.User is null)
+            return new Result<bool>
+            {
+                Success = false,
+                Code = "USER_NOT_FOUND",
+                Status = 404,
+                Title = "User not found for the provided token",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (token.DeviceId != deviceId)
+            return new Result<bool>
+            {
+                Success = false,
+                Code = "INVALID_DEVICE",
+                Status = 400,
+                Title = "The token is not valid for this device",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        if (token.ExpiresAt < DateTime.UtcNow)
+            return new Result<bool>
+            {
+                Success = false,
+                Code = "TOKEN_EXPIRED",
+                Status = 401,
+                Title = "Session token has expired",
+                Data = false,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+
+        // Maybe I will add more validations in the future but for now, this is enough
+        return new Result<bool>
+        {
+            Success = true,
+            Code = "TOKEN_VALID",
+            Status = 200,
+            Title = "Session token is valid",
+            Data = true,
             TraceCode = FileCodes.CallerIC(),
             Returnable = true
         };

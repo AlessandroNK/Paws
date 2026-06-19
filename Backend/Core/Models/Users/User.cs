@@ -107,6 +107,11 @@ public class User : IDtoConvertible<UserResponse>,
     /// </summary>
     public List<UserPet> UserPets { get; set; } = new List<UserPet>();
 
+    /// <summary>
+    /// User's session token, this is used to authenticate the user in the frontend and to authorize the user to access
+    /// certain endpoints in the backend.
+    /// </summary>
+    public SessionToken SessionToken { get; set; }
 
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------

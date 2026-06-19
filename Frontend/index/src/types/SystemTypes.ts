@@ -109,25 +109,28 @@ export class TimePeriod {
 // ---------------------------------------------------------------------------------------------------------------------
 export class User {
     public id: number
+    public name: string
     public email: string
     public documentType: number
-    public documentNumber: string
-    public name: string
+    public documentNumber: string | null
+    public token: string | null
     // public pets: PetResponse[]
 
     constructor(
         id: number,
-        email: string,
-        documentType: number,
-        documentNumber: string,
         name: string,
+        email: string,
+        documentType: number = 1,
+        documentNumber: string | null = null,
+        token: string | null = null,
         // pets: Pet[],
     ) {
         this.id = id;
+        this.name = name;
         this.email = email;
         this.documentType = documentType;
         this.documentNumber = documentNumber;
-        this.name = name;
+        this.token = token;
         // this.pets = pets;
     }
 

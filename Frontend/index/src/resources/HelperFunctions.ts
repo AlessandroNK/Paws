@@ -1,5 +1,6 @@
 import {ApiError, Components, FetchOptions, Result} from "../types/CommonTypes.ts";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
+import {User} from "../types/SystemTypes.ts";
 
 // ---------------------------------------------------------------------------------------------------------------------
 /**
@@ -223,4 +224,88 @@ function ApiCodeToUiMessage(status: number): ApiError {
 
     const error = new ApiError("API Error");
     return error.addUiMessage(uiMessage);
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+/**
+ * Retrieves the user token and related information from local storage, validates the data, and returns a Result
+ * containing a User object if successful.
+ * If the required data is missing or invalid, it clears any partial session data and returns a Result with an appropriate
+ * error message.
+ * @returns A Result object containing a User instance if the token and related information are valid, or null if the
+ * user is not logged in. In case of errors, it returns a Result with an error message.
+ * @description This function attempts to fetch the user's ID, token, name, and email from local storage. It validates
+ * that the ID is a valid number and that all required fields are present. If any validation fails, it clears the local
+ * user session to prevent inconsistent state and returns a Result indicating the failure reason. If all validations pass,
+ * it constructs a User object with the retrieved information and returns it wrapped in a successful Result.
+ */
+export function getLocalUser(): Result<User | null> {
+    try {
+        // ID
+        const id = localStorage.getItem('paws_user_id');
+        const token = localStorage.getItem('paws_user_token');
+        const name = localStorage.getItem('paws_user_name');
+        const email = localStorage.getItem('paws_user_email');
+
+        // convert id into number
+        const idNumber = id ? parseInt(id) : null;
+        if (idNumber === null || isNaN(idNumber)) {
+            clearLocalUserSession();
+            return Result.fail<null>(
+                "User ID is missing or invalid in local storage",
+                401,
+                Components.USER_SERVICE,
+                "USER_ID_ERROR"
+            );
+        }
+
+        // return our user if all values are present
+        if (id && token && name && email) {
+            const user = new User(
+                idNumber,
+                email,
+                name
+            );
+            return Result.ok(user);
+        }
+
+        // clear any partial data if present
+        clearLocalUserSession();
+        return Result.fail<null>(
+            "User is not logged in",
+            401,
+            Components.USER_SERVICE,
+            "USER_NOT_LOGGED_IN"
+        );
+    } catch (err) {
+        const error = err as Error;
+        clearLocalUserSession();
+        return Result
+            .fail<null>(
+                `Error fetching user from local storage, error: ${error.message}`,
+                500,
+                Components.USER_SERVICE,
+                "USER_SESSION_FETCH_ERROR"
+            ).log();
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+export function clearLocalUserSession(): Result<void> {
+    try {
+        localStorage.removeItem('paws_user_id');
+        localStorage.removeItem('paws_user_token');
+        localStorage.removeItem('paws_user_name');
+        localStorage.removeItem('paws_user_email');
+        return Result.ok(undefined);
+    } catch (err) {
+        const error = err as Error;
+        return Result
+            .fail<void>(
+                `Error clearing user session from local storage, error: ${error.message}`,
+                500,
+                Components.USER_SERVICE,
+                "USER_SESSION_CLEAR_ERROR"
+            ).log();
+    }
 }

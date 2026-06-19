@@ -57,7 +57,7 @@
     overflow-y: auto;
 }
 
-.no-appointments {
+.center-appointments {
     display: flex;
     align-items: center;
     justify-content: center;

@@ -95,4 +95,7 @@ public interface IUserService
     /// <param name="request"></param>
     /// <returns></returns>
     public Task<Result<User?>> ResendVerificationEmailAsync(ResendVerificationCodeRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<User?>> ValidateSessionTokenAsync(string deviceId, string token);
 }

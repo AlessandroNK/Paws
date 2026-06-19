@@ -97,4 +97,11 @@ public interface IUserRepository
     /// <param name="filters">The filters to apply to the query</param>
     /// <returns>The <see cref="User"/></returns>
     public Task<Result<User?>> UpdateAsync(User user, StatusFilters? filters = null);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<SessionToken?>> GetSessionTokenByTokenAsync(
+        string token,
+        StatusFilters? filters = null,
+        bool includeUser = false
+    );
 }

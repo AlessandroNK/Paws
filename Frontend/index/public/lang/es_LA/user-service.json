@@ -1,0 +1,5 @@
+{
+  "USER_SESSION_FETCH_ERROR": "Error al obtener la sesión del usuario",
+  "USER_ID_ERROR": "Error al obtener el ID del usuario",
+  "USER_NOT_LOGGED_IN": "Usuario no ha iniciado sesión"
+}
