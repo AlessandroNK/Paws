@@ -2,7 +2,6 @@ using Backend.Core.Internal;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Intern;
 using Backend.Core.Models.Pets;
-using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
 using Backend.Core.Policies;
@@ -808,6 +807,7 @@ public class UserService(
                 };
             var token = tokenResult.Data;
 
+            // Validate Token
             var tokenValidationResult = SecurityService.IsSessionTokenValid(deviceId, token);
             if (!tokenValidationResult) return tokenValidationResult.ConvertTo<User?>();
 
@@ -1117,7 +1117,7 @@ public class UserService(
                 user.SessionToken.Status != EntityStatus.Active
             )
             {
-                var sessionTokenResult = SecurityService.CreateSessionToken(user);
+                var sessionTokenResult = SecurityService.CreateSessionToken(deviceId, user);
                 if (!sessionTokenResult.Success)
                     return sessionTokenResult.ConvertTo<User?>();
 

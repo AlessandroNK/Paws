@@ -12,6 +12,7 @@ export const Components = {
     APPOINTMENT_SERVICE: 'appointment-service',
     API_RESPONSE_PROCESSING: 'api-response-processing',
     USER_SERVICE: 'user-service',
+    PET_SERVICE: 'pet-service',
 } as const;
 
 export type Components = typeof Components[keyof typeof Components];
@@ -228,34 +229,18 @@ export class Day {
     public Year: number;
     public Month: number;
     public Day: number;
+    public date: Date;
 
     constructor(year: number, month: number, day: number) {
         this.Year = year;
         this.Month = month;
         this.Day = day;
-    }
-
-    // ------------------------------------------------------------------------
-    public static fromDate(date: Date): Day {
-        return new Day(date.getFullYear(), date.getMonth() + 1, date.getDate());
-    }
-
-    // ------------------------------------------------------------------------
-    public toDate(): Date {
-        return new Date(this.Year, this.Month - 1, this.Day);
-    }
-
-    // ------------------------------------------------------------------------
-    public toString(): string {
-        const monthString = this.Month.toString().padStart(2, "0");
-        const dayString = this.Day.toString().padStart(2, "0");
-        return `${this.Year}-${monthString}-${dayString}`;
+        this.date = new Date(year, month - 1, day);
     }
 
     // ------------------------------------------------------------------------
     public getDayOfWeek(): number {
-        const date = this.toDate();
-        return date.getDay();
+        return this.date.getDay();
     }
 
     // ------------------------------------------------------------------------

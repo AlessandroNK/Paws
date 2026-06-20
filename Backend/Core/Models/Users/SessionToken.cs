@@ -67,6 +67,13 @@ public class SessionToken : IEncryptable
     public DateTime ExpiresAt { get; set; }
 
     // -----------------------------------------------------------------------------------------------------------------
+    public void Renew()
+    {
+        Token = $"{UserId}::{DeviceId}::{Guid.NewGuid().ToString()}";
+        ExpiresAt = DateTime.UtcNow.AddDays(7);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
     public Result Hash()
     {
         if (string.IsNullOrWhiteSpace(Token))

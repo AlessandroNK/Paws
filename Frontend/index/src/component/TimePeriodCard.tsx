@@ -1,9 +1,10 @@
 import "./TimePeriodCard.css";
-import {type TimePeriod} from "../types/SystemTypes.ts";
+import {Appointment, type TimePeriod} from "../types/SystemTypes.ts";
 import AppointmentCard from "./AppointmentCard.tsx";
 
 interface Props {
-    timePeriod: TimePeriod
+    timePeriod: TimePeriod,
+    onAppointmentClick: (appointment: Appointment) => void
 }
 
 
@@ -25,7 +26,7 @@ function TimePeriodCard(props: Props) {
             <h2 className={"time"}>{to12HourFormat(props.timePeriod.startTime)}</h2>
             <div className={"appointments"}>
                 {props.timePeriod.appointments.map((appointment) => (
-                    <AppointmentCard key={appointment.id} appointment={appointment}/>
+                    <AppointmentCard key={appointment.id} appointment={appointment} onAppointmentClick={props.onAppointmentClick}/>
                 ))}
             </div>
         </div>

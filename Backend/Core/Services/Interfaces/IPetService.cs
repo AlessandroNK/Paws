@@ -96,7 +96,7 @@ public interface IPetService
     public Task<Result> AcceptOwnershipInvitationAsync(
         AcceptOwnershipInvitationRequest request,
         StatusFilters? filters = null
-        );
+    );
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
@@ -129,5 +129,20 @@ public interface IPetService
         StatusFilters? filters = null,
         bool includeUser = false,
         bool includePet = false
+    );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets all pets by owner. It takes the device id from the header and returns a list of pets owned by the user. It
+    /// also checks if the user is verified before returning the pets. If the user is not verified, it returns a bad
+    /// request with a message indicating that the user is not verified.
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<Result<User?>> GetPetsByOwnerAsync(
+        string deviceId,
+        string sessionToken,
+        GetPetsByOwnerRequest request
     );
 }

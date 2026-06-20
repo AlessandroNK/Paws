@@ -513,14 +513,15 @@ public partial class SecurityService
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public static Result<SessionToken> CreateSessionToken(User user)
+    public static Result<SessionToken> CreateSessionToken(string deviceId, User user)
     {
         try
         {
             var token = new SessionToken
             {
                 UserId = user.Id,
-                Token = $"{user.Id}::{Guid.NewGuid().ToString()}",
+                Token = $"{user.Id}::{deviceId}::{Guid.NewGuid().ToString()}",
+                DeviceId = deviceId,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
                 Status = EntityStatus.Active,

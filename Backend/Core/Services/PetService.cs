@@ -879,6 +879,48 @@ public class PetService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<User?>> UpdateUserAsync(User user)
+    {
+        try
+        {
+            _logger.LogInformation("Updating user with id {UserId}", user.Id);
+
+            if (user.Id <= 0)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_USER_ID",
+                    Status = 400,
+                    Title = "The user ID is invalid",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var updateResult = await DbRetry.ExecuteWithRetry(
+                operation: () => _userRepo.UpdateAsync(user),
+                operationName: "Updating user",
+                logger: _logger
+            );
+            _logger.LogInformation("User with id {UserId} updated successfully", user.Id);
+            return updateResult;
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, "Error updating user");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_UPDATING_USER",
+                Status = 500,
+                Title = "An error occurred while updating the user",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Shares the ownership of a pet with another user by sending an invitation email with a code to the new owner. The
     /// new owner can then use the code to accept the invitation and become a co-owner of the pet. This method checks if
@@ -1570,6 +1612,107 @@ public class PetService(
                 Code = "ERROR_GETTING_USER_PET",
                 Status = 500,
                 Title = "An error occurred while getting the user pet. Please try again later.",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets all pets by owner. It takes the device id from the header and returns a list of pets owned by the user. It
+    /// also checks if the user is verified before returning the pets. If the user is not verified, it returns a bad
+    /// request with a message indicating that the user is not verified.
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<Result<User?>> GetPetsByOwnerAsync(
+        string deviceId,
+        string sessionToken,
+        GetPetsByOwnerRequest request
+    )
+    {
+        try
+        {
+            // Get the user
+            var userResult = await _userRepo.GetByIdAsync(
+                request.OwnerId,
+                StatusFilters.ExcludeAll().ThenIncludeActive(),
+                true,
+                true
+            );
+            if (!userResult || userResult.Data is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "USER_NOT_FOUND",
+                    Status = 404,
+                    Title = "User not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            var user = userResult.Data;
+
+            // Check Token
+            if (user.SessionToken is null)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "SESSION_TOKEN_NOT_FOUND",
+                    Status = 401,
+                    Title = "Session token not found"
+                };
+
+            // TODO Implement Auth service as a new layer
+            var tokenResult = SecurityService.IsSessionTokenValid(deviceId, user.SessionToken);
+            if (!tokenResult.Success)
+            {
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_SESSION_TOKEN",
+                    Status = 401,
+                    Title = "Invalid session token"
+                };
+            }
+
+            // Renew token
+            user.SessionToken.Renew();
+            var updateResult = await UpdateUserAsync(user);
+            if (!updateResult) return updateResult.ConvertTo<User?>();
+
+            // Check for pets
+            return user.UserPets.Count > 0
+                ? new Result<User?>
+                {
+                    Success = true,
+                    Code = "PETS_FOUND",
+                    Status = 200,
+                    Title = "Pets found for this user",
+                    Data = user,
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : new Result<User?>
+                {
+                    Success = true,
+                    Code = "NO_PETS_FOUND",
+                    Status = 200,
+                    Title = "No pets found for this user",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error getting pets by owner with device id {deviceId}");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_GETTING_PETS_BY_OWNER",
+                Status = 500,
+                Title = "An error occurred while getting the pets by owner. Please try again later.",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

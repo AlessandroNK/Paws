@@ -274,8 +274,8 @@ export function getLocalUser(): Result<User> {
         if (id && token && name && email) {
             const user = new User(
                 idNumber,
-                email,
                 name,
+                email,
                 undefined,
                 undefined,
                 token

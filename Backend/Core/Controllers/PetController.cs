@@ -123,7 +123,7 @@ public class PetController(
             : BadRequest(result);
     }
 
-        // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Creates and adds a pet to the user. It takes the device id from the header and the add pet to user request from
     /// the body. It returns an IActionResult with some relevant data as ok, code, and the created pet data. It also
@@ -148,7 +148,7 @@ public class PetController(
 
             // Validations
             Env.SetInteractionCode(deviceId);
-        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Sign the pet up
@@ -200,7 +200,7 @@ public class PetController(
 
             // Validations
             Env.SetInteractionCode(deviceId);
-        var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
             if (!deviceValidationResult) return BadRequest(deviceValidationResult);
 
             // Remove the pet
@@ -210,6 +210,57 @@ public class PetController(
             return result
                 ? Ok(result.ToApiResponse<PetResponse>())
                 : BadRequest(result.ToApiResponse<PetResponse>());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Kind = ApiResponseKind.Error,
+                    Code = "BAD_OPERATION",
+                    Status = 500,
+                    Title = "Something is breaking inside the API",
+                    TraceCode = FileCodes.CallerIC()
+                }
+            );
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets all pets by owner.
+    /// </summary>
+    /// <param name="deviceId">The id of the device sending the request</param>
+    /// <param name="sessionToken">The session token of the user sending the request</param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("get-pets-by-owner")]
+    public async Task<IActionResult> GetPetsByOwnerAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromHeader(Name = "session-Token")] string sessionToken,
+        [FromBody] GetPetsByOwnerRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Getting pets by owner with device id: {DeviceId} and owner id: {@OwnerId}",
+                deviceId,
+                request.OwnerId);
+
+            // Validations
+            Env.SetInteractionCode(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Get the pets
+            var result = await _petService.GetPetsByOwnerAsync(deviceId, sessionToken, request);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToApiResponse<UserResponse>())
+                : BadRequest(result.ToApiResponse<UserResponse>());
         }
         catch (Exception e)
         {

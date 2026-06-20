@@ -114,7 +114,7 @@ export class User {
     public documentType: number
     public documentNumber: string | null
     public sessionToken: string | null
-    // public pets: PetResponse[]
+    public pets: Pet[]
 
     constructor(
         id: number,
@@ -123,7 +123,6 @@ export class User {
         documentType: number = 1,
         documentNumber: string | null = null,
         sessionToken: string | null = null,
-        // pets: Pet[],
     ) {
         this.id = id;
         this.name = name;
@@ -131,7 +130,7 @@ export class User {
         this.documentType = documentType;
         this.documentNumber = documentNumber;
         this.sessionToken = sessionToken;
-        // this.pets = pets;
+        this.pets = [];
     }
 
     // ------------------------------------------------------------------------
@@ -144,5 +143,51 @@ export class User {
             }
         }
         return initials;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+export const PetSpecies = {
+    Other: 1,
+    Dog: 2,
+    Cat: 3,
+    Bunny: 4,
+    Hamster: 5,
+    Turtle: 6,
+    Cow: 7,
+    Horse: 8,
+    Bird: 9,
+    Fish: 10,
+    Reptile: 11,
+    Rodent: 12
+} as const;
+
+export type PetSpecies = typeof PetSpecies[keyof typeof PetSpecies];
+
+// ---------------------------------------------------------------------------------------------------------------------
+export class Pet {
+    public id: number;
+    public name: string;
+    public species: PetSpecies;
+    public breed: string | null;
+    public createdAt: Date | null;
+    public updatedAt: Date | null;
+
+    // public ownershipInvitations: OwnershipInvitation[];
+
+    constructor(
+        id: number,
+        name: string,
+        species: PetSpecies = PetSpecies.Other,
+        breed: string| null = null,
+        createdAt: Date | null = null,
+        updatedAt: Date | null = null,
+    ) {
+        this.id = id;
+        this.name = name;
+        this.species = species;
+        this.breed = breed;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }

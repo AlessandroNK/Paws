@@ -12,12 +12,14 @@ import * as UserService from "../services/UserService.ts";
 import LoginCard from "../component/LoginCard.tsx";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
 import {LoginRequest, StartLoginRequest} from "../types/RequestTypes.ts";
+import * as PetService from "../services/PetService.ts";
+import ReserveAppointmentCard from "../component/ReserveAppointmentCard.tsx";
 
 function Calendar() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const isFetchingApi = useRef(false);
-    const [selectedDate] = useState(new Day(2026, 6, 18));
+    const [selectedDate] = useState(new Day(2026, 6, 20));
     const [appointmentsTitle, setAppointmentsTitle] = useState("");
     const [appointmentDay, setAppointmentDay] = useState("");
     const [appointmentConnector, setAppointmentConnector] = useState("");
@@ -26,8 +28,11 @@ function Calendar() {
     const [appointments, setAppointments] = useState([] as Appointment[]);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
     const [user, setUser] = useState<User | null>(null);
+    const [appointment, setAppointment] = useState<Appointment | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [authUi, setAuthUi] = useState<string | null>(null);
+    const [reservingAppointment, setReservingAppointment] = useState<boolean>(false);
+    const userObject = useRef(user);
 
 
     // Functions
@@ -62,17 +67,22 @@ function Calendar() {
             const localSessionResult = UserService.getLocalSession();
             if (!localSessionResult.success || !localSessionResult.data) {
                 HelperFunctions.clearLocalUserSession();
-                setUser(null);
+                userObject.current = null;
+                setUser(userObject.current);
                 return;
             }
-            setUser(localSessionResult.data);
 
             // Then check in the API
-            const userResult = await UserService.getApiSessionAsync(localSessionResult.data);
-            if (userResult.code === 'NETWORK_ERROR') return;
-            if (!userResult.success) HelperFunctions.clearLocalUserSession();
+            userObject.current = localSessionResult.data;
+            const userResult = await UserService.getApiSessionAsync(userObject.current);
+            if (userResult.code === 'NETWORK_ERROR') {
+                setUser(userObject.current);
+                return;
+            }
 
-            setUser(userResult.data);
+            if (!userResult.success) HelperFunctions.clearLocalUserSession();
+            userObject.current = userResult.data;
+            setUser(userObject.current);
         }
 
         // UI texts
@@ -81,9 +91,25 @@ function Calendar() {
             setAppointmentsTitle(result.data ?? "Available appointments for");
 
             result = await LanguageService.getTranslationAsync(Components.CALENDAR, "OF");
-            setAppointmentDay(`${selectedDate.getDayOfWeekName()} ${selectedDate.getDayOfWeek()}`);
+            setAppointmentDay(`${selectedDate.getDayOfWeekName()} ${selectedDate.Day}`);
             setAppointmentConnector(result.data ?? "of");
             setAppointmentsYear(`${selectedDate.getMonthName()} ${result.data ?? "of"} ${selectedDate.getYear()}`);
+        }
+
+        // User's pets
+        async function getUserPets() {
+            if (!userObject.current) return;
+
+            // Validations
+            if (!userObject.current.sessionToken) return;
+
+            const petsResult = await PetService.getPetsByOwnerApi(
+                userObject.current.sessionToken,
+                userObject.current.id
+            );
+            if (!petsResult.success) return;
+            if (userObject.current && petsResult.data) userObject.current.pets = petsResult.data;
+            setUser(userObject.current);
         }
 
         // Appointments from API
@@ -111,7 +137,8 @@ function Calendar() {
             // Validations
             if (
                 result.code === "INVALID_DATE" ||
-                result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS"
+                result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS" ||
+                result.code === "NO_AVAILABLE_APPOINTMENTS_FOUND"
             ) {
                 const errorResult = await LanguageService.getTranslationAsync(Components.CALENDAR, result.code);
                 setAppointmentsError(errorResult.data ?? "Error getting appointments");
@@ -119,11 +146,7 @@ function Calendar() {
                 return
             }
 
-            if (
-                result.code === "NO_AVAILABLE_APPOINTMENTS_FOUND" ||
-                result.code === "INVALID_DATE" ||
-                result.code === "APPOINTMENTS_FETCH_ERROR"
-            ) {
+            if (result.code === "APPOINTMENTS_FETCH_ERROR") {
                 const errorResult = await LanguageService.getTranslationAsync(Components.CALENDAR, "ERROR_GETTING_APPOINTMENTS");
                 setAppointmentsError(errorResult.data ?? "Error getting appointments");
                 setIsLoading(false);
@@ -158,6 +181,7 @@ function Calendar() {
 
         loadUser();
         loadTranslation();
+        getUserPets();
         getAppointmentsApi();
     }, []);
 
@@ -198,7 +222,7 @@ function Calendar() {
         return (
             <div className={"appointments-container"}>
                 {periods.map((period) => (
-                    <TimePeriodCard key={period.id} timePeriod={period}/>
+                    <TimePeriodCard key={period.id} timePeriod={period} onAppointmentClick={handleClickAppointment}/>
                 ))}
             </div>
         )
@@ -290,6 +314,12 @@ function Calendar() {
 
         if (loginResult.code === "LOGIN_SUCCESSFUL") setUser(loginResult.data);
         return loginResult.convertTo<void>();
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    async function handleClickAppointment(appointment: Appointment) {
+        setReservingAppointment(true);
+        setAppointment(appointment);
     }
 
     // Return
@@ -410,6 +440,7 @@ function Calendar() {
                 </div>
             </div>
             <PushMessagesUi messages={pushMessages}/>
+            {reservingAppointment && <ReserveAppointmentCard user={user} />}
             {authUi === 'login' &&
                 <LoginCard className={"login-floating-form"}
                            onClose={() => setAuthUi('')}

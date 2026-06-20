@@ -135,9 +135,10 @@ public class User : IDtoConvertible<UserResponse>,
     {
         try
         {
-            SessionToken ??= SecurityService.CreateSessionToken(this).Data;
+            SessionToken ??= SecurityService.CreateSessionToken("", this).Data;
             if (string.IsNullOrWhiteSpace(SessionToken.TokenHash))
                 SessionToken.TokenHash = SecurityService.HashWithSalt(SessionToken.Token).Data ?? string.Empty;
+            SessionToken.Status = EntityStatus.Inactive;
 
             return new UserResponse
             {
@@ -171,9 +172,10 @@ public class User : IDtoConvertible<UserResponse>,
     // -----------------------------------------------------------------------------------------------------------------
     BasicUserResponse IDtoConvertible<BasicUserResponse>.ToDto()
     {
-        SessionToken ??= SecurityService.CreateSessionToken(this).Data;
+        SessionToken ??= SecurityService.CreateSessionToken("", this).Data;
         if (string.IsNullOrWhiteSpace(SessionToken.TokenHash))
             SessionToken.TokenHash = SecurityService.HashWithSalt(SessionToken.Token).Data ?? string.Empty;
+        SessionToken.Status = EntityStatus.Inactive;
 
         return new BasicUserResponse
         {

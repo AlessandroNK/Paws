@@ -1,0 +1,8 @@
+{
+  "INVALID_OWNER_ID": "ID de propietario no válido",
+  "INVALID_PET_ID": "ID de mascota no válido",
+  "PET_FETCH_ERROR": "Error al obtener la mascota",
+  "PETS_FETCH_ERROR": "Error al obtener las mascotas",
+  "PET_NOT_FOUND": "Mascota no encontrada",
+  "PETS_NOT_FOUND": "Mascotas no encontradas"
+}

@@ -85,4 +85,18 @@ public interface IPetController
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] AcceptOwnershipInvitationRequest invitationCode
     );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Gets all pets by owner.
+    /// </summary>
+    /// <param name="deviceId">The id of the device sending the request</param>
+    /// <param name="sessionToken">The session token of the user sending the request</param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<IActionResult> GetPetsByOwnerAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromHeader(Name = "session-Token")] string sessionToken,
+        [FromBody] GetPetsByOwnerRequest request
+    );
 }

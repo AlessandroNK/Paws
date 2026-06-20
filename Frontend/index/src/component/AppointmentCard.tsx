@@ -3,7 +3,8 @@ import "./AppointmentCard.css";
 
 
 interface Props {
-    appointment: Appointment
+    appointment: Appointment,
+    onAppointmentClick: (appointment: Appointment) => void
 }
 
 function AppointmentCard(props: Props) {
@@ -27,7 +28,7 @@ function AppointmentCard(props: Props) {
     return (
         <div className="appointment-card"
             // onClick={() => props.onClick?.(props.appointment)}
-             onClick={() => console.log("Clicked appointment with id: " + props.appointment.id)}
+             onClick={() => props.onAppointmentClick(props.appointment)}
         >
             <h3>{to12HourFormat(props.appointment?.startTime)}</h3>
             <p>{props.appointment?.vet?.name.toString()}</p>
