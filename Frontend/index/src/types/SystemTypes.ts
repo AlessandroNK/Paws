@@ -113,7 +113,7 @@ export class User {
     public email: string
     public documentType: number
     public documentNumber: string | null
-    public token: string | null
+    public sessionToken: string | null
     // public pets: PetResponse[]
 
     constructor(
@@ -122,7 +122,7 @@ export class User {
         email: string,
         documentType: number = 1,
         documentNumber: string | null = null,
-        token: string | null = null,
+        sessionToken: string | null = null,
         // pets: Pet[],
     ) {
         this.id = id;
@@ -130,7 +130,7 @@ export class User {
         this.email = email;
         this.documentType = documentType;
         this.documentNumber = documentNumber;
-        this.token = token;
+        this.sessionToken = sessionToken;
         // this.pets = pets;
     }
 

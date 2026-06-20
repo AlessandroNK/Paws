@@ -72,4 +72,24 @@ public interface IUserController
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] ResendVerificationCodeRequest request
     );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Starts the login process by sending a verification code to the user's email. It takes the device id from the
+    /// header and the login request from the body. It returns an IActionResult with some relevant data as ok, code, and
+    /// status
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<IActionResult> StartLoginProcessAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] LoginRequest request
+    );
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<IActionResult> loginWithCode(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] LoginWithCodeRequest request
+    );
 }

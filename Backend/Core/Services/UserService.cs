@@ -230,10 +230,12 @@ public class UserService(
     /// </summary>
     /// <param name="email">The email to search for</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByEmailAsync(
         string email,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includeSessionToken = false
     )
     {
         try
@@ -256,7 +258,8 @@ public class UserService(
             return await DbRetry.ExecuteWithRetry(
                 operation: () => _userRepo.GetByEmailAsync(
                     email,
-                    filters
+                    filters,
+                    includeSessionToken
                 ),
                 operationName: "Getting user by email",
                 logger: _logger
@@ -463,17 +466,17 @@ public class UserService(
             filters = StatusFilters.Create().ThenIncludeUnverified();
             var ownershipResult = await _petService.AcceptOwnershipInvitationAsync(invitationRequest, filters);
             return ownershipResult
-            ?  new Result<User?>
-            {
-                Success = true,
-                Code = "VERIFICATION_CODE_SENT",
-                Status = 201,
-                Title = "User signed up successfully",
-                Data = user,
-                TraceCode = FileCodes.CallerIC(),
-                Returnable = true
-            }
-            : ownershipResult.ConvertTo<User?>();
+                ? new Result<User?>
+                {
+                    Success = true,
+                    Code = "VERIFICATION_CODE_SENT",
+                    Status = 201,
+                    Title = "User signed up successfully",
+                    Data = user,
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                }
+                : ownershipResult.ConvertTo<User?>();
         }
         catch (Exception e)
         {
@@ -724,7 +727,7 @@ public class UserService(
 
     // -----------------------------------------------------------------------------------------------------------------
     public async Task<Result<SessionToken?>> GetSessionTokenByTokenAsync(
-        string token,
+        string requestTokenHash,
         StatusFilters? filters = null,
         bool includeUser = false
     )
@@ -734,7 +737,7 @@ public class UserService(
             _logger.LogInformation("Getting session token by token");
 
             // Validations
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(requestTokenHash))
                 return new Result<SessionToken?>
                 {
                     Success = false,
@@ -747,7 +750,7 @@ public class UserService(
 
             // Search for the session token
             return await DbRetry.ExecuteWithRetry(
-                operation: () => _userRepo.GetSessionTokenByTokenAsync(token, filters, includeUser),
+                operation: () => _userRepo.GetSessionTokenByTokenAsync(requestTokenHash, filters, includeUser),
                 operationName: "Getting session token by token",
                 logger: _logger
             );
@@ -768,14 +771,14 @@ public class UserService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result<User?>> ValidateSessionTokenAsync(string deviceId, string requestToken)
+    public async Task<Result<User?>> ValidateSessionTokenAsync(string deviceId, string requestTokenHash)
     {
         try
         {
             _logger.LogInformation("Validating session token");
 
             // Validations
-            if (string.IsNullOrWhiteSpace(requestToken))
+            if (string.IsNullOrWhiteSpace(requestTokenHash))
                 return new Result<User?>
                 {
                     Success = false,
@@ -792,7 +795,7 @@ public class UserService(
                 .ThenIncludeBanned()
                 .ThenIncludeInactive()
                 .ThenIncludeArchived();
-            var tokenResult = await GetSessionTokenByTokenAsync(requestToken, filters, true);
+            var tokenResult = await GetSessionTokenByTokenAsync(requestTokenHash, filters, true);
             if (tokenResult.Data is null)
                 return new Result<User?>
                 {
@@ -833,5 +836,322 @@ public class UserService(
             };
         }
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Starts the login process by sending a verification code to the user's email. It takes the device id from the
+    /// header and the login request from the body. It returns an IActionResult with some relevant data as ok, code, and
+    /// status
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<Result<string>> StartLoginProcessAsync(string deviceId, LoginRequest request)
+    {
+        try
+        {
+            // Check the request
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return new Result<string>
+                {
+                    Success = false,
+                    Code = "INVALID_EMAIL",
+                    Status = 400,
+                    Title = "Email is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Get the user
+            var filters = StatusFilters.Create()
+                .ThenIncludeUnverified()
+                .ThenIncludeBanned()
+                .ThenIncludeInactive()
+                .ThenIncludeArchived();
+            var userResult = await GetByEmailAsync(request.Email, filters);
+            if (!userResult || userResult.Data is null)
+                return userResult.ConvertTo<string>();
+            var user = userResult.Data;
+
+            switch (user.Status)
+            {
+                // Check the user
+                case EntityStatus.Unverified:
+                    return new Result<string>
+                    {
+                        Success = false,
+                        Code = "USER_UNVERIFIED",
+                        Status = 403,
+                        Title = "User is unverified",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Banned:
+                    return new Result<string>
+                    {
+                        Success = false,
+                        Code = "USER_BANNED",
+                        Status = 403,
+                        Title = "User is banned",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Inactive:
+                    return new Result<string>
+                    {
+                        Success = false,
+                        Code = "USER_INACTIVE",
+                        Status = 403,
+                        Title = "User is inactive",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Archived:
+                    return new Result<string>
+                    {
+                        Success = false,
+                        Code = "USER_ARCHIVED",
+                        Status = 403,
+                        Title = "User is archived",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Deleted:
+                    return new Result<string>
+                    {
+                        Success = false,
+                        Code = "USER_DELETED",
+                        Status = 403,
+                        Title = "User is deleted",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.ToDelete:
+                    return new Result<string>
+                    {
+                        Success = false,
+                        Code = "USER_TO_DELETE",
+                        Status = 403,
+                        Title = "User is marked for deletion",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+            }
+
+            // Generate and send the code
+            user.VerificationCode = SecurityService.GenerateVerificationCode();
+            user.VerificationCodeDate = DateTime.UtcNow;
+
+            var emailResult = await _notificationService.SendLoginCodeAsync(
+                user.Name,
+                request.Email,
+                user.VerificationCode
+            );
+            if (!emailResult)
+                return emailResult.ConvertTo<string>();
+
+            // Update the verification code and date
+            var updateResult = await _userRepo.UpdateAsync(user);
+            if (!updateResult || updateResult.Data is null)
+                return updateResult.ConvertTo<string>();
+
+            return new Result<string>
+            {
+                Success = true,
+                Code = "LOGIN_CODE_SENT",
+                Status = 200,
+                Title = "Login code sent successfully",
+                Data = updateResult.Data.Email,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error starting login process for user with email: {request.Email}");
+            return new Result<string>
+            {
+                Success = false,
+                Code = "ERROR_STARTING_LOGIN_PROCESS",
+                Status = 400,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result<User?>> LoginWithCodeAsync(string deviceId, LoginWithCodeRequest request)
+    {
+        try
+        {
+            // Check the request
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_EMAIL",
+                    Status = 400,
+                    Title = "Email is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (string.IsNullOrWhiteSpace(request.Code))
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_LOGIN_CODE",
+                    Status = 400,
+                    Title = "Login code is required",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // Get the user
+            var filters = StatusFilters.Create()
+                .ThenIncludeUnverified()
+                .ThenIncludeBanned()
+                .ThenIncludeInactive()
+                .ThenIncludeArchived();
+            var userResult = await GetByEmailAsync(request.Email, filters, includeSessionToken: true);
+            if (!userResult || userResult.Data is null)
+                return userResult.ConvertTo<User?>();
+            var user = userResult.Data;
+
+            switch (user.Status)
+            {
+                // Check the user
+                case EntityStatus.Unverified:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_UNVERIFIED",
+                        Status = 403,
+                        Title = "User is unverified",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Banned:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_BANNED",
+                        Status = 403,
+                        Title = "User is banned",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Inactive:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_INACTIVE",
+                        Status = 403,
+                        Title = "User is inactive",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Archived:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_ARCHIVED",
+                        Status = 403,
+                        Title = "User is archived",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Deleted:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_DELETED",
+                        Status = 403,
+                        Title = "User is deleted",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.ToDelete:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_TO_DELETE",
+                        Status = 403,
+                        Title = "User is marked for deletion",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+            }
+
+            // Check
+            if (user.VerificationCodeDate == null || user.VerificationCodeDate.Value.AddMinutes(15) < DateTime.UtcNow)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "LOGIN_CODE_EXPIRED",
+                    Status = 400,
+                    Title = "Login code has expired. Please request a new one.",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (request.Code != user.VerificationCode)
+                return new Result<User?>
+                {
+                    Success = false,
+                    Code = "INVALID_LOGIN_CODE",
+                    Status = 400,
+                    Title = "Invalid login code",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            // The code is correct so login the user
+            user.VerificationCode = string.Empty;
+            user.VerificationCodeDate = null;
+
+            // Create token
+            if (
+                user.SessionToken is null ||
+                user.SessionToken.Status != EntityStatus.Active
+            )
+            {
+                var sessionTokenResult = SecurityService.CreateSessionToken(user);
+                if (!sessionTokenResult.Success)
+                    return sessionTokenResult.ConvertTo<User?>();
+
+                user.SessionToken = sessionTokenResult.Data;
+            }
+            user.SessionToken.ExpiresAt = DateTime.UtcNow.AddDays(7);
+
+            var updateResult = await _userRepo.UpdateAsync(user);
+            if (!updateResult || updateResult.Data is null) return updateResult.ConvertTo<User?>();
+            user = updateResult.Data;
+            return new Result<User?>
+            {
+                Success = true,
+                Code = "LOGIN_SUCCESSFUL",
+                Status = 200,
+                Title = "Login successful",
+                Data = user,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e, $"Error starting login process for user with email: {request.Email}");
+            return new Result<User?>
+            {
+                Success = false,
+                Code = "ERROR_LOGGING_IN",
+                Status = 400,
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
     #endregion
 }

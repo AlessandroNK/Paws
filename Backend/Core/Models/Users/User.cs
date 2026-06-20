@@ -111,7 +111,7 @@ public class User : IDtoConvertible<UserResponse>,
     /// User's session token, this is used to authenticate the user in the frontend and to authorize the user to access
     /// certain endpoints in the backend.
     /// </summary>
-    public SessionToken SessionToken { get; set; }
+    public SessionToken? SessionToken { get; set; }
 
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
@@ -135,6 +135,10 @@ public class User : IDtoConvertible<UserResponse>,
     {
         try
         {
+            SessionToken ??= SecurityService.CreateSessionToken(this).Data;
+            if (string.IsNullOrWhiteSpace(SessionToken.TokenHash))
+                SessionToken.TokenHash = SecurityService.HashWithSalt(SessionToken.Token).Data ?? string.Empty;
+
             return new UserResponse
             {
                 Id = Id,
@@ -146,7 +150,8 @@ public class User : IDtoConvertible<UserResponse>,
                 {
                     IDtoConvertible<PetResponse> petResponse = userPet.Pet;
                     return petResponse.ToDto();
-                }).ToList()
+                }).ToList(),
+                SessionToken = SessionToken.TokenHash
             };
         }
         catch (Exception e)
@@ -166,13 +171,18 @@ public class User : IDtoConvertible<UserResponse>,
     // -----------------------------------------------------------------------------------------------------------------
     BasicUserResponse IDtoConvertible<BasicUserResponse>.ToDto()
     {
+        SessionToken ??= SecurityService.CreateSessionToken(this).Data;
+        if (string.IsNullOrWhiteSpace(SessionToken.TokenHash))
+            SessionToken.TokenHash = SecurityService.HashWithSalt(SessionToken.Token).Data ?? string.Empty;
+
         return new BasicUserResponse
         {
             Id = Id,
             Email = Email,
             DocumentType = DocumentType,
             DocumentNumber = DocumentNumber,
-            Name = Name
+            Name = Name,
+            SessionToken = SessionToken.TokenHash
         };
     }
 
@@ -266,6 +276,22 @@ public class User : IDtoConvertible<UserResponse>,
                 Returnable = false
             };
         EmailHash = emailResult.Data;
+
+        // ------------------------------------------------------------------------------ Token
+        if (SessionToken is not null)
+        {
+            var tokenResult = SessionToken.Hash();
+            if (!tokenResult)
+                return new Result
+                {
+                    Success = false,
+                    Code = "TOKEN_HASHING_FAILED",
+                    Status = 500,
+                    Title = "Token hashing failed for user hash",
+                    TraceCode = $"{FileCodes.CallerIC()}",
+                    Returnable = false
+                };
+        }
 
         return new Result
         {

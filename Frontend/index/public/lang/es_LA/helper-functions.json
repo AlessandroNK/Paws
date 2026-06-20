@@ -1,0 +1,5 @@
+{
+  "INVALID_EMAIL_FORMAT_ERROR": "Ese correo que verga? Pórtese serio",
+  "INVALID_LOGIN_CODE_FORMAT_ERROR": "Código de inicio de sesión inválido",
+  "INPUT_EMPTY_ERROR": "El campo de entrada no puede estar vacío"
+}

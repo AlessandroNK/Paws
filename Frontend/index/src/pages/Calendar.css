@@ -77,3 +77,10 @@
 .clsLg-2 {
     fill: var(--sec-color);
 }
+
+.login-floating-form {
+    position: absolute;
+    top: 130px;
+    left: 50%;
+    animation: fadeInY 0.5s ease-in-out;
+}

@@ -1,0 +1,52 @@
+.login-form-content {
+    width: 400px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+    position: relative;
+    padding: 20px;
+    gap: 20px;
+    transition: height 0.3s ease;
+}
+
+.login-form-close-button {
+    align-self: end;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.login-form-success-message,
+.login-form-warning-message,
+.login-form-info-message,
+.login-form-error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    font-size: 14px;
+    padding: 10px;
+    animation: fadeInY 1s ease-in-out;
+}
+
+.login-form-info-message {
+    background: #daccff;
+    color: var(--main-color);
+}
+
+.login-form-error-message {
+    background: #ffcccc;
+    color: #cc0000;
+}
+
+.login-form-success-message {
+    background: #ccffcc;
+    color: #009900;
+}
+
+.login-form-warning-message {
+    background: #fff7da;
+    color: #e48a00;
+}

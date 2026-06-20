@@ -37,5 +37,5 @@ public struct BasicUserResponse
     /// User's session token, this is used to authenticate the user in the frontend and to authorize the user to access
     /// certain endpoints in the backend.
     /// </summary>
-    public SessionToken SessionToken { get; set; }
+    public string SessionToken { get; set; }
 }

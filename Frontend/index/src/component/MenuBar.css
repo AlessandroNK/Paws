@@ -48,6 +48,16 @@
 
 .menu-bar-profile.logged-in {
     background-color: var(--main-color);
+    animation: turnMainColor 2s ease-in-out;
+}
+
+@keyframes turnMainColor {
+    0% {
+        background-color: white;
+    }
+    100% {
+        background-color: var(--main-color);
+    }
 }
 
 .menu-bar-profile.logged-in:hover {

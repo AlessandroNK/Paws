@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Backend.Core.Internal;
+using Backend.Core.Models.Enums;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Users;
 
@@ -512,7 +513,7 @@ public partial class SecurityService
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Result<SessionToken> CreateSessionToken(User user)
+    public static Result<SessionToken> CreateSessionToken(User user)
     {
         try
         {
@@ -521,7 +522,8 @@ public partial class SecurityService
                 UserId = user.Id,
                 Token = $"{user.Id}::{Guid.NewGuid().ToString()}",
                 CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                Status = EntityStatus.Active,
             };
 
             return new Result<SessionToken>

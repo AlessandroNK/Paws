@@ -9,12 +9,12 @@ import * as VetService from "./VetService.ts";
 export async function getAvailableAppointmentsApi(request: Day): Promise<Result<Appointment[]>> {
     try {
         // API request
-        const deviceIdResult = HelperFunctions.GetDeviceId();
+        const deviceIdResult = HelperFunctions.getDeviceId();
         if (!deviceIdResult.success || !deviceIdResult.data)
             return deviceIdResult.convertTo<Appointment[]>();
 
         const accessPoint = "appointment/get-available-appointments";
-        const url = HelperFunctions.CreateUrlRequest(accessPoint);
+        const url = HelperFunctions.createUrlRequest(accessPoint);
         const options: FetchOptions = {
             method: "POST",
             headers: {
@@ -23,7 +23,7 @@ export async function getAvailableAppointmentsApi(request: Day): Promise<Result<
             },
             body: JSON.stringify(request)
         }
-        const result = await HelperFunctions.ExecuteFetchWithTimeout(url, options);
+        const result = await HelperFunctions.executeFetchWithTimeout(url, options);
         if (result.code) result.component = Components.APPOINTMENT_SERVICE;
         if (!result.success || !result.data) return result.convertTo<Appointment[]>();
 

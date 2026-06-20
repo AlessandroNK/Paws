@@ -37,4 +37,10 @@ public struct UserResponse
     /// All user's pets
     /// </summary>
     public List<PetResponse?> Pets { get; set; }
+
+    /// <summary>
+    /// User's session token, this is used to authenticate the user in the frontend and to authorize the user to access
+    /// certain endpoints in the backend.
+    /// </summary>
+    public string SessionToken { get; set; }
 }

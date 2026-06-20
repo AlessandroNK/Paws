@@ -93,7 +93,7 @@ export class Result<T> {
      * component, code, and status, and an empty errors array
      */
     static ok<T>(
-        data: T,
+        data: T | null = null,
         title: string | null = null,
         component: Components = Components.NONE,
         code: string | null = null,

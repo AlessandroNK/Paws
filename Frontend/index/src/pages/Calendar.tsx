@@ -2,12 +2,16 @@ import "./Calendar.css"
 import {useEffect, useRef, useState} from "react";
 import {Components, Day, Result} from "../types/CommonTypes.ts";
 import * as LanguageService from "../services/LanguageService.ts";
-import {type Appointment, TimePeriod} from "../types/SystemTypes.ts";
+import {type Appointment, TimePeriod, User} from "../types/SystemTypes.ts";
 import * as AppointmentsService from "../services/AppointmentService.ts";
 import PushMessagesUi from "../component/PushMessagesUi.tsx";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
 import TimePeriodCard from "../component/TimePeriodCard.tsx";
 import MenuBar from "../component/MenuBar.tsx";
+import * as UserService from "../services/UserService.ts";
+import LoginCard from "../component/LoginCard.tsx";
+import * as HelperFunctions from "../resources/HelperFunctions.ts";
+import {LoginRequest, StartLoginRequest} from "../types/RequestTypes.ts";
 
 function Calendar() {
     // Variables
@@ -21,8 +25,9 @@ function Calendar() {
     const [appointmentsError, setAppointmentsError] = useState("");
     const [appointments, setAppointments] = useState([] as Appointment[]);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [authUi, setAuthUi] = useState<string | null>(null);
 
 
     // Functions
@@ -54,6 +59,7 @@ function Calendar() {
         // User and log-in
         async function loadUser() {
             const userResult = await UserService.getUserFromSessionAsync();
+            setUser(userResult.data);
         }
 
         // UI texts
@@ -125,6 +131,9 @@ function Calendar() {
             setIsLoading(false);
         }
 
+        // Change page name
+        document.title = "PAWS 🐾 Citas";
+
         loadUser();
         loadTranslation();
         getAppointmentsApi();
@@ -173,13 +182,101 @@ function Calendar() {
         )
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    const onUserProfileClick = () => {
+        // Check if there is any user logged-in
+        if (user) {
+            // Handle user profile click
+            return;
+            setAuthUi(null);
+        }
+
+        // Handle log-in click
+        setAuthUi("login");
+    };
+
+    // -----------------------------------------------------------------------------------------------------------------
+    async function handleStartLoginProcess(email: string): Promise<Result<void>> {
+        if (isFetchingApi.current) {
+            return Result.fail<void>(
+                "Ya se está procesando una solicitud, por favor espera.",
+                400,
+                Components.CALENDAR,
+                "API_REQUEST_IN_PROGRESS"
+            );
+        }
+
+        if (!email || email.trim() === "") {
+            return Result.fail<void>(
+                "Por favor, ingresa tu correo electrónico",
+                400,
+                Components.USER_SERVICE,
+                "EMPTY_EMAIL"
+            );
+        }
+
+        const checkEmailResult = HelperFunctions.isValidEmail(email);
+        if (!checkEmailResult.success)
+            return checkEmailResult;
+
+        // Call API
+        const request = new StartLoginRequest(email);
+        const loginResult = await UserService.startLoginProcessAsync(request);
+        return loginResult.convertTo<void>();
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    async function handleLoginWithCode(email: string, code: string): Promise<Result<void>> {
+        if (isFetchingApi.current) {
+            return Result.fail<void>(
+                "Ya se está procesando una solicitud, por favor espera.",
+                400,
+                Components.CALENDAR,
+                "API_REQUEST_IN_PROGRESS"
+            );
+        }
+
+        if (!email || email.trim() === "") {
+            return Result.fail<void>(
+                "Por favor, ingresa tu correo electrónico",
+                400,
+                Components.USER_SERVICE,
+                "EMPTY_EMAIL"
+            );
+        }
+
+        if (!code || code.trim() === "") {
+            return Result.fail<void>(
+                "Por favor, ingresa el código de verificación",
+                400,
+                Components.USER_SERVICE,
+                "EMPTY_CODE"
+            );
+        }
+
+        const checkEmailResult = HelperFunctions.isValidEmail(email);
+        if (!checkEmailResult.success)
+            return checkEmailResult;
+
+        const checkLoginCodeResult = HelperFunctions.isValidLoginCode(code);
+        if (!checkLoginCodeResult.success)
+            return checkLoginCodeResult;
+
+        // Call API
+        const request = new LoginRequest(email, code);
+        const loginResult = await UserService.loginWithCodeRequest(request);
+
+        if (loginResult.code === "LOGIN_SUCCESSFUL") setUser(loginResult.data);
+        return loginResult.convertTo<void>();
+    }
+
     // Return
     // -----------------------------------------------------------------------------------------------------------------
     return (
         <>
             <div className={"calendar-page"}>
                 <section className={"calendar-header"}>
-                    <MenuBar user={user}/>
+                    <MenuBar user={user} onUserProfileClick={onUserProfileClick}/>
                     <svg className={"banner-logo"} data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"
                          viewBox="0 0 381.81 116.11">
                         <defs>
@@ -291,6 +388,14 @@ function Calendar() {
                 </div>
             </div>
             <PushMessagesUi messages={pushMessages}/>
+            {authUi === 'login' &&
+                <LoginCard className={"login-floating-form"}
+                           onClose={() => setAuthUi('')}
+                           onStartLogin={handleStartLoginProcess}
+                           onLoginWithCode={handleLoginWithCode}
+                />
+            }
+            {/*{authUi === 'signup' && <SignupCard className={"login-floating-form"} onClose={() => setAuthUi('')} />}*/}
         </>
     );
 }

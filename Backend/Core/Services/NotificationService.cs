@@ -172,6 +172,95 @@ public class NotificationService(
         }
     }
 
+    //                                                                                                    Public Methods
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Sends a login code to the given email address.
+    /// </summary>
+    /// <param name="name">The name of the user</param>
+    /// <param name="email">The email to send the code to</param>
+    /// <param name="code">The code to send</param>
+    /// <returns></returns>
+    public async Task<Result> SendLoginCodeAsync(string name, string email, string code)
+    {
+        try
+        {
+            // Get API key and sender email from environment variables
+            var variables = GetNotificationEnvironmentVariables();
+
+            if (!variables.Success || variables.Data is null) return variables;
+
+            var apiKey = variables.Data.ApiKey;
+            var senderEmail = variables.Data.SenderEmail;
+
+            // Extract first name from full name
+            var firstName = name.Split(' ').FirstOrDefault() ?? "Usuario";
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("api-key", apiKey);
+
+            // Prepare the email content
+            var requestBody = new
+            {
+                sender = new { email = senderEmail, name = "🐾Paws acá🐶" },
+                to = new[] { new { email, name = email } },
+                subject = $"Tu código para Iniciar Sesión en Paws es {code}",
+                htmlContent = $@"
+                            <h2>¡Hola!</h2>
+                            <p>{firstName}, aquí tienes tu <b>código de un solo uso</b> para iniciar sesión en <strong>Paws</strong>:</p>
+                            <p style='font-size: 20px; font-weight: 500; color: #f05a22;'>{code}</p>
+                            <p>Si no solicitaste este código, simplemente ignora este mensaje. No pasa nada 🙂</p>
+                            <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
+                            <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
+                            <p><a href='https://' style='color:#f05a22; text-decoration:none;'>no tengo web para Paws aún</a></p>>"
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8,
+                "application/json");
+            var response = await client.PostAsync("https://api.brevo.com/v3/smtp/email", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                LogHelpers.LogInfo(_logger, $"Login code sent to {email}");
+                return new Result
+                {
+                    Success = true,
+                    Status = 200,
+                    Title = "Login code sent successfully.",
+                    Code = "LOGIN_CODE_SENT",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            }
+
+            LogHelpers.LogError(
+                _logger,
+                $"Failed to send verification code to {email}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}"
+            );
+            return new Result
+            {
+                Success = false,
+                Status = (int)response.StatusCode,
+                Title = "Failed to send verification code.",
+                Code = "LOGIN_CODE_NOT_SENT",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception while sending verification code to {Email}", email);
+            return new Result
+            {
+                Success = false,
+                Status = 500,
+                Title = "An error occurred while sending the login code.",
+                Code = "LOGIN_CODE_NOT_SEND_FAILED",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// Sends an ownership share code to the given email address.

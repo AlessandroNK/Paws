@@ -99,11 +99,13 @@ public class UserRepository(
     /// <param name="email">The email to search for</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includePets">Whether to include the user's pets in the result</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByEmailAsync(
         string email,
         StatusFilters? filters = null,
-        bool includePets = false
+        bool includePets = false,
+        bool includeSessionToken = false
     )
     {
         // Encrypt user data to find it in the db
@@ -123,6 +125,10 @@ public class UserRepository(
             query = query
                 .Include(p => p.UserPets)
                 .ThenInclude(up => up.Pet);
+
+        if (includeSessionToken)
+            query = query
+                .Include(u => u.SessionToken);
 
         query = query.AsSplitQuery();
 
@@ -159,11 +165,13 @@ public class UserRepository(
     /// <param name="document">The document of the user</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includePets">Whether to include the user's pets in the result</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>The user if any</returns>
     public async Task<Result<User?>> GetByDocumentAsync(
         string document,
         StatusFilters? filters = null,
-        bool includePets = false
+        bool includePets = false,
+        bool includeSessionToken = false
     )
     {
         // Encrypt user data to find it in the db
@@ -187,6 +195,10 @@ public class UserRepository(
             query = query
                 .Include(p => p.UserPets)
                 .ThenInclude(up => up.Pet);
+
+        if (includeSessionToken)
+            query = query
+                .Include(u => u.SessionToken);
 
         query = query.AsSplitQuery();
 
@@ -222,11 +234,13 @@ public class UserRepository(
     /// <param name="id">The ID of the user to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includePets">Whether to include the user's pets in the result</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>A <see cref="Result{User}"/> indicating the result of the operation and including the user if it was found</returns>
     public async Task<Result<User?>> GetByIdAsync(
         int id,
         StatusFilters? filters = null,
-        bool includePets = false
+        bool includePets = false,
+        bool includeSessionToken = false
     )
     {
         if (id <= 0)
@@ -252,6 +266,10 @@ public class UserRepository(
             query = query
                 .Include(p => p.UserPets)
                 .ThenInclude(up => up.Pet);
+
+        if (includeSessionToken)
+            query = query
+                .Include(u => u.SessionToken);
 
         query = query.AsSplitQuery();
 
@@ -382,19 +400,14 @@ public class UserRepository(
 
     // -----------------------------------------------------------------------------------------------------------------
     public async Task<Result<SessionToken?>> GetSessionTokenByTokenAsync(
-        string token,
+        string requestTokenHash,
         StatusFilters? filters = null,
         bool includeUser = false
     )
     {
-        // Hash token
-        var tokenResult = SecurityService.HashWithSalt(token);
-        if (!tokenResult)
-            return tokenResult.Log(_logger).ConvertTo<SessionToken?>();
-
         // Find this token
         var query = _dbContext.SessionTokens
-            .Where(st => st.TokenHash == tokenResult.Data);
+            .Where(st => st.TokenHash == requestTokenHash);
 
         // Apply status filters
         query = ApplyStatusFilters(query, filters);

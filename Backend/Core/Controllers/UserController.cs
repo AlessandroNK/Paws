@@ -214,7 +214,7 @@ public class UserController(
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Checks a providen token to validate the user's session
+    /// Checks a provided token to validate the user's session
     /// </summary>
     /// <param name="deviceId">The ID of the device sending the request</param>
     /// <param name="sessionToken">The session token to be validated</param>
@@ -259,5 +259,98 @@ public class UserController(
         }
     }
 
-    #endregion
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Starts the login process by sending a verification code to the user's email. It takes the device id from the
+    /// header and the login request from the body. It returns an IActionResult with some relevant data as ok, code, and
+    /// status
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("start-login-process")]
+    public async Task<IActionResult> StartLoginProcessAsync(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] LoginRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Logging in user with device id: {DeviceId} and email: {@Email}", deviceId,
+                request.Email);
+
+            // Validations
+            Env.SetInteractionCode(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Log the user in
+            var result = await _userService.StartLoginProcessAsync(deviceId, request);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToApiResponse())
+                : BadRequest(result.ToApiResponse());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Kind = ApiResponseKind.Error,
+                    Code = "BAD_OPERATION",
+                    Status = 500,
+                    Title = "Something is breaking inside the API",
+                    TraceCode = FileCodes.CallerIC()
+                }
+            );
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    [HttpPost]
+    [Route("login-with-code")]
+    public async Task<IActionResult> loginWithCode(
+        [FromHeader(Name = "Device-Id")] string deviceId,
+        [FromBody] LoginWithCodeRequest request
+    )
+    {
+        try
+        {
+            _logger.LogInformation("Logging in user with device id: {DeviceId} and email: {@Email}", deviceId,
+                request.Email);
+
+            // Validations
+
+            Env.SetInteractionCode(deviceId);
+            var deviceValidationResult = SecurityService.ValidateDeviceId(deviceId);
+            if (!deviceValidationResult) return BadRequest(deviceValidationResult);
+
+            // Log the user in
+            var result = await _userService.LoginWithCodeAsync(deviceId, request);
+
+            // Clean the response and convert it and its data to Dto
+            return result
+                ? Ok(result.ToApiResponse<UserResponse>())
+                : BadRequest(result.ToApiResponse<UserResponse>());
+        }
+        catch (Exception e)
+        {
+            LogHelpers.LogError(_logger, e);
+            return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Kind = ApiResponseKind.Error,
+                    Code = "BAD_OPERATION",
+                    Status = 500,
+                    Title = "Something is breaking inside the API",
+                    TraceCode = FileCodes.CallerIC()
+                }
+            );
+        }
+    }
+
+#endregion
 }

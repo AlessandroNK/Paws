@@ -17,7 +17,7 @@ import {User} from "../types/SystemTypes.ts";
  * // If the app is running on production, it will return:
  * CreateUrlRequest('users'); // returns 'https://koodi-fbhcf8gtfgd5g7cd.canadacentral-01.azurewebsites.net/api/users'
  */
-export function CreateUrlRequest(accessPoint: string): string {
+export function createUrlRequest(accessPoint: string): string {
     // TODO handle bad API directions
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.id1";
     return isLocal
@@ -29,7 +29,7 @@ export function CreateUrlRequest(accessPoint: string): string {
 /**
  * Generate or retrieve a persistent Id
  */
-export function GetDeviceId(): Result<string> {
+export function getDeviceId(): Result<string> {
     try {
         let id = localStorage.getItem('paws_device_id');
         if (!id) {
@@ -59,7 +59,7 @@ export function GetDeviceId(): Result<string> {
  * @returns {Result} The result of the operation, could contain any data.
  * @throws {Error} If the operation times out.
  */
-export async function ExecuteFetchWithTimeout(
+export async function executeFetchWithTimeout(
     url: string,
     options: FetchOptions,
     timeout: number = 30000
@@ -94,7 +94,7 @@ export async function ExecuteFetchWithTimeout(
             result.title = json.title || json.message;
 
             // Add local error
-            result.addError(ApiCodeToUiMessage(response.status));
+            result.addError(apiCodeToUiMessage(response.status));
         }
 
         // Extract errors if present
@@ -151,7 +151,7 @@ export async function ExecuteFetchWithTimeout(
  * // For an unexpected status code:
  * ApiCodeToUiMessage(999); // returns a Result with a UiMessage indicating "Unexpected Error: 999" and a sad mood.
  */
-function ApiCodeToUiMessage(status: number): ApiError {
+function apiCodeToUiMessage(status: number): ApiError {
     const uiMessage = new UiMessage();
     uiMessage.status = status;
     uiMessage.code = status.toString();
@@ -243,7 +243,7 @@ export function getLocalUser(): Result<User | null> {
     try {
         // ID
         const id = localStorage.getItem('paws_user_id');
-        const token = localStorage.getItem('paws_user_token');
+        const token = localStorage.getItem('paws_user_session_token');
         const name = localStorage.getItem('paws_user_name');
         const email = localStorage.getItem('paws_user_email');
 
@@ -294,7 +294,7 @@ export function getLocalUser(): Result<User | null> {
 export function clearLocalUserSession(): Result<void> {
     try {
         localStorage.removeItem('paws_user_id');
-        localStorage.removeItem('paws_user_token');
+        localStorage.removeItem('paws_user_session_token');
         localStorage.removeItem('paws_user_name');
         localStorage.removeItem('paws_user_email');
         return Result.ok(undefined);
@@ -308,4 +308,121 @@ export function clearLocalUserSession(): Result<void> {
                 "USER_SESSION_CLEAR_ERROR"
             ).log();
     }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+export function saveLocalUserSession(user: User): Result<void> {
+    try {
+        if (!user.id || !user.sessionToken || !user.name || !user.email) {
+            return Result.fail<void>(
+                "User object is missing required fields",
+                400,
+                Components.USER_SERVICE,
+                "USER_SESSION_SAVE_ERROR"
+            );
+        }
+
+        localStorage.setItem('paws_user_id', user.id.toString());
+        localStorage.setItem('paws_user_session_token', user.sessionToken);
+        localStorage.setItem('paws_user_name', user.name);
+        localStorage.setItem('paws_user_email', user.email);
+        return Result.ok(undefined);
+    } catch (err) {
+        const error = err as Error;
+        return Result
+            .fail<void>(
+                `Error saving user session to local storage, error: ${error.message}`,
+                500,
+                Components.USER_SERVICE,
+                "USER_SESSION_SAVE_ERROR"
+            ).log();
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+/**
+ * Restricts input to text, numbers, ASCII stuff, and emojis.
+ * This function checks the value of a user input field and ensures that it contains only text, ASCII stuff, and emojis.
+ * @param {unknown} userInput - The user input to validate.
+ * @return {Result} A Result object indicating whether the input is valid. If the input is invalid, the Result will
+ * contain a UiMessage with an error message.
+ */
+export function restrictInputToExistent(userInput: unknown): Result<void> {
+    if (
+        userInput === undefined ||
+        userInput === null ||
+        userInput === ""
+    ) return Result.fail<void>(
+        "Input is empty",
+        400,
+        Components.HELPER_FUNCTIONS,
+        "INPUT_EMPTY_ERROR"
+    );
+
+    return Result.ok();
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+/**
+ * Restricts input to valid email address.
+ * This function checks the value of a user input field and ensures that it is a coherent and valid email address,
+ * it creates a UiMessage indicating that only numbers are allowed and returns a Result object with the error message.
+ * @param {string} userInput - The user input to validate.
+ * @return {Result} A Result object indicating whether the input is a valid email address. If the input is invalid, the
+ * Result will contain a UiMessage with an error message.
+ */
+export function isValidEmail(userInput: string): Result<void> {
+    const result = restrictInputToExistent(userInput);
+    if (!result.success) {
+        return Result.fail<void>(
+            "Input is empty",
+            400,
+            Components.HELPER_FUNCTIONS,
+            "INPUT_EMPTY_ERROR"
+        );
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInput)) {
+        return Result.fail<void>(
+            "Invalid email format",
+            400,
+            Components.HELPER_FUNCTIONS,
+            "INVALID_EMAIL_FORMAT_ERROR"
+        );
+    }
+
+    return Result.ok();
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+export function isValidLoginCode(userInput: string): Result<void> {
+    const result = restrictInputToExistent(userInput);
+    if (!result.success) {
+        return Result.fail<void>(
+            "Input is empty",
+            400,
+            Components.HELPER_FUNCTIONS,
+            "INPUT_EMPTY_ERROR"
+        );
+    }
+
+    if (!/^[A-Z0-9]+$/.test(userInput)) {
+        return Result.fail<void>(
+            "Invalid login code format: only uppercase letters and numbers are allowed",
+            400,
+            Components.HELPER_FUNCTIONS,
+            "INVALID_LOGIN_CODE_FORMAT_ERROR"
+        );
+    }
+
+    return Result.ok();
+}
+// ---------------------------------------------------------------------------------------------------------------------
+/**
+ * Pauses the execution for a moment
+ * @param ms The amount of time to pause the app in ms
+ * @return {Promise<unknown>}
+ */
+export async function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

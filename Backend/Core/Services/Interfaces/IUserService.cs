@@ -39,10 +39,12 @@ public interface IUserService
     /// </summary>
     /// <param name="email">The email to search for</param>
     /// <param name="filters">The filters to apply to the query</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByEmailAsync(
         string email,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includeSessionToken = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -97,5 +99,19 @@ public interface IUserService
     public Task<Result<User?>> ResendVerificationEmailAsync(ResendVerificationCodeRequest request);
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<Result<User?>> ValidateSessionTokenAsync(string deviceId, string token);
+    public Task<Result<User?>> ValidateSessionTokenAsync(string deviceId, string requestTokenHash);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Starts the login process by sending a verification code to the user's email. It takes the device id from the
+    /// header and the login request from the body. It returns an IActionResult with some relevant data as ok, code, and
+    /// status
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public Task<Result<string>> StartLoginProcessAsync(string deviceId, LoginRequest request);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result<User?>> LoginWithCodeAsync(string deviceId, LoginWithCodeRequest request);
 }

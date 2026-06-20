@@ -42,6 +42,16 @@ public interface INotificationService
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>
+    /// Sends a login code to the given email address.
+    /// </summary>
+    /// <param name="name">The name of the user</param>
+    /// <param name="email">The email to send the code to</param>
+    /// <param name="code">The code to send</param>
+    /// <returns></returns>
+    public Task<Result> SendLoginCodeAsync(string name, string email, string code);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    /// <summary>
     /// Sends an ownership invitation to the given email address.
     /// </summary>
     /// <param name="invitation">The <see cref="OwnershipInvitation"/> to send</param>

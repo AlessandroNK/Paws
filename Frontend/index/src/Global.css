@@ -131,6 +131,10 @@ a {
     fill: var(--main-color);
 }
 
+.icon-very-small {
+    width: 10px;
+}
+
 .icon-small {
     width: 15px;
 }
@@ -149,4 +153,51 @@ a {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+}
+
+input {
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: var(--font-size-phar);}
+
+button {
+    align-self: end;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: var(--main-color);
+    color: white;
+    font-size: var(--font-size-phar);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.disable-button {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+@keyframes fadeInX {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInY {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

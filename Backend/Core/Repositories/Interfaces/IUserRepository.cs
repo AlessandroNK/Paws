@@ -42,11 +42,13 @@ public interface IUserRepository
     /// <param name="email">The email to search for</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includePets">Whether to include the user's pets in the result</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByEmailAsync(
         string email,
         StatusFilters? filters = null,
-        bool includePets = false
+        bool includePets = false,
+        bool includeSessionToken = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -56,11 +58,13 @@ public interface IUserRepository
     /// <param name="document">The document of the user</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includePets">Whether to include the user's pets in the result</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>The user if any</returns>
     public Task<Result<User?>> GetByDocumentAsync(
         string document,
         StatusFilters? filters = null,
-        bool includePets = false
+        bool includePets = false,
+        bool includeSessionToken = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -70,11 +74,13 @@ public interface IUserRepository
     /// <param name="id">The ID of the user to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includePets">Whether to include the user's pets in the result</param>
+    /// <param name="includeSessionToken">Whether to include the session token in the result</param>
     /// <returns>A <see cref="Result{User}"/> indicating the result of the operation and including the user if it was found</returns>
     public Task<Result<User?>> GetByIdAsync(
         int id,
         StatusFilters? filters = null,
-        bool includePets = false
+        bool includePets = false,
+        bool includeSessionToken = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -100,7 +106,7 @@ public interface IUserRepository
 
     // -----------------------------------------------------------------------------------------------------------------
     public Task<Result<SessionToken?>> GetSessionTokenByTokenAsync(
-        string token,
+        string requestTokenHash,
         StatusFilters? filters = null,
         bool includeUser = false
     );

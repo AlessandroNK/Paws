@@ -1,5 +1,10 @@
 {
   "USER_SESSION_FETCH_ERROR": "Error al obtener la sesión del usuario",
   "USER_ID_ERROR": "Error al obtener el ID del usuario",
+  "LOGIN_CODE_NOT_SENT": "Imposible al enviar el código de inicio de sesión a tu correo",
+  "NETWORK_ERROR": "Error de red, por favor intenta de nuevo",
+  "EMPTY_EMAIL": "El correo electrónico no puede estar vacío",
+  "ERROR_LOGGING_IN": "Error al iniciar sesión, por favor intenta de nuevo",
+  "INVALID_LOGIN_CODE": "De dónde carajos sacaste ese código de inicio de sesión? No es válido",
   "USER_NOT_LOGGED_IN": "Usuario no ha iniciado sesión"
 }
