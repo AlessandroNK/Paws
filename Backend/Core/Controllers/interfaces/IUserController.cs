@@ -88,7 +88,7 @@ public interface IUserController
     );
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<IActionResult> loginWithCode(
+    public Task<IActionResult> LoginWithCode(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] LoginWithCodeRequest request
     );

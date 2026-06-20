@@ -6,21 +6,32 @@ import {LoginRequest, StartLoginRequest} from "../types/RequestTypes.ts";
 
 //                                                                                                             FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------------
-export async function getUserFromSessionAsync(): Promise<Result<User | null>> {
+export function getLocalSession(): Result<User> {
     try {
         // Find local user session
-        const sessionResult = HelperFunctions.getLocalUser();
-        if (!sessionResult.success || !sessionResult.data) return sessionResult;
+        return HelperFunctions.getLocalUser();
+    } catch (err) {
+        const error = err as Error;
+        return Result
+            .fail<User>(
+                `Error fetching user from session, error: ${error.message}`,
+                500,
+                Components.USER_SERVICE,
+                "USER_SESSION_FETCH_ERROR"
+            ).log();
+    }
+}
 
-        // Check on the API for active sessions
+// ---------------------------------------------------------------------------------------------------------------------
+export async function getApiSessionAsync(user: User): Promise<Result<User>> {
+    try {
         // API request
         const deviceIdResult = HelperFunctions.getDeviceId();
         if (!deviceIdResult.success || !deviceIdResult.data)
-            return deviceIdResult.convertTo<null>();
+            return deviceIdResult.convertTo<User>();
 
-        const user = sessionResult.data;
         if (!user.sessionToken) {
-            return Result.fail<null>(
+            return Result.fail<User>(
                 "No session token found for the user",
                 401,
                 Components.USER_SERVICE,
@@ -40,21 +51,23 @@ export async function getUserFromSessionAsync(): Promise<Result<User | null>> {
         }
         const result = await HelperFunctions.executeFetchWithTimeout(url, options);
         if (result.code) result.component = Components.USER_SERVICE;
-        if (!result.success || !result.data) return result.convertTo<null>();
+        if (!result.success || !result.data) return result.convertTo<User>();
 
         // Process response
-        return Result.ok(new User(
-            result.data.id,
-            result.data.name,
-            result.data.email,
-            result.data.documentType,
-            result.data.documentNumber,
-            result.data.sessionToken
-        ));
+        return Result.ok(
+            new User(
+                result.data.id,
+                result.data.name,
+                result.data.email,
+                result.data.documentType,
+                result.data.documentNumber,
+                result.data.sessionToken
+            )
+        );
     } catch (err) {
         const error = err as Error;
         return Result
-            .fail<null>(
+            .fail<User>(
                 `Error fetching user from session, error: ${error.message}`,
                 500,
                 Components.USER_SERVICE,
@@ -129,7 +142,7 @@ export async function loginWithCodeRequest(request: LoginRequest): Promise<Resul
             userData.sessionToken
         );
         HelperFunctions.saveLocalUserSession(user);
-        return Result.ok(user, null,  Components.USER_SERVICE, result.code);
+        return Result.ok(user, null, Components.USER_SERVICE, result.code);
     } catch (err) {
         const error = err as Error;
         return Result

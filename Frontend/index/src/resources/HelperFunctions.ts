@@ -239,7 +239,7 @@ function apiCodeToUiMessage(status: number): ApiError {
  * user session to prevent inconsistent state and returns a Result indicating the failure reason. If all validations pass,
  * it constructs a User object with the retrieved information and returns it wrapped in a successful Result.
  */
-export function getLocalUser(): Result<User | null> {
+export function getLocalUser(): Result<User> {
     try {
         // ID
         const id = localStorage.getItem('paws_user_id');
@@ -247,15 +247,26 @@ export function getLocalUser(): Result<User | null> {
         const name = localStorage.getItem('paws_user_name');
         const email = localStorage.getItem('paws_user_email');
 
-        // convert id into number
         const idNumber = id ? parseInt(id) : null;
+
+        // Validations
         if (idNumber === null || isNaN(idNumber)) {
             clearLocalUserSession();
-            return Result.fail<null>(
+            return Result.fail<User>(
                 "User ID is missing or invalid in local storage",
                 401,
                 Components.USER_SERVICE,
                 "USER_ID_ERROR"
+            );
+        }
+
+        if (!token) {
+            clearLocalUserSession();
+            return Result.fail<User>(
+                "User session token is missing in local storage",
+                401,
+                Components.USER_SERVICE,
+                "USER_SESSION_TOKEN_ERROR"
             );
         }
 
@@ -264,14 +275,17 @@ export function getLocalUser(): Result<User | null> {
             const user = new User(
                 idNumber,
                 email,
-                name
+                name,
+                undefined,
+                undefined,
+                token
             );
             return Result.ok(user);
         }
 
         // clear any partial data if present
         clearLocalUserSession();
-        return Result.fail<null>(
+        return Result.fail<User>(
             "User is not logged in",
             401,
             Components.USER_SERVICE,
@@ -281,7 +295,7 @@ export function getLocalUser(): Result<User | null> {
         const error = err as Error;
         clearLocalUserSession();
         return Result
-            .fail<null>(
+            .fail<User>(
                 `Error fetching user from local storage, error: ${error.message}`,
                 500,
                 Components.USER_SERVICE,
@@ -417,6 +431,7 @@ export function isValidLoginCode(userInput: string): Result<void> {
 
     return Result.ok();
 }
+
 // ---------------------------------------------------------------------------------------------------------------------
 /**
  * Pauses the execution for a moment

@@ -10,6 +10,8 @@
   "APPOINTMENT_PATIENT": "Paciente",
   "APPOINTMENT_DOCTOR": "Doctor",
   "APPOINTMENT_ACTIONS": "Acciones",
+  "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS": "No podemos obtener citas para días pasados.",
+  "INVALID_DATE": "Esa fecha qu pusiste está de la verga, selecciona una válida.",
   "FETCHING_AVAILABLE_APPOINTMENTS": "Obteniendo citas disponibles...",
   "OF": "de"
 }

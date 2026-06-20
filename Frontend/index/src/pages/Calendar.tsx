@@ -58,7 +58,20 @@ function Calendar() {
     useEffect(() => {
         // User and log-in
         async function loadUser() {
-            const userResult = await UserService.getUserFromSessionAsync();
+            // Get local session
+            const localSessionResult = UserService.getLocalSession();
+            if (!localSessionResult.success || !localSessionResult.data) {
+                HelperFunctions.clearLocalUserSession();
+                setUser(null);
+                return;
+            }
+            setUser(localSessionResult.data);
+
+            // Then check in the API
+            const userResult = await UserService.getApiSessionAsync(localSessionResult.data);
+            if (userResult.code === 'NETWORK_ERROR') return;
+            if (!userResult.success) HelperFunctions.clearLocalUserSession();
+
             setUser(userResult.data);
         }
 
@@ -97,10 +110,19 @@ function Calendar() {
 
             // Validations
             if (
+                result.code === "INVALID_DATE" ||
+                result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS"
+            ) {
+                const errorResult = await LanguageService.getTranslationAsync(Components.CALENDAR, result.code);
+                setAppointmentsError(errorResult.data ?? "Error getting appointments");
+                setIsLoading(false);
+                return
+            }
+
+            if (
                 result.code === "NO_AVAILABLE_APPOINTMENTS_FOUND" ||
                 result.code === "INVALID_DATE" ||
-                result.code === "APPOINTMENTS_FETCH_ERROR" ||
-                result.code === "CANNOT_GET_AVAILABLE_APPOINTMENTS_FOR_PAST_DAYS"
+                result.code === "APPOINTMENTS_FETCH_ERROR"
             ) {
                 const errorResult = await LanguageService.getTranslationAsync(Components.CALENDAR, "ERROR_GETTING_APPOINTMENTS");
                 setAppointmentsError(errorResult.data ?? "Error getting appointments");

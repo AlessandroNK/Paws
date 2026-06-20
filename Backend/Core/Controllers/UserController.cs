@@ -312,7 +312,7 @@ public class UserController(
     // -----------------------------------------------------------------------------------------------------------------
     [HttpPost]
     [Route("login-with-code")]
-    public async Task<IActionResult> loginWithCode(
+    public async Task<IActionResult> LoginWithCode(
         [FromHeader(Name = "Device-Id")] string deviceId,
         [FromBody] LoginWithCodeRequest request
     )
