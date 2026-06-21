@@ -240,8 +240,8 @@ public class UserController(
 
             // Clean the response and convert it and its data to Dto
             return result
-                ? Ok(result.ToApiResponse<BasicUserResponse>())
-                : BadRequest(result.ToApiResponse<BasicUserResponse>());
+                ? Ok(result.ToApiResponse<UserResponse>())
+                : BadRequest(result.ToApiResponse<UserResponse>());
         }
         catch (Exception e)
         {

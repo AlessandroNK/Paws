@@ -68,7 +68,8 @@ public interface IUserService
     /// <returns>The created user</returns>
     public Task<Result<User?>> GetByIdAsync(
        int id,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includePets = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------

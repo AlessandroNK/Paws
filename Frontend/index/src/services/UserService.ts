@@ -1,6 +1,6 @@
 // TODO convert services into classes and use dependency injection
 import {Components, FetchOptions, Result} from "../types/CommonTypes.ts";
-import {User} from "../types/SystemTypes.ts";
+import {Pet, User} from "../types/SystemTypes.ts";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
 import {LoginRequest, StartLoginRequest} from "../types/RequestTypes.ts";
 
@@ -54,16 +54,23 @@ export async function getApiSessionAsync(user: User): Promise<Result<User>> {
         if (!result.success || !result.data) return result.convertTo<User>();
 
         // Process response
-        return Result.ok(
-            new User(
-                result.data.id,
-                result.data.name,
-                result.data.email,
-                result.data.documentType,
-                result.data.documentNumber,
-                result.data.sessionToken
-            )
+        user = new User(
+            result.data.id,
+            result.data.name,
+            result.data.email,
+            result.data.documentType,
+            result.data.documentNumber,
+            result.data.sessionToken
         );
+        user.pets = result.data.pets.map((petData: object) => new Pet(
+            petData.id,
+            petData.name,
+            petData.species,
+            petData.breed,
+            petData.age,
+            petData.ownerId
+        ));
+        return Result.ok(user);
     } catch (err) {
         const error = err as Error;
         return Result
@@ -141,6 +148,14 @@ export async function loginWithCodeRequest(request: LoginRequest): Promise<Resul
             userData.documentNumber,
             userData.sessionToken
         );
+        user.pets = result.data.pets.map((petData: object) => new Pet(
+            petData.id,
+            petData.name,
+            petData.species,
+            petData.breed,
+            petData.age,
+            petData.ownerId
+        ));
         HelperFunctions.saveLocalUserSession(user);
         return Result.ok(user, null, Components.USER_SERVICE, result.code);
     } catch (err) {

@@ -4,7 +4,7 @@ import AppointmentCard from "./AppointmentCard.tsx";
 
 interface Props {
     timePeriod: TimePeriod,
-    onAppointmentClick: (appointment: Appointment) => void
+    onAppointmentClick: (e: React.MouseEvent, appointment: Appointment) => Promise<void>
 }
 
 

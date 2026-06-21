@@ -338,7 +338,8 @@ public class UserService(
     /// <returns>The created user</returns>
     public async Task<Result<User?>> GetByIdAsync(
         int id,
-        StatusFilters? filters = null
+        StatusFilters? filters = null,
+        bool includePets = false
     )
     {
         try
@@ -361,7 +362,8 @@ public class UserService(
             return await DbRetry.ExecuteWithRetry(
                 operation: () => _userRepo.GetByIdAsync(
                     id,
-                    filters
+                    filters,
+                    includePets
                 ),
                 operationName: "Getting user by ID",
                 logger: _logger
@@ -811,6 +813,75 @@ public class UserService(
             var tokenValidationResult = SecurityService.IsSessionTokenValid(deviceId, token);
             if (!tokenValidationResult) return tokenValidationResult.ConvertTo<User?>();
 
+            // Get user back
+            var userResult = await GetByIdAsync(token.UserId, filters, true);
+            if (!userResult || userResult.Data is null) return userResult.ConvertTo<User?>();
+            var user = userResult.Data;
+
+            switch (user.Status)
+            {
+                case EntityStatus.Unverified:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_UNVERIFIED",
+                        Status = 403,
+                        Title = "User is unverified",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Banned:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_BANNED",
+                        Status = 403,
+                        Title = "User is banned",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Inactive:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_INACTIVE",
+                        Status = 403,
+                        Title = "User is inactive",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Archived:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_ARCHIVED",
+                        Status = 403,
+                        Title = "User is archived",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.Deleted:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_DELETED",
+                        Status = 403,
+                        Title = "User is deleted",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+                case EntityStatus.ToDelete:
+                    return new Result<User?>
+                    {
+                        Success = false,
+                        Code = "USER_TO_DELETE",
+                        Status = 403,
+                        Title = "User is marked for deletion",
+                        TraceCode = FileCodes.CallerIC(),
+                        Returnable = true
+                    };
+            }
+
             // Return user data
             return new Result<User?>
             {
@@ -818,7 +889,7 @@ public class UserService(
                 Code = "SESSION_TOKEN_VALID",
                 Status = 200,
                 Title = "Session token is valid",
-                Data = token.User,
+                Data = user,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };
@@ -1123,6 +1194,7 @@ public class UserService(
 
                 user.SessionToken = sessionTokenResult.Data;
             }
+
             user.SessionToken.ExpiresAt = DateTime.UtcNow.AddDays(7);
 
             var updateResult = await _userRepo.UpdateAsync(user);

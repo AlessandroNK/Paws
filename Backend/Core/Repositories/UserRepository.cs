@@ -254,14 +254,11 @@ public class UserRepository(
                 Returnable = true
             };
 
-        // Find the user
         var query = _dbContext.Users
             .Where(u => u.Id == id);
 
-        // Apply status filters
         query = ApplyStatusFilters(query, filters);
 
-        // Includes
         if (includePets)
             query = query
                 .Include(p => p.UserPets)
@@ -271,9 +268,6 @@ public class UserRepository(
             query = query
                 .Include(u => u.SessionToken);
 
-        query = query.AsSplitQuery();
-
-        // Execute query
         var user = await query.FirstOrDefaultAsync();
         if (user is null)
             return new Result<User?>

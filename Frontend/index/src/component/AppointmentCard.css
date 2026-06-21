@@ -9,6 +9,7 @@
     align-items: center;
     flex-direction: column;
     border: 2px solid transparent;
+    max-height: 63px;
     transition: background-color 0.3s, color 0.3s;
 }
 

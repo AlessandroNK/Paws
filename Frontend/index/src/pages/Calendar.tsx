@@ -13,13 +13,14 @@ import LoginCard from "../component/LoginCard.tsx";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
 import {LoginRequest, StartLoginRequest} from "../types/RequestTypes.ts";
 import * as PetService from "../services/PetService.ts";
-import ReserveAppointmentCard from "../component/ReserveAppointmentCard.tsx";
+import ReserveAppointmentMenu from "../component/ReserveAppointmentMenu.tsx";
+import * as React from "react";
 
 function Calendar() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const isFetchingApi = useRef(false);
-    const [selectedDate] = useState(new Day(2026, 6, 20));
+    const [selectedDate] = useState(new Day(2026, 6, 22));
     const [appointmentsTitle, setAppointmentsTitle] = useState("");
     const [appointmentDay, setAppointmentDay] = useState("");
     const [appointmentConnector, setAppointmentConnector] = useState("");
@@ -28,10 +29,11 @@ function Calendar() {
     const [appointments, setAppointments] = useState([] as Appointment[]);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
     const [user, setUser] = useState<User | null>(null);
-    const [appointment, setAppointment] = useState<Appointment | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [authUi, setAuthUi] = useState<string | null>(null);
-    const [reservingAppointment, setReservingAppointment] = useState<boolean>(false);
+    const [reservingAppointment, setReservingAppointment] = useState(false);
+    const [appointment, setAppointment] = useState<Appointment | null>(null);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const userObject = useRef(user);
 
 
@@ -110,6 +112,7 @@ function Calendar() {
             if (!petsResult.success) return;
             if (userObject.current && petsResult.data) userObject.current.pets = petsResult.data;
             setUser(userObject.current);
+            console.log(userObject.current.pets)
         }
 
         // Appointments from API
@@ -317,9 +320,17 @@ function Calendar() {
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    async function handleClickAppointment(appointment: Appointment) {
-        setReservingAppointment(true);
+    async function handleClickAppointment(e: React.MouseEvent, appointment: Appointment): Promise<void> {
         setAppointment(appointment);
+
+        if (!user) {
+            setAuthUi("login");
+            return;
+        }
+
+        // Validations
+        setMousePosition({ x: e.clientX, y: e.clientY });
+        setReservingAppointment(true);
     }
 
     // Return
@@ -440,7 +451,6 @@ function Calendar() {
                 </div>
             </div>
             <PushMessagesUi messages={pushMessages}/>
-            {reservingAppointment && <ReserveAppointmentCard user={user} />}
             {authUi === 'login' &&
                 <LoginCard className={"login-floating-form"}
                            onClose={() => setAuthUi('')}
@@ -448,6 +458,15 @@ function Calendar() {
                            onLoginWithCode={handleLoginWithCode}
                 />
             }
+            {
+                reservingAppointment &&
+                <ReserveAppointmentMenu appointment={appointment}
+                                        user={user}
+                                        mousePosition={mousePosition}
+                                        onClose={() => setReservingAppointment(false)}
+                />
+            }
+
             {/*{authUi === 'signup' && <SignupCard className={"login-floating-form"} onClose={() => setAuthUi('')} />}*/}
         </>
     );

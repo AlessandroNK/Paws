@@ -127,6 +127,13 @@ a {
     color: var(--main-color);
 }
 
+.highlight-text {
+    background: var(--main-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .icon-main-color {
     fill: var(--main-color);
 }
