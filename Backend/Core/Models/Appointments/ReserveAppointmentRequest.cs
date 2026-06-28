@@ -10,7 +10,8 @@ public class ReserveAppointmentRequest
     // -----------------------------------------------------------------------------------------------------------------
     public int AppointmentId { get; set; }
 
-    public int UserPetId { get; set; }
+    public int UserId { get; set; }
+    public int PetId { get; set; }
 
 
     //                                                                                                         Operators

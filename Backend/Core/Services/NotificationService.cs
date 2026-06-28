@@ -1,9 +1,11 @@
 using System.Text;
 using Backend.Core.Internal;
+using Backend.Core.Models.Appointments;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
 using Backend.Core.Models.Security;
+using Backend.Core.Models.Users;
 using Backend.Core.Services.Interfaces;
 using Newtonsoft.Json;
 
@@ -112,17 +114,17 @@ public class NotificationService(
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "🐾Paws acá🐶" },
+                sender = new { email = senderEmail, name = "🐾 Paws acá 🐶" },
                 to = new[] { new { email, name = email } },
                 subject = $"Tu código para Registro en Paws es {code}",
                 htmlContent = $@"
                             <h2>¡Hola!</h2>
                             <p>{firstName}, aquí tienes tu <b>código de un solo uso</b> para verificar tu cuenta en <strong>Paws</strong>:</p>
-                            <p style='font-size: 20px; font-weight: 500; color: #f05a22;'>{code}</p>
+                            <p style='font-size: 20px; font-weight: 500; color: #7060f7;'>{code}</p>
                             <p>Si no solicitaste este código, simplemente ignora este mensaje. No pasa nada 🙂</p>
                             <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
                             <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
-                            <p><a href='https://' style='color:#f05a22; text-decoration:none;'>no tengo web para Paws aún</a></p>>"
+                            <p><a href='https://' style='color:#7060f7; text-decoration:none;'>no tengo web para Paws aún</a></p>>"
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8,
@@ -201,17 +203,17 @@ public class NotificationService(
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "🐾Paws acá🐶" },
+                sender = new { email = senderEmail, name = "🐾 Paws acá 🐶" },
                 to = new[] { new { email, name = email } },
                 subject = $"Tu código para Iniciar Sesión en Paws es {code}",
                 htmlContent = $@"
                             <h2>¡Hola!</h2>
                             <p>{firstName}, aquí tienes tu <b>código de un solo uso</b> para iniciar sesión en <strong>Paws</strong>:</p>
-                            <p style='font-size: 20px; font-weight: 500; color: #f05a22;'>{code}</p>
+                            <p style='font-size: 20px; font-weight: 500; color: #7060f7;'>{code}</p>
                             <p>Si no solicitaste este código, simplemente ignora este mensaje. No pasa nada 🙂</p>
                             <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
                             <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
-                            <p><a href='https://' style='color:#f05a22; text-decoration:none;'>no tengo web para Paws aún</a></p>>"
+                            <p><a href='https://' style='color:#7060f7; text-decoration:none;'>no tengo web para Paws aún</a></p>>"
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8,
@@ -299,8 +301,8 @@ public class NotificationService(
             }
 
             var accountP = invitation.NewOwnerHasAccount
-                ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>ingresa a este enlace</a> para continuar."
-                : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
+                ? $"Sabemos que eres cliente PAWS, por eso te facilitamos la vida, solo <a href='{invitation.OwnershipLink}' style='color:#7060f7; text-decoration:none;'>ingresa a este enlace</a> para continuar."
+                : $"Bienvenido a Paws! Para comenzar, ingresa a <a href='{invitation.OwnershipLink}' style='color:#7060f7; text-decoration:none;'>nuestro sitio web y crea tu cuenta</a>.";
 
             var emoji = pet.Species switch
             {
@@ -320,19 +322,19 @@ public class NotificationService(
             // Prepare the email content
             var requestBody = new
             {
-                sender = new { email = senderEmail, name = "🐾Paws acá🐶" },
+                sender = new { email = senderEmail, name = "🐾 Paws acá 🐶" },
                 to = new[] { new { email = invitation.NewOwnerEmail, name = invitation.NewOwnerName } },
                 subject = $"{invitation.Pet.Name} {emoji} te pide que seas su dueño en Paws",
                 htmlContent = $@"
                     <h2>¡Hola {invitation.NewOwnerName}!</h2>
                     <p>{user.Name} quiere compartir contigo la propiedad de su mascota <strong>{pet.Name}</strong> en <b>Paws</b>.</p>
                     <p>Para aceptar la invitación y convertirte en co‑propietario, dale click al siguiente <b>enlace de un solo uso</b>:</p>
-                    <p style='font-size: 20px; font-weight: 600; color: #f05a22;'><a href='{invitation.OwnershipLink}' style='color:#f05a22; text-decoration:none;'>Aceptar invitación</a></p>
+                    <p style='font-size: 20px; font-weight: 600; color: #7060f7;'><a href='{invitation.OwnershipLink}' style='color:#7060f7; text-decoration:none;'>Aceptar invitación</a></p>
                     <p>Este código es válido por 24 horas.</p>
                     {accountP}
                     <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
                     <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
-                    <p><a href='' style='color:#f05a22; text-decoration:none;'>Pronto tendremos sitio web oficial</a></p>"
+                    <p><a href='' style='color:#7060f7; text-decoration:none;'>Pronto tendremos sitio web oficial</a></p>"
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8,
@@ -376,6 +378,124 @@ public class NotificationService(
                 Status = 500,
                 Title = "An error occurred while sending the ownership share code.",
                 Code = "OWNERSHIP_SHARE_CODE_SEND_FAILED",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public async Task<Result> SendAppointmentConfirmationEmailAsync(Appointment appointment)
+    {
+        try
+        {
+            // Get API key and sender email from environment variables
+            var variables = GetNotificationEnvironmentVariables();
+
+            if (!variables.Success || variables.Data is null) return variables;
+
+            var apiKey = variables.Data.ApiKey;
+            var senderEmail = variables.Data.SenderEmail;
+
+            // Extract first name from full name
+            if (appointment.UserPet is null)
+                return new Result
+                {
+                    Success = false,
+                    Status = 400,
+                    Title = "Invalid appointment: UserPet is null.",
+                    Code = "INVALID_APPOINTMENT_USERPET_NULL",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (appointment.UserPet.User is null)
+                return new Result
+                {
+                    Success = false,
+                    Status = 400,
+                    Title = "Invalid appointment: User is null.",
+                    Code = "INVALID_APPOINTMENT_USER_NULL",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            if (appointment.UserPet.Pet is null)
+                return new Result
+                {
+                    Success = false,
+                    Status = 400,
+                    Title = "Invalid appointment: Pet is null.",
+                    Code = "INVALID_APPOINTMENT_PET_NULL",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
+            var firstName = appointment.UserPet.User.Name.Split(' ').FirstOrDefault() ?? "Usuario";
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("api-key", apiKey);
+
+            // Prepare the email content
+            var requestBody = new
+            {
+                sender = new { email = senderEmail, name = "🐾 Paws acá 🐶" },
+                to = new[] { new { email = appointment.UserPet.User.Email, name = firstName } },
+                subject = $"La cita de {appointment.UserPet.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada",
+                htmlContent = $@"
+                            <h2>¡Hola!</h2>
+                            <p>{firstName}, tu cita para {appointment.UserPet.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada.</p>
+                            <p>Detalles de la cita:</p>
+                            <ul>
+                                <li><strong>Fecha y hora:</strong> {Env.ToClinicLocal(appointment.StartTime).ToString("f")}</li>
+                                <li><strong>Veterinario:</strong> {appointment.Vet?.Name}</li>
+                            </ul>
+                            <p>Por favor, asegúrate de llegar a tiempo y traer cualquier documentación necesaria.</p>
+                            <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
+                            <p><em>Paws es un proyecto académico, hecho con fines de aprendizaje.</em></p>
+                            <p><a href='https://' style='color:#7060f7; text-decoration:none;'>no tengo web para Paws aún</a></p>>"
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8,
+                "application/json");
+            var response = await client.PostAsync("https://api.brevo.com/v3/smtp/email", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                LogHelpers.LogInfo(_logger, $"Login code sent to {appointment.UserPet.User.Email}");
+                return new Result
+                {
+                    Success = true,
+                    Status = 200,
+                    Title = "Login code sent successfully.",
+                    Code = "LOGIN_CODE_SENT",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+            }
+
+            LogHelpers.LogError(
+                _logger,
+                $"Failed to send verification code to {appointment.UserPet.User.Email}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}"
+            );
+            return new Result
+            {
+                Success = false,
+                Status = (int)response.StatusCode,
+                Title = "Failed to send verification code.",
+                Code = "LOGIN_CODE_NOT_SENT",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception while sending appointment confirmation email to Email");
+            return new Result
+            {
+                Success = false,
+                Status = 500,
+                Title = "An error occurred while sending the appointment confirmation email.",
+                Code = "APPOINTMENT_CONFIRMATION_EMAIL_SEND_FAILED",
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

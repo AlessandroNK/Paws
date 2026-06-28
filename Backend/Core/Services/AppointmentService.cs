@@ -17,6 +17,7 @@ public class AppointmentService(
     IAppConfigService appConfigService,
     IVetRepository vetRepo,
     IPetRepository petRepo,
+    INotificationService notificationService,
     ILogger<PetService> logger
 ) : IAppointmentService
 {
@@ -41,6 +42,11 @@ public class AppointmentService(
     /// Provides functionality to access and manage pets.
     /// </summary>
     private readonly IPetRepository _petRepo = petRepo;
+
+    /// <summary>
+    /// Provides functionality to send notifications to users.
+    /// </summary>
+    private readonly INotificationService _notificationService = notificationService;
 
     /// <summary>
     /// We wanna log!!!
@@ -672,7 +678,7 @@ public class AppointmentService(
                     Returnable = true
                 };
 
-            var appointments =  result.Data.Where(a => a.StartTime > DateTime.UtcNow.AddMinutes(15)).ToList();
+            var appointments = result.Data.Where(a => a.StartTime > DateTime.UtcNow.AddMinutes(15)).ToList();
             return appointments.Count == 0
                 ? new Result<List<Appointment>>
                 {
@@ -688,7 +694,8 @@ public class AppointmentService(
                     Success = true,
                     Code = "AVAILABLE_APPOINTMENTS_FOUND",
                     Status = 200,
-                    Title = $"Available appointments were found for the specified day. Total available appointments: {appointments.Count}",
+                    Title =
+                        $"Available appointments were found for the specified day. Total available appointments: {appointments.Count}",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true,
                     Data = appointments
@@ -723,12 +730,13 @@ public class AppointmentService(
     {
         try
         {
-            _logger.LogInformation("Reserving appointment with id {AppointmentId} for user pet with id {UserPetId}",
-                request.AppointmentId, request.UserPetId);
+            _logger.LogInformation(
+                "Reserving appointment with id {AppointmentId} for user with id {UserId} and pet with id {PetId}",
+                request.AppointmentId, request.UserId, request.PetId);
 
             // Get appointment
             var filters = StatusFilters.IncludeAll();
-            var appointmentResul = await GetByIdAsync(request.AppointmentId, filters);
+            var appointmentResul = await GetByIdAsync(request.AppointmentId, filters, true);
             if (!appointmentResul || appointmentResul.Data is null)
                 return new Result<Appointment?>
                 {
@@ -789,9 +797,22 @@ public class AppointmentService(
                     Returnable = true
                 };
 
+            // Vet
+            if (appointmentResul.Data is null)
+                return new Result<Appointment?>
+                {
+                    Success = false,
+                    Code = "VET_NOT_FOUND",
+                    Status = 404,
+                    Title = "The vet was not found",
+                    TraceCode = FileCodes.CallerIC(),
+                    Returnable = true
+                };
+
             // Get user pet relationship
-            var userPet = await _petRepo.GetUserPetByIdAsync(
-                request.UserPetId,
+            var userPet = await _petRepo.GetUserPetByBothIdsAsync(
+                request.UserId,
+                request.PetId,
                 filters,
                 includeUser: true,
                 includePet: true
@@ -933,13 +954,14 @@ public class AppointmentService(
             }
 
             // Update appointment
-            appointment.UserPetId = request.UserPetId;
+            appointment.UserPetId = userPet.Data.Id;
             appointment.Status = AppointmentStatus.Scheduled;
             appointment.UpdatedAt = DateTime.UtcNow;
             var result = await UpdateAsync(appointment);
-            if (!result || result.Data is null) result.Log(_logger, "Error reserving appointment");
-            return !result || result.Data is null
-                ? new Result<Appointment?>
+            if (!result || result.Data is null)
+            {
+                result.Log(_logger, "Error reserving appointment");
+                return new Result<Appointment?>
                 {
                     Success = false,
                     Code = "ERROR_RESERVING_APPOINTMENT",
@@ -947,17 +969,34 @@ public class AppointmentService(
                     Title = "An error occurred while reserving the appointment",
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
-                }
-                : new Result<Appointment?>
+                };
+            }
+
+            // Appointment reserved, so send the email confirming the appointment
+            appointment.UserPet = userPet.Data;
+            var emailResult = await _notificationService.SendAppointmentConfirmationEmailAsync(appointment);
+            if (!emailResult)
+                return new Result<Appointment?>
                 {
                     Success = true,
-                    Code = "APPOINTMENT_RESERVED_SUCCESSFULLY",
+                    Code = "ERROR_SENDING_APPOINTMENT_CONFIRMATION_EMAIL",
                     Status = 200,
-                    Title = "The appointment was reserved successfully",
+                    Title =
+                        "Appointment reserved successfully, but an error occurred while sending the confirmation email",
                     TraceCode = FileCodes.CallerIC(),
-                    Returnable = true,
-                    Data = result.Data
+                    Returnable = true
                 };
+
+            return new Result<Appointment?>
+            {
+                Success = true,
+                Code = "APPOINTMENT_RESERVED_SUCCESSFULLY",
+                Status = 200,
+                Title = "The appointment was reserved successfully",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true,
+                Data = result.Data
+            };
         }
         catch (Exception e)
         {

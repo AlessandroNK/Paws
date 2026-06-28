@@ -16,3 +16,16 @@ export class LoginRequest {
         this.code = code;
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+export class ReserveAppointmentRequest {
+    public appointmentId: number;
+    public userId: number;
+    public petId: number;
+
+    constructor(appointmentId: number, userId: number, petId: number) {
+        this.appointmentId = appointmentId;
+        this.userId = userId;
+        this.petId = petId;
+    }
+}

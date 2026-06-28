@@ -11,7 +11,7 @@ import MenuBar from "../component/MenuBar.tsx";
 import * as UserService from "../services/UserService.ts";
 import LoginCard from "../component/LoginCard.tsx";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
-import {LoginRequest, StartLoginRequest} from "../types/RequestTypes.ts";
+import {LoginRequest, ReserveAppointmentRequest, StartLoginRequest} from "../types/RequestTypes.ts";
 import * as PetService from "../services/PetService.ts";
 import ReserveAppointmentMenu from "../component/ReserveAppointmentMenu.tsx";
 import * as React from "react";
@@ -20,7 +20,7 @@ function Calendar() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const isFetchingApi = useRef(false);
-    const [selectedDate] = useState(new Day(2026, 6, 22));
+    const [selectedDate] = useState(new Day(2026, 6, 29));
     const [appointmentsTitle, setAppointmentsTitle] = useState("");
     const [appointmentDay, setAppointmentDay] = useState("");
     const [appointmentConnector, setAppointmentConnector] = useState("");
@@ -335,7 +335,28 @@ function Calendar() {
 
     // -----------------------------------------------------------------------------------------------------------------
     async function handleReserveAppointment(petId: number) {
+        if (!user || !appointment) return;
 
+        // Put some loading animation here
+        setIsLoading(true);
+
+        // Call the API
+        const request = new ReserveAppointmentRequest(
+            appointment.id,
+            user.id,
+            petId
+        );
+        setIsLoading(false);
+
+        const reserveAppointmentResult = await AppointmentsService.reserveAppointmentAsync(request);
+        if (!reserveAppointmentResult.success) {
+            showErrorsAsPushMessages(reserveAppointmentResult);
+            return;
+        }
+
+        setReservingAppointment(false);
+        // Here, we redirect the user to their profile page
+        window.location.href = "/profile";
     }
 
     // Return
@@ -470,6 +491,7 @@ function Calendar() {
                                         mousePosition={mousePosition}
                                         onClose={() => setReservingAppointment(false)}
                                         onReserve={handleReserveAppointment}
+                                        loading={isLoading}
                 />
             }
 

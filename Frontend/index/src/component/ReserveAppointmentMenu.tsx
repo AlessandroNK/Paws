@@ -7,13 +7,15 @@ interface Props {
     user: User | null,
     onClose: () => void,
     onReserve: (petId: number) => Promise<void>,
-    mousePosition: { x: number, y: number }
+    mousePosition: { x: number, y: number },
+    loading: boolean,
 }
 
 function ReserveAppointmentMenu(props: Props) {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const [selectedPet, setSelectedPet] = useState<number | null>(null);
+    const [loading, setIsloading] = useState<boolean>(false);
 
     // Functions
     // -----------------------------------------------------------------------------------------------------------------
@@ -66,16 +68,21 @@ function ReserveAppointmentMenu(props: Props) {
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    function handleReserve(e: React.MouseEvent<HTMLButtonElement>) {
+    async function handleReserve(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
         e.stopPropagation();
 
-        if (selectedPet !== null) {
-            props.onReserve(selectedPet);
-        }
+        if (selectedPet === null) return
+        setIsloading(true);
+        await props.onReserve(selectedPet);
+        setIsloading(false);
+
     }
 
     // Return
+    // -----------------------------------------------------------------------------------------------------------------
+    if (!props.appointment || !props.user) return null;
+
     // -----------------------------------------------------------------------------------------------------------------
     return (
         <>
@@ -90,14 +97,15 @@ function ReserveAppointmentMenu(props: Props) {
                      e.preventDefault();
                      e.stopPropagation();
                      setSelectedPet(null)
-                 }} // when adding this one, pet-item onClick stops working, why????
+                 }}
             >
                 <h2 className={"text-4lvl"}>Para quién es la <span className={"highlight-text"}>cita</span>?</h2>
                 {createPetList()}
-                <button className={"reserve-button" + (selectedPet === null ? " disabled" : "")}
-                        onClick={handleReserve}>
+                {loading && <div className="loader"></div>}
+                {!loading && (<button className={"reserve-button" + (selectedPet === null ? " disabled" : "")}
+                                      onClick={handleReserve}>
                     Reservar
-                </button>
+                </button>)}
             </div>
         </>
     );

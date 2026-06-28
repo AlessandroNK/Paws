@@ -1,5 +1,7 @@
+using Backend.Core.Models.Appointments;
 using Backend.Core.Models.Pets;
 using Backend.Core.Models.Results;
+using Backend.Core.Models.Users;
 
 namespace Backend.Core.Services.Interfaces;
 
@@ -57,4 +59,7 @@ public interface INotificationService
     /// <param name="invitation">The <see cref="OwnershipInvitation"/> to send</param>
     /// <returns></returns>
     public Task<Result> SendOwnershipInvitationLink(OwnershipInvitation invitation);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public Task<Result> SendAppointmentConfirmationEmailAsync(Appointment appointment);
 }

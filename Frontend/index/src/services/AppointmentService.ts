@@ -3,6 +3,7 @@ import {Components, Day, FetchOptions, Result} from "../types/CommonTypes.ts";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
 import type {AppointmentResponse} from "../types/ResponseTypes.ts";
 import * as VetService from "./VetService.ts";
+import type {ReserveAppointmentRequest} from "../types/RequestTypes.ts";
 
 //                                                                                                             FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------------
@@ -37,6 +38,42 @@ export async function getAvailableAppointmentsApi(request: Day): Promise<Result<
                 500,
                 Components.APPOINTMENT_SERVICE,
                 "APPOINTMENTS_FETCH_ERROR"
+            ).log();
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+export async function reserveAppointmentAsync(request: ReserveAppointmentRequest): Promise<Result<Appointment>> {
+    try {
+        // API request
+        const deviceIdResult = HelperFunctions.getDeviceId();
+        if (!deviceIdResult.success || !deviceIdResult.data)
+            return deviceIdResult.convertTo<Appointment>();
+
+        const accessPoint = "appointment/reserve-appointment";
+        const url = HelperFunctions.createUrlRequest(accessPoint);
+        const options: FetchOptions = {
+            method: "POST",
+            headers: {
+                "Device-Id": deviceIdResult.data,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(request)
+        }
+        const result = await HelperFunctions.executeFetchWithTimeout(url, options);
+        if (result.code) result.component = Components.APPOINTMENT_SERVICE;
+        if (!result.success || !result.data) return result.convertTo<Appointment>();
+
+        // Process response
+        return createAppointmentFromApiResponse(result.data);
+    } catch (err) {
+        const error = err as Error;
+        return Result
+            .fail<Appointment>(
+                `Error reserving appointment, error: ${error.message}`,
+                500,
+                Components.APPOINTMENT_SERVICE,
+                "APPOINTMENT_RESERVATION_ERROR"
             ).log();
     }
 }
