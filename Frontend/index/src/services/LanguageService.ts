@@ -1,4 +1,4 @@
-import {Languages} from "../types/LangageTypes.ts";
+import {Languages} from "../types/LanguageTypes.ts";
 import {Components, Result} from "../types/CommonTypes.ts";
 
 //                                                                                                             CONSTANTS
