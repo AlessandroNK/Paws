@@ -6,6 +6,7 @@ interface Props {
     appointment: Appointment | null,
     user: User | null,
     onClose: () => void,
+    onReserve: (petId: number) => Promise<void>,
     mousePosition: { x: number, y: number }
 }
 
@@ -51,11 +52,27 @@ function ReserveAppointmentMenu(props: Props) {
     function createPetList() {
         if (!props.user) return null;
         return props.user.pets.map((pet, index) => (
-            <div key={index} className="pet-item">
+            <div key={index}
+                 className={`pet-item ${selectedPet === pet.id ? "selected" : ""}`}
+                 onClick={(e) => {
+                     e.stopPropagation();
+                     setSelectedPet(pet.id);
+                 }}
+            >
                 <span className="pet-type">{speciesToEmoji(pet.species)}</span>
                 <span className="pet-name">{pet.name}</span>
             </div>
         ));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    function handleReserve(e: React.MouseEvent<HTMLButtonElement>) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (selectedPet !== null) {
+            props.onReserve(selectedPet);
+        }
     }
 
     // Return
@@ -66,14 +83,19 @@ function ReserveAppointmentMenu(props: Props) {
             <div className="reserve-appointment-menu"
                  style={{
                      position: 'fixed',
-                     top: props.mousePosition.y - 150,
-                     left: props.mousePosition.x,
+                     top: props.mousePosition.y - 180,
+                     left: props.mousePosition.x + 20,
                  }}
+                 onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+                     e.preventDefault();
+                     e.stopPropagation();
+                     setSelectedPet(null)
+                 }} // when adding this one, pet-item onClick stops working, why????
             >
                 <h2 className={"text-4lvl"}>Para quién es la <span className={"highlight-text"}>cita</span>?</h2>
                 {createPetList()}
                 <button className={"reserve-button" + (selectedPet === null ? " disabled" : "")}
-                        onClick={() => alert("Funcionalidad de reserva aún no implementada")}>
+                        onClick={handleReserve}>
                     Reservar
                 </button>
             </div>

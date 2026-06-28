@@ -1,6 +1,7 @@
 :root {
     /* Colors */
     --main-color: #7060f7;
+    --soft-main-color: #a79df7;
     --sec-color: #ee0097;
     --back-color: #210f40;
     --main-gradient: linear-gradient(135deg, var(--main-color) 0%, var(--sec-color) 100%);
@@ -191,6 +192,17 @@ button {
     from {
         opacity: 0;
         transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-100px);
     }
     to {
         opacity: 1;

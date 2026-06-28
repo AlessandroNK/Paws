@@ -21,7 +21,8 @@
     flex-direction: column;
     align-items: center;
     width: 160px;
-    animation: fadeInX 0.3s ease-in-out;
+    animation: fadeInRight 0.3s ease-in-out;
+    gap: 10px;
 }
 
 .pet-item {
@@ -39,6 +40,20 @@
 
 .pet-item:hover {
     background-color: #f0f0f0;
+}
+
+.selected {
+    background-color: var(--soft-main-color);
+    color: white;
+}
+
+.selected:hover {
+    background-color: var(--soft-main-color);
+    color: white;
+}
+
+.reserve-button {
+    align-self: center;
 }
 
 .disabled {

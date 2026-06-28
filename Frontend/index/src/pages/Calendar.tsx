@@ -333,6 +333,11 @@ function Calendar() {
         setReservingAppointment(true);
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    async function handleReserveAppointment(petId: number) {
+
+    }
+
     // Return
     // -----------------------------------------------------------------------------------------------------------------
     return (
@@ -464,6 +469,7 @@ function Calendar() {
                                         user={user}
                                         mousePosition={mousePosition}
                                         onClose={() => setReservingAppointment(false)}
+                                        onReserve={handleReserveAppointment}
                 />
             }
 
