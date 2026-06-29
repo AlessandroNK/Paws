@@ -21,7 +21,8 @@ function Calendar() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const isFetchingApi = useRef(false);
-    const [selectedDate] = useState(new Day(2026, 6, 30));
+    const [selectedDate, setSelectedDate] = useState(new Day(2026, 6, 30));
+    const [dateInput, setDateInput] = useState("2026-06-30");
     const [appointmentsTitle, setAppointmentsTitle] = useState("");
     const [appointmentDay, setAppointmentDay] = useState("");
     const [appointmentConnector, setAppointmentConnector] = useState("");
@@ -117,6 +118,9 @@ function Calendar() {
 
         // Appointments from API
         async function getAppointmentsApi() {
+            setIsLoading(true);
+            setAppointments([] as Appointment[]);
+
             // Push amount message
             let uiMessage = new UiMessage();
             uiMessage.code = "FETCHING_AVAILABLE_APPOINTMENTS";
@@ -197,7 +201,7 @@ function Calendar() {
 
         loadAllData();
 
-    }, []);
+    }, [selectedDate]);
 
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -345,6 +349,17 @@ function Calendar() {
     }
 
     // -----------------------------------------------------------------------------------------------------------------
+    function handleSelectedDateChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const value = event.target.value;
+        setDateInput(value);
+
+        const [year, month, day] = value.split("-").map(Number);
+        if (!year || !month || !day) return;
+
+        setSelectedDate(new Day(year, month, day));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
     async function handleReserveAppointment(petId: number) {
         if (!user || !appointment) return;
 
@@ -482,6 +497,15 @@ function Calendar() {
                                     className={"font-bold main-gradient-text"}>{appointmentDay}</span> {appointmentConnector}
                             </h1>
                             <h1>{appointmentsYear}</h1>
+
+                            <div className={"appointments-date-input"}>
+                                <input
+                                    id={"appointments-date-picker"}
+                                    type={"date"}
+                                    value={dateInput}
+                                    onChange={handleSelectedDateChange}
+                                />
+                            </div>
                         </div>
 
                         <div className={"appointments-container"}>
