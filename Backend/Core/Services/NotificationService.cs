@@ -442,12 +442,12 @@ public class NotificationService(
                 to = new[] { new { email = appointment.UserPet.User.Email, name = firstName } },
                 subject = $"La cita de {appointment.UserPet.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada",
                 htmlContent = $@"
-                            <h2>¡Hola!</h2>
+                            <h2 style='color:#7060f7;'>¡Hola!</h2>
                             <p>{firstName}, tu cita para {appointment.UserPet.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada.</p>
                             <p>Detalles de la cita:</p>
                             <ul>
-                                <li><strong>Fecha y hora:</strong> {Env.ToClinicLocal(appointment.StartTime).ToString("f")}</li>
-                                <li><strong>Veterinario:</strong> {appointment.Vet?.Name}</li>
+                                <li style='color:#7060f7;'><strong>Fecha y hora:</strong> {Env.ToClinicLocal(appointment.StartTime).ToString("f")}</li>
+                                <li style='color:#7060f7;'><strong>Veterinario:</strong> {appointment.Vet?.Name}</li>
                             </ul>
                             <p>Por favor, asegúrate de llegar a tiempo y traer cualquier documentación necesaria.</p>
                             <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>

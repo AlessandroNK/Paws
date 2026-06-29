@@ -1,0 +1,35 @@
+.pet-card {
+    min-width: 350px;
+    border: 1px solid #c1c1c1;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    gap: 20px;
+}
+
+.pet-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: #f1f1f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pet-name {
+    font-size: 1.2rem;
+}
+
+.pet-icon {
+    height: 60%;
+    fill: #b1b1b1;
+}
+
+.pet-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+

@@ -19,7 +19,7 @@ function MenuBar(props: Props) {
         if (props.user) {
             return (
                 <div className={"menu-bar-profile logged-in"}
-                     onClick={() => window.location.href = '/profile'}
+                     onClick={props.onUserProfileClick}
                 >
                     <p className={"text - 5lvl"}>{props.user.getInitials()}</p>
                 </div>

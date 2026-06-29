@@ -1,6 +1,6 @@
 import {ApiError, Components, FetchOptions, Result} from "../types/CommonTypes.ts";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
-import {User} from "../types/SystemTypes.ts";
+import {PetSpecies, User} from "../types/SystemTypes.ts";
 
 // ---------------------------------------------------------------------------------------------------------------------
 /**
@@ -440,4 +440,36 @@ export function isValidLoginCode(userInput: string): Result<void> {
  */
 export async function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+export function getPetSpecies(species: PetSpecies): string {
+    switch (species) {
+        case PetSpecies.Other:
+            return "Otro";
+        case PetSpecies.Dog:
+            return "Perro";
+        case PetSpecies.Cat:
+            return "Gato";
+        case PetSpecies.Bunny:
+            return "Conejo";
+        case PetSpecies.Hamster:
+            return "Hámster";
+        case PetSpecies.Turtle:
+            return "Tortuga";
+        case PetSpecies.Cow:
+            return "Vaca";
+        case PetSpecies.Horse:
+            return "Caballo";
+        case PetSpecies.Bird:
+            return "Pájaro";
+        case PetSpecies.Fish:
+            return "Pez";
+        case PetSpecies.Reptile:
+            return "Reptil";
+        case PetSpecies.Rodent:
+            return "Roedor";
+        default:
+            return "Desconocido";
+    }
 }

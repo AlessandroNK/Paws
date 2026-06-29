@@ -15,6 +15,7 @@ import {LoginRequest, ReserveAppointmentRequest, StartLoginRequest} from "../typ
 import * as PetService from "../services/PetService.ts";
 import ReserveAppointmentMenu from "../component/ReserveAppointmentMenu.tsx";
 import * as React from "react";
+import LoadingScreen from "../component/LoadingScreen.tsx";
 
 function Calendar() {
     // Variables
@@ -35,6 +36,8 @@ function Calendar() {
     const [appointment, setAppointment] = useState<Appointment | null>(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const userObject = useRef(user);
+    const [loaded, setLoaded] = useState(false);
+
 
 
     // Functions
@@ -112,7 +115,6 @@ function Calendar() {
             if (!petsResult.success) return;
             if (userObject.current && petsResult.data) userObject.current.pets = petsResult.data;
             setUser(userObject.current);
-            console.log(userObject.current.pets)
         }
 
         // Appointments from API
@@ -179,13 +181,23 @@ function Calendar() {
             setIsLoading(false);
         }
 
-        // Change page name
-        document.title = "PAWS 🐾 Citas";
+        function finalizeLoading() {
+            setLoaded(true);
+        }
 
-        loadUser();
-        loadTranslation();
-        getUserPets();
-        getAppointmentsApi();
+        async function loadAllData() {
+            // Change page name
+            document.title = "PAWS 🐾 - Mi Perfil";
+
+            await loadUser();
+            await loadTranslation();
+            await getUserPets();
+            await getAppointmentsApi();
+            finalizeLoading();
+        }
+
+        loadAllData();
+
     }, []);
 
 
@@ -236,8 +248,8 @@ function Calendar() {
         // Check if there is any user logged-in
         if (user) {
             // Handle user profile click
+            window.location.href = "/profile";
             return;
-            setAuthUi(null);
         }
 
         // Handle log-in click
@@ -360,6 +372,9 @@ function Calendar() {
     }
 
     // Return
+    // -----------------------------------------------------------------------------------------------------------------
+    if (!loaded) return (<LoadingScreen/>);
+
     // -----------------------------------------------------------------------------------------------------------------
     return (
         <>
