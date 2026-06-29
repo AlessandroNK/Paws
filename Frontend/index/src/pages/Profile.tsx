@@ -9,6 +9,7 @@ import {User} from "../types/SystemTypes.ts";
 import MenuBar from "../component/MenuBar.tsx";
 import PetCard from "../component/PetCard.tsx";
 import LoadingScreen from "../component/LoadingScreen.tsx";
+import PawsChat from "../component/PawsChat.tsx";
 
 function Profile() {
     // Variables
@@ -18,6 +19,7 @@ function Profile() {
     const [user, setUser] = useState<User | null>(null);
     const userObject = useRef(user);
     const [loaded, setLoaded] = useState(false);
+    const [pawsMessage, setPawsMessage] = useState<string>("");
 
 
     // Functions
@@ -51,8 +53,6 @@ function Profile() {
             // Get local session
             const localSessionResult = UserService.getLocalSession();
             if (!localSessionResult.success || !localSessionResult.data) {
-                console.log("E5")
-
                 HelperFunctions.clearLocalUserSession();
                 userObject.current = null;
                 setUser(userObject.current);
@@ -67,10 +67,7 @@ function Profile() {
                 return;
             }
 
-            if (!userResult.success) {
-                console.log("E6")
-                HelperFunctions.clearLocalUserSession();
-            }
+            if (!userResult.success) HelperFunctions.clearLocalUserSession();
             userObject.current = userResult.data;
             setUser(userObject.current);
         }
@@ -111,8 +108,36 @@ function Profile() {
     }, []);
 
     // -----------------------------------------------------------------------------------------------------------------
-    const onUserProfileClick = () => {
-    };
+    async function onUserProfileClick() {
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    async function getPawsMessage() {
+        const accessPoint = "chat";
+        const url = HelperFunctions.createUrlRequest(accessPoint);
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                UserName: userObject.current?.name || "Usuario",
+                message: "HOla carola"
+            })
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let fullMessage = "";
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            fullMessage += decoder.decode(value);
+            setPawsMessage(fullMessage);
+        }
+    }
 
     // Return
     // -----------------------------------------------------------------------------------------------------------------
@@ -157,9 +182,9 @@ function Profile() {
                             <p>No tienes mascotas registradas.</p>
                         )}
                     </div>
-
                 </section>
 
+                <PawsChat user={user}/>
             </div>
         </>
     )

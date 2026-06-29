@@ -258,9 +258,6 @@ public class PetController(
             var result = await _petService.GetPetsByOwnerAsync(deviceId, sessionToken, request);
 
             // Clean the response and convert it and its data to Dto
-            Console.WriteLine(result.Data.SessionToken.TokenHash);
-            Console.WriteLine("====================================================================");
-
             return result
                 ? Ok(result.ToApiResponse<UserResponse>())
                 : BadRequest(result.ToApiResponse<UserResponse>());

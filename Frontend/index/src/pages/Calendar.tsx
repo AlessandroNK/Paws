@@ -16,6 +16,7 @@ import * as PetService from "../services/PetService.ts";
 import ReserveAppointmentMenu from "../component/ReserveAppointmentMenu.tsx";
 import * as React from "react";
 import LoadingScreen from "../component/LoadingScreen.tsx";
+import PawsChat from "../component/PawsChat.tsx";
 
 function Calendar() {
     // Variables
@@ -532,6 +533,7 @@ function Calendar() {
                                         loading={isLoading}
                 />
             }
+            <PawsChat user={user}/>
 
             {/*{authUi === 'signup' && <SignupCard className={"login-floating-form"} onClose={() => setAuthUi('')} />}*/}
         </>

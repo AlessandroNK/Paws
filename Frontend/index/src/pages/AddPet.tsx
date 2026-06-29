@@ -10,6 +10,7 @@ import * as PetService from "../services/PetService.ts";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
 import type {Result} from "../types/CommonTypes.ts";
 import PushMessagesUi from "../component/PushMessagesUi.tsx";
+import PawsChat from "../component/PawsChat.tsx";
 
 function AddPet() {
     // Variables
@@ -226,6 +227,7 @@ function AddPet() {
                 </div>
             </section>
             <PushMessagesUi messages={pushMessages}/>
+            <PawsChat user={user}/>
         </div>
     );
 }

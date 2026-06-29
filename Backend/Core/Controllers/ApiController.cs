@@ -63,10 +63,13 @@ public class ApiController(
     /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
     /// </summary>
     /// <returns></returns>
-    [HttpGet]
+    [HttpPost]
     [Route("chat")]
-    public async Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request)
+    public async Task ChatWithPaws([FromBody] ChatRequest request)
     {
+        Response.StatusCode = 200;
+        Response.ContentType = "text/plain";
+
         // TODO clean this shit up
         IChatClient chatClient = new OllamaApiClient("http://localhost:11434", "llama3.1:8b");
         chatClient = chatClient.AsBuilder().UseFunctionInvocation().Build();
@@ -111,61 +114,88 @@ public class ApiController(
                                  You are Paws, the charismatic official pet (mascota) of the PAWS app.
                                  You MUST match the user's message and respond in a way that reflects the mood of the user.
                                  You MUST match the user's language.
-                                 You MUST respond ONLY with a valid JSON object in this exact format, no markdown, no extra text:
-                                 {
-                                   "message": "<your response here>",
-                                   "mood": "<mood name here>"
-                                 }
-                                 
-                                 The mood field MUST be one of these exact strings (not numbers):
-                                 HAPPY, SAD, PLAYFUL, HUNGRY, SLEEPY, EXCITED, CALM, CHILL, CONFIDENT, ANGRY, CRAZY.
-                                 
-                                 Choose the mood that genuinely reflects how you feel while generating this response.
-                                 No markdown, no extra text — raw JSON only.
-                                 """),
+                                 """ +
+                                 $"The User's name is {request.UserName}, you can use that name to talk to the user"),
             new(ChatRole.User, request.Message)
         };
-        var response = await chatClient.GetResponseAsync(messages, chatOptions);
-        var rawOne = response.Text;
-
-        // Parse response into JSON to get the object
-        PawsChatResponse pawsResponse;
-        try
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, chatOptions))
         {
-            var parsed = JsonSerializer.Deserialize<PawsChatRaw>(
-                rawOne,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                }
-            );
-
-            pawsResponse = new PawsChatResponse
+            if (!string.IsNullOrEmpty(update.Text))
             {
-                Message = parsed!.Message,
-                Mood = parsed.Mood
-            };
-        }
-        catch (Exception e)
-        {
-            // Model didn't respect the format, I need to insult it
-            pawsResponse = new PawsChatResponse
-            {
-                Message = rawOne,
-                Mood = nameof(PawsMood.Happy)
-            };
+                await Response.WriteAsync(update.Text);
+                await Response.Body.FlushAsync();
+            }
         }
 
-        var result = new Result<PawsChatResponse>
-        {
-            Success = true,
-            Code = "CHAT_RESPONSE",
-            Status = 200,
-            Data = pawsResponse,
-            Title = "Chat response generated successfully",
-            TraceCode = FileCodes.CallerIC()
-        };
-        return Ok(result);
+
+        //
+        //
+        //
+        //
+        //
+        //
+        // // Send the AI the prompt, and return each word to the frontend
+        // await foreach (var update in chatClient.GetStreamingResponseAsync(messages, chatOptions))
+        // {
+        //     Console.Write(update.Text);
+        // }
+        //
+        // Response.ContentType = "text/plain";
+        //
+        // await foreach (var update in chatClient.GetStreamingResponseAsync(messages, chatOptions))
+        // {
+        //     if (!string.IsNullOrEmpty(update.Text))
+        //     {
+        //         await Response.WriteAsync(update.Text);
+        //         await Response.Body.FlushAsync();
+        //     }
+        // }
+        //
+        // return new EmptyResult();
+        //
+        //
+        // var response = await chatClient.GetResponseAsync(messages, chatOptions);
+        // var rawOne = response.Text;
+        //
+        //
+        // // Parse response into JSON to get the object
+        // PawsChatResponse pawsResponse;
+        // try
+        // {
+        //     var parsed = JsonSerializer.Deserialize<PawsChatRaw>(
+        //         rawOne,
+        //         new JsonSerializerOptions
+        //         {
+        //             PropertyNameCaseInsensitive = true
+        //         }
+        //     );
+        //
+        //     pawsResponse = new PawsChatResponse
+        //     {
+        //         Message = parsed!.Message,
+        //         Mood = parsed.Mood
+        //     };
+        // }
+        // catch (Exception e)
+        // {
+        //     // Model didn't respect the format, I need to insult it
+        //     pawsResponse = new PawsChatResponse
+        //     {
+        //         Message = rawOne,
+        //         Mood = nameof(PawsMood.Happy)
+        //     };
+        // }
+        //
+        // var result = new Result<PawsChatResponse>
+        // {
+        //     Success = true,
+        //     Code = "CHAT_RESPONSE",
+        //     Status = 200,
+        //     Data = pawsResponse,
+        //     Title = "Chat response generated successfully",
+        //     TraceCode = FileCodes.CallerIC()
+        // };
+        // return Ok(result);
     }
 
     // -----------------------------------------------------------------------------------------------------------------

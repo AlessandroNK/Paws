@@ -39,7 +39,7 @@ public interface IApiController
     /// the version of the API is compatible with the client. It is also used to check if the API is up and running.
     /// </summary>
     /// <returns></returns>
-    public Task<IActionResult> ChatWithPaws([FromBody] ChatRequest request);
+    public Task ChatWithPaws([FromBody] ChatRequest request);
 
     // -----------------------------------------------------------------------------------------------------------------
     /// <summary>

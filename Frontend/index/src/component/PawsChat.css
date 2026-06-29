@@ -1,0 +1,50 @@
+.paws-chat {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background-color: #fff;
+    border: 1px solid #c1c1c1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    gap: 20px;
+    padding: 20px;
+    max-height: 70px;
+    max-width: 80px;
+    transition: max-height 0.8s ease, max-width 0.3s ease;
+    z-index: 30;
+
+    &:hover {
+        max-height: 1000px;
+        max-width: 300px;
+    }
+}
+
+.paws-chat-footer {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-top: 1px solid #c1c1c1;
+    gap: 10px;
+}
+
+.paws-writing {
+    width: 20px;
+    aspect-ratio: 2;
+    --_g: no-repeat radial-gradient(circle closest-side,#000 90%,#0000);
+    background:
+            var(--_g) 0%   50%,
+            var(--_g) 50%  50%,
+            var(--_g) 100% 50%;
+    background-size: calc(100%/3) 50%;
+    animation: l8 1s infinite linear;
+}
+@keyframes l8 {
+    20%{background-position:0%   0%, 50%  50%,100%  50%}
+    40%{background-position:0% 100%, 50%   0%,100%  50%}
+    60%{background-position:0%  50%, 50% 100%,100%   0%}
+    80%{background-position:0%  50%, 50%  50%,100% 100%}
+}

@@ -139,9 +139,6 @@ export async function loginWithCodeRequest(request: LoginRequest): Promise<Resul
         if (result.code) result.component = Components.USER_SERVICE;
         if (!result.success || !result.data) return result.convertTo<User>();
 
-
-        console.log("Login successful, user data:", result.data);
-
         // Process response
         const responseData = result.data;
         const user = new User(
