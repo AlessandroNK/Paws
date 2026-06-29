@@ -1,5 +1,5 @@
 .pet-card {
-    min-width: 350px;
+    /*min-width: 350px;*/
     border: 1px solid #c1c1c1;
     border-radius: 8px;
     padding: 16px;
@@ -23,7 +23,7 @@
 }
 
 .pet-icon {
-    height: 60%;
+    height: 40%;
     fill: #b1b1b1;
 }
 

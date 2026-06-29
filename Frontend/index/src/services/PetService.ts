@@ -123,7 +123,7 @@ export async function addPetApi(sessionToken: string, userId: number, pet: Pet):
                 Pet: {
                     Name: pet.name,
                     Species: pet.species,
-                    Breed: pet.breed || null
+                    Breed: pet.breed || ""
                 }
             })
         }

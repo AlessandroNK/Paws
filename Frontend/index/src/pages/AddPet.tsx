@@ -129,6 +129,7 @@ function AddPet() {
         );
 
         // Add pet
+        setLoginMessage("");
         setIsLoading(true);
         isFetching.current = true;
         const result = await PetService.addPetApi(

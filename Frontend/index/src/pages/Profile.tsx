@@ -146,15 +146,13 @@ function Profile() {
 
 
                     <div className={"pet-list"}>
-                        <div className={"pet-info"}>
-                            {user?.pets && user.pets.length > 0 ? (
-                                user.pets.map((pet) => (
-                                    <PetCard key={pet.id} pet={pet}/>
-                                ))
-                            ) : (
-                                <p>No tienes mascotas registradas.</p>
-                            )}
-                        </div>
+                        {user?.pets && user.pets.length > 0 ? (
+                            user.pets.map((pet) => (
+                                <PetCard key={pet.id} pet={pet}/>
+                            ))
+                        ) : (
+                            <p>No tienes mascotas registradas.</p>
+                        )}
                     </div>
 
                 </section>
