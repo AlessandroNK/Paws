@@ -4,7 +4,7 @@
     flex-direction: column;
     align-items: center;
     height: 100vh;
-    gap: 20px;
+    gap: 30px;
 }
 
 .add-pet-content {
@@ -13,7 +13,7 @@
     flex-direction: column;
     align-items: center;
     padding: 40px;
-    gap: 20px;
+    gap: 10px;
 }
 
 .pet-form {
@@ -26,6 +26,7 @@
 }
 
 .add-pet-form {
+    position: relative;
     width: 100%;
     max-width: 600px;
     padding: 30px;
@@ -35,8 +36,28 @@
     gap: 20px;
 }
 
-.form-select {
+.add-pet-form-icon {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.add-pet-form-content {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    gap: 20px;
 }
 
 .form-button {

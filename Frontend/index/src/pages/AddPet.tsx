@@ -6,6 +6,11 @@ import {Pet, PetSpecies, User} from "../types/SystemTypes.ts";
 import MenuBar from "../component/MenuBar.tsx";
 import LoadingScreen from "../component/LoadingScreen.tsx";
 import AnimalIcon from "../component/AnimalIcon.tsx";
+import * as PetService from "../services/PetService.ts";
+import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
+import type {Result} from "../types/CommonTypes.ts";
+import PushMessagesUi from "../component/PushMessagesUi.tsx";
+import * as React from "react";
 
 function AddPet() {
     // Variables
@@ -20,9 +25,11 @@ function AddPet() {
     // -----------------------------------------------------------------------------------------------------------------
     const [pet, setPet] = useState<Pet | null>(null);
     const petObject = useRef(pet);
+    const [pushMessages, setPushMessages] = useState([] as UiMessage[])
     const [petName, setPetName] = useState<string>("");
     const [petSpecies, setPetSpecies] = useState<PetSpecies>(PetSpecies.Dog);
     const [petBreed, setPetBreed] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
 
     // Functions
@@ -76,22 +83,44 @@ function AddPet() {
     }, []);
 
     // -----------------------------------------------------------------------------------------------------------------
-    function handleAddPet() {
+    async function showErrorsAsPushMessages(result: Result<unknown>) {
+        const pushMessages: UiMessage[] = [];
+        if (result.code) {
+            const uiMessage = new UiMessage();
+            uiMessage.type = result.success ? MessageType.SUCCESS : MessageType.ERROR;
+            uiMessage.mood = result.success ? MessageMood.HAPPY : MessageMood.SAD;
+            uiMessage.duration = MessageDuration.MEDIUM;
+            uiMessage.component = result.component;
+            uiMessage.code = result.code;
+            pushMessages.push(uiMessage);
+        }
+
+        if (result.errors.length > 0) {
+            result.errors.forEach(error => {
+                for (const message of error.messages) {
+                    pushMessages.push(message);
+                }
+            });
+        }
+        setPushMessages(pushMessages);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    async function handleAddPet() {
         if (isFetching.current) return;
 
         if (!userObject.current) {
             setLoginMessage("Usuario no autenticado. Por favor, inicia sesión.");
-            setLoginClass("error-message");
+            setLoginClass("standard-ui-error-message");
             return;
         }
 
         if (!petName.trim()) {
             setLoginMessage("Por favor, ingresa un nombre para la mascota.");
-            setLoginClass("error-message");
+            setLoginClass("standard-ui-error-message");
             return;
         }
 
-        isFetching.current = true;
         const newPet = new Pet(
             0,
             petName.trim(),
@@ -99,17 +128,29 @@ function AddPet() {
             petBreed?.trim() || null
         );
 
-        // Here you would typically send the newPet object to your backend API to save it.
-        // For now, we'll just log it to the console.
-        console.log("New Pet:", newPet);
-
-        // Reset form fields after adding the pet
+        // Add pet
+        setIsLoading(true);
+        isFetching.current = true;
+        const result = await PetService.addPetApi(
+            userObject.current.sessionToken || "",
+            userObject.current.id,
+            newPet
+        );
+        setIsLoading(false);
         isFetching.current = false;
-        setPetName("");
-        setPetSpecies(PetSpecies.Dog);
-        setPetBreed(null);
-        setLoginMessage("Mascota agregada exitosamente.");
-        setLoginClass("success-message");
+
+        // Show errors up
+        showErrorsAsPushMessages(result);
+
+        // Process result
+        if (!result.success) {
+            setLoginMessage("Error al agregar la mascota. Por favor, intenta nuevamente.");
+            setLoginClass("standard-ui-error-message");
+            return;
+        }
+
+        // Redirect to profile page after adding the pet
+        window.location.href = "/profile";
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -133,15 +174,18 @@ function AddPet() {
 
             <section className={"pet-form"}>
                 <div className={"add-pet-form"}>
-                    <input className={"form-input"}
-                           type="text"
-                           placeholder="Nombre de la mascota"
-                           value={petName}
-                           autoComplete={"off"}
-                           onChange={(e) => setPetName(e.target.value)}
-                    />
-                    <div className={"flex row gap-3 w-100"}>
-                        <AnimalIcon className={"w-12 h-12 fill-main-soft"} species={petSpecies}/>
+                    <div className={"add-pet-form-icon"}>
+                        <AnimalIcon species={petSpecies} className={"h-60 w-60 fill-main"}/>
+                    </div>
+                    <div className={"add-pet-form-content" +
+                        ""}>
+                        <input className={"form-input"}
+                               type="text"
+                               placeholder="Nombre de la mascota"
+                               value={petName}
+                               autoComplete={"off"}
+                               onChange={(e) => setPetName(e.target.value)}
+                        />
                         <select
                             className="form-select"
                             value={petSpecies}
@@ -156,22 +200,26 @@ function AddPet() {
                             <option value={PetSpecies.Reptile}>Reptil</option>
                             <option value={PetSpecies.Turtle}>Tortuga</option>
                         </select>
-                    </div>
 
-                    <input className={"form-input"}
-                           type="text"
-                           placeholder="Raza de la mascota (opcional)"
-                           value={petBreed || ""}
-                           autoComplete={"off"}
-                           onChange={(e) => setPetBreed(e.target.value)}
-                    />
-                    <button className={"form-button"}
-                            onClick={handleAddPet}>
-                        Agregar Mascota
-                    </button>
-                    <p className={loginClass}>{loginMessage}</p>
+                        <input className={"form-input"}
+                               type="text"
+                               placeholder="Raza de la mascota (opcional)"
+                               value={petBreed || ""}
+                               autoComplete={"off"}
+                               onChange={(e) => setPetBreed(e.target.value)}
+                        />
+                        {!isLoading && (
+                            <button className={"form-button"}
+                                    onClick={handleAddPet}>
+                                Agregar Mascota
+                            </button>
+                        )}
+                        {isLoading && (<div className={"loader-white"}></div>)}
+                        <p className={loginClass}>{loginMessage}</p>
+                    </div>
                 </div>
             </section>
+            <PushMessagesUi messages={pushMessages}/>
         </div>
     );
 }

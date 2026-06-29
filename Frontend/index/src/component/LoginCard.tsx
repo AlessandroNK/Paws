@@ -28,16 +28,16 @@ function LoginCard(props: Props) {
         let className: string;
         switch (uiMessage.type) {
             case MessageType.WARNING:
-                className = 'login-form-warning-message';
+                className = 'standard-ui-warning-message';
                 break;
             case MessageType.SUCCESS:
-                className = 'login-form-success-message';
+                className = 'standard-ui-success-message';
                 break;
             case MessageType.ERROR:
-                className = 'login-form-error-message';
+                className = 'standard-ui-error-message';
                 break;
             default:
-                className = 'login-form-info-message';
+                className = 'standard-ui-info-message';
         }
         setLoginClass(className);
 
