@@ -87,8 +87,6 @@ function Profile() {
             if (!petsResult.success) return;
             if (userObject.current && petsResult.data) userObject.current.pets = petsResult.data;
             setUser(userObject.current);
-
-            console.log(userObject.current);
         }
 
         function finalizeLoading() {

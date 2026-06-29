@@ -21,6 +21,7 @@
     align-items: center;
     width: 160px;
     animation: fadeInRight 0.3s ease-in-out;
+    padding: 5px;
 }
 
 .reserve-title {
@@ -29,6 +30,7 @@
 
 .pet-item {
     width: 100%;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     padding: 10px;

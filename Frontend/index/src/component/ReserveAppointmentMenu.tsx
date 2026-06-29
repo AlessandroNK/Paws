@@ -31,7 +31,7 @@ function ReserveAppointmentMenu(props: Props) {
                  }}
             >
                 <AnimalIcon species={pet.species} className={"icon-small"}/>
-                <span className="pet-name">{pet.name}</span>
+                <span className="reserve-pet-name">{pet.name}</span>
             </div>
         ));
     }

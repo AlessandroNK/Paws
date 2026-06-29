@@ -30,3 +30,20 @@
     height: 40%;
     fill: #b1b1b1;
 }
+
+.pet-appointments {
+    margin-top: 16px;
+}
+
+.pet-appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.pet-appointments-ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
