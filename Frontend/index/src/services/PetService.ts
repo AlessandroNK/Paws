@@ -44,6 +44,10 @@ export async function getPetsByOwnerApi(ownerId: number): Promise<Result<Pet[]>>
 
         if (result.code) result.component = Components.PET_SERVICE;
         if (!result.success || !result.data) return result.convertTo<Pet[]>();
+
+        // Update token and handle empty response
+        const responseData = result.data;
+        HelperFunctions.updateSessionToken(responseData.sessionToken);
         if (result.data.pets.length === 0) {
             return Result.fail<Pet[]>(
                 "No pets found for the specified owner",
@@ -54,9 +58,7 @@ export async function getPetsByOwnerApi(ownerId: number): Promise<Result<Pet[]>>
         }
 
         // Process response
-        const responseData = result.data;
         const pets: Pet[] = createPetsFromResponse(responseData.pets);
-        HelperFunctions.updateSessionToken(responseData.sessionToken);
 
         return Result.ok(pets);
     } catch (err) {

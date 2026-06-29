@@ -1683,24 +1683,13 @@ public class PetService(
             if (!updateResult) return updateResult.ConvertTo<User?>();
 
             // Check for pets
-            if (user.UserPets.Count > 0)
-                return new Result<User?>
-                {
-                    Success = true,
-                    Code = "PETS_FOUND",
-                    Status = 200,
-                    Title = "Pets found for this user",
-                    Data = user,
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
             return new Result<User?>
             {
                 Success = true,
-                Code = "NO_PETS_FOUND",
+                Code = user.UserPets.Count > 0 ? "PETS_FOUND" : "NO_PETS_FOUND",
                 Status = 200,
-                Title = "No pets found for this user",
+                Title = user.UserPets.Count > 0 ? "Pets found for this user" : "No pets found for this user",
+                Data = user,
                 TraceCode = FileCodes.CallerIC(),
                 Returnable = true
             };

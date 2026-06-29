@@ -319,7 +319,7 @@ export function getSessionToken(): Result<string> {
 
 // ---------------------------------------------------------------------------------------------------------------------
 export function clearLocalUserSession(): Result<void> {
-    // return Result.ok(undefined);
+    return Result.ok(undefined);
     try {
         localStorage.removeItem('paws_user_id');
         localStorage.removeItem('paws_user_session_token');
