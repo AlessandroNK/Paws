@@ -1,7 +1,7 @@
 //                                                                                                             FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------------
 import {Components, FetchOptions, Result} from "../types/CommonTypes.ts";
-import {Pet} from "../types/SystemTypes.ts";
+import {Appointment, Pet} from "../types/SystemTypes.ts";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
 
 export async function getPetsByOwnerApi(ownerId: number): Promise<Result<Pet[]>> {
@@ -38,7 +38,7 @@ export async function getPetsByOwnerApi(ownerId: number): Promise<Result<Pet[]>>
                 "Session-Token": tokenResult.data,
                 "Content-Type": "application/json"
             },
-                body: JSON.stringify({ ownerId })
+            body: JSON.stringify({ownerId})
         }
         const result = await HelperFunctions.executeFetchWithTimeout(url, options);
 
@@ -55,14 +55,7 @@ export async function getPetsByOwnerApi(ownerId: number): Promise<Result<Pet[]>>
 
         // Process response
         const responseData = result.data;
-        const pets: Pet[] = responseData.pets.map((petData: object) => new Pet(
-            petData.id,
-            petData.name,
-            petData.species,
-            petData.breed,
-            petData.age,
-            petData.ownerId
-        ));
+        const pets: Pet[] = createPetsFromResponse(responseData.pets);
         HelperFunctions.updateSessionToken(responseData.sessionToken);
 
         return Result.ok(pets);
@@ -76,6 +69,35 @@ export async function getPetsByOwnerApi(ownerId: number): Promise<Result<Pet[]>>
                 "PETS_FETCH_ERROR"
             ).log();
     }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+function createPetsFromResponse(petsData: object[]): Pet[] {
+    const pets: Pet[] = [];
+    for (const petData of petsData) {
+        const pet = new Pet(
+            petData.id,
+            petData.name,
+            petData.species,
+            petData.breed
+        );
+
+        // Appointments
+        if (petData.appointments && Array.isArray(petData.appointments)) {
+            for (const appointmentData of petData.appointments) {
+                const appointment = new Appointment(
+                    appointmentData.id,
+                    appointmentData.vetId,
+                    new Date(appointmentData.startTime),
+                    new Date(appointmentData.endTime)
+                );
+                pet.appointments.push(appointment);
+            }
+        }
+
+        pets.push(pet);
+    }
+    return pets;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

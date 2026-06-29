@@ -50,7 +50,7 @@ export class Vet {
 export class Appointment {
     public id: number
     public vetId: number
-    public vet?: Vet
+    public vet: Vet | null
     public userPetId?: number | null
     public startTime: Date
     public endTime: Date
@@ -75,10 +75,10 @@ export class Appointment {
         vetId: number,
         startTime: Date,
         endTime: Date,
-        createdAt: Date | null,
-        updatedAt: Date | null,
-        vet?: Vet,
-        userPetId?: number | null,
+        createdAt: Date | null = null,
+        updatedAt: Date | null = null,
+        vet: Vet | null = null,
+        userPetId: number | null  = null,
     ) {
         this.id = id;
         this.vetId = vetId;
@@ -169,6 +169,7 @@ export class Pet {
     public breed: string | null;
     public createdAt: Date | null;
     public updatedAt: Date | null;
+    public appointments: Appointment[] = [];
 
     // public ownershipInvitations: OwnershipInvitation[];
 
@@ -186,5 +187,6 @@ export class Pet {
         this.breed = breed;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.appointments = [];
     }
 }

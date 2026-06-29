@@ -793,14 +793,6 @@ public class UserService(
             // Find the token
             var tokenResult = await GetSessionTokenByTokenAsync(requestTokenHash, StatusFilters.IncludeAll(), true);
 
-            Console.WriteLine("====================================================================");
-
-            Console.WriteLine(requestTokenHash);
-            Console.WriteLine(tokenResult.Title);
-
-            Console.WriteLine("====================================================================");
-// if (!tokenResult) Environment.Exit(0);
-
             if (tokenResult.Data is null)
                 return new Result<User?>
                 {
