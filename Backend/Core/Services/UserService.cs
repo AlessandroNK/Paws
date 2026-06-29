@@ -791,12 +791,16 @@ public class UserService(
                 };
 
             // Find the token
-            var filters = StatusFilters.Create()
-                .ThenIncludeUnverified()
-                .ThenIncludeBanned()
-                .ThenIncludeInactive()
-                .ThenIncludeArchived();
-            var tokenResult = await GetSessionTokenByTokenAsync(requestTokenHash, filters, true);
+            var tokenResult = await GetSessionTokenByTokenAsync(requestTokenHash, StatusFilters.IncludeAll(), true);
+
+            Console.WriteLine("====================================================================");
+
+            Console.WriteLine(requestTokenHash);
+            Console.WriteLine(tokenResult.Title);
+
+            Console.WriteLine("====================================================================");
+// if (!tokenResult) Environment.Exit(0);
+
             if (tokenResult.Data is null)
                 return new Result<User?>
                 {
@@ -814,7 +818,7 @@ public class UserService(
             if (!tokenValidationResult) return tokenValidationResult.ConvertTo<User?>();
 
             // Get user back
-            var userResult = await GetByIdAsync(token.UserId, filters, true);
+            var userResult = await GetByIdAsync(token.UserId, StatusFilters.IncludeAll(), true);
             if (!userResult || userResult.Data is null) return userResult.ConvertTo<User?>();
             var user = userResult.Data;
 
@@ -1183,19 +1187,9 @@ public class UserService(
             user.VerificationCodeDate = null;
 
             // Create token
-            if (
-                user.SessionToken is null ||
-                user.SessionToken.Status != EntityStatus.Active
-            )
-            {
-                var sessionTokenResult = SecurityService.CreateSessionToken(deviceId, user);
-                if (!sessionTokenResult.Success)
-                    return sessionTokenResult.ConvertTo<User?>();
-
-                user.SessionToken = sessionTokenResult.Data;
-            }
-
-            user.SessionToken.ExpiresAt = DateTime.UtcNow.AddDays(7);
+            user.SessionToken ??= new SessionToken();
+            user.SessionToken.UserId = user.Id;
+            user.SessionToken.Renew(deviceId);
 
             var updateResult = await _userRepo.UpdateAsync(user);
             if (!updateResult || updateResult.Data is null) return updateResult.ConvertTo<User?>();

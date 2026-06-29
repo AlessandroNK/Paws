@@ -61,5 +61,5 @@ public interface INotificationService
     public Task<Result> SendOwnershipInvitationLink(OwnershipInvitation invitation);
 
     // -----------------------------------------------------------------------------------------------------------------
-    public Task<Result> SendAppointmentConfirmationEmailAsync(Appointment appointment);
+    public Task<Result> SendAppointmentConfirmationEmailAsync(Appointment appointment, User user);
 }

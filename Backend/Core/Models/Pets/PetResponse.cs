@@ -1,3 +1,4 @@
+using Backend.Core.Models.Appointments;
 using Backend.Core.Models.Enums;
 
 namespace Backend.Core.Models.Pets;
@@ -41,6 +42,11 @@ public class PetResponse
     /// pets
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// A list with appointments daaahhhh
+    /// </summary>
+    public List<AppointmentResponse> Appointments { get; set; }
 
 
     //                                                                                                         Operators

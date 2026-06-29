@@ -243,7 +243,6 @@ export function getLocalUser(): Result<User> {
     try {
         // ID
         const id = localStorage.getItem('paws_user_id');
-        const token = localStorage.getItem('paws_user_session_token');
         const name = localStorage.getItem('paws_user_name');
         const email = localStorage.getItem('paws_user_email');
 
@@ -260,25 +259,14 @@ export function getLocalUser(): Result<User> {
             );
         }
 
-        if (!token) {
-            clearLocalUserSession();
-            return Result.fail<User>(
-                "User session token is missing in local storage",
-                401,
-                Components.USER_SERVICE,
-                "USER_SESSION_TOKEN_ERROR"
-            );
-        }
-
         // return our user if all values are present
-        if (id && token && name && email) {
+        if (id && name && email) {
             const user = new User(
                 idNumber,
                 name,
                 email,
                 undefined,
-                undefined,
-                token
+                undefined
             );
             return Result.ok(user);
         }
@@ -305,7 +293,33 @@ export function getLocalUser(): Result<User> {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+export function getSessionToken(): Result<string> {
+    try {
+        const token = localStorage.getItem('paws_user_session_token');
+        if (!token) {
+            return Result.fail<string>(
+                "User session token is missing in local storage",
+                401,
+                Components.USER_SERVICE,
+                "USER_SESSION_TOKEN_MISSING"
+            );
+        }
+        return Result.ok(token);
+    } catch (err) {
+        const error = err as Error;
+        return Result
+            .fail<string>(
+                `Error fetching user session token from local storage, error: ${error.message}`,
+                500,
+                Components.USER_SERVICE,
+                "USER_SESSION_TOKEN_FETCH_ERROR"
+            ).log();
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 export function clearLocalUserSession(): Result<void> {
+    // return Result.ok(undefined);
     try {
         localStorage.removeItem('paws_user_id');
         localStorage.removeItem('paws_user_session_token');
@@ -325,9 +339,35 @@ export function clearLocalUserSession(): Result<void> {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+export function updateSessionToken(newToken: string): Result<void> {
+    try {
+        if (!newToken) {
+            return Result.fail<void>(
+                "New session token is missing",
+                400,
+                Components.USER_SERVICE,
+                "USER_SESSION_TOKEN_UPDATE_ERROR"
+            );
+        }
+
+        localStorage.setItem('paws_user_session_token', newToken);
+        return Result.ok(undefined);
+    } catch (err) {
+        const error = err as Error;
+        return Result
+            .fail<void>(
+                `Error updating user session token in local storage, error: ${error.message}`,
+                500,
+                Components.USER_SERVICE,
+                "USER_SESSION_TOKEN_UPDATE_ERROR"
+            ).log();
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 export function saveLocalUserSession(user: User): Result<void> {
     try {
-        if (!user.id || !user.sessionToken || !user.name || !user.email) {
+        if (!user.id || !user.name || !user.email) {
             return Result.fail<void>(
                 "User object is missing required fields",
                 400,
@@ -337,7 +377,6 @@ export function saveLocalUserSession(user: User): Result<void> {
         }
 
         localStorage.setItem('paws_user_id', user.id.toString());
-        localStorage.setItem('paws_user_session_token', user.sessionToken);
         localStorage.setItem('paws_user_name', user.name);
         localStorage.setItem('paws_user_email', user.email);
         return Result.ok(undefined);

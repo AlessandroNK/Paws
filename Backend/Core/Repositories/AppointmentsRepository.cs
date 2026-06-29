@@ -265,14 +265,12 @@ public class AppointmentsRepository(
     /// <param name="id">The ID of the appointment to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includeVet">Whether to include the vet data in the query</param>
-    /// <param name="includeUser">Whether to include the user pet data in the query</param>
     /// <param name="includePet">Whether to include the pet data in the query</param>
     /// <returns>A <see cref="Result{Appointment}"/> indicating the result of the operation and including the appointment if it was found</returns>
     public async Task<Result<Appointment?>> GetByIdAsync(
         int id,
         StatusFilters? filters = null,
         bool includeVet = false,
-        bool includeUser = false,
         bool includePet = false
     )
     {
@@ -300,15 +298,9 @@ public class AppointmentsRepository(
             query = query
                 .Include(a => a.Vet);
 
-        if (includeUser)
-            query = query
-                .Include(a => a.UserPet)
-                .ThenInclude(up => up.User);
-
         if (includePet)
             query = query
-                .Include(p => p.UserPet)
-                .ThenInclude(up => up.Pet);
+                .Include(p => p.Pet);
 
         query = query.AsSplitQuery();
 
@@ -341,7 +333,6 @@ public class AppointmentsRepository(
         TimeRange range,
         StatusFilters? filters = null,
         bool includeVet = false,
-        bool includeUser = false,
         bool includePet = false
     )
     {
@@ -361,15 +352,9 @@ public class AppointmentsRepository(
             query = query
                 .Include(a => a.Vet);
 
-        if (includeUser)
-            query = query
-                .Include(a => a.UserPet)
-                .ThenInclude(up => up.User);
-
         if (includePet)
             query = query
-                .Include(a => a.UserPet)
-                .ThenInclude(up => up.Pet);
+                .Include(p => p.Pet);
 
         query = query.AsSplitQuery();
 
@@ -420,7 +405,6 @@ public class AppointmentsRepository(
 
         // Get the appointment back from the db
         var filters = StatusFilters.IncludeAll();
-        Console.WriteLine(appointment.Id);
         var getAppointmentResult = await GetByIdAsync(appointment.Id, filters);
         if (!getAppointmentResult || getAppointmentResult.Data == null)
             return new Result<Appointment?>

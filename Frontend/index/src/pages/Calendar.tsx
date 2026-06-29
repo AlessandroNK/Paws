@@ -21,7 +21,7 @@ function Calendar() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
     const isFetchingApi = useRef(false);
-    const [selectedDate] = useState(new Day(2026, 6, 29));
+    const [selectedDate] = useState(new Day(2026, 6, 30));
     const [appointmentsTitle, setAppointmentsTitle] = useState("");
     const [appointmentDay, setAppointmentDay] = useState("");
     const [appointmentConnector, setAppointmentConnector] = useState("");
@@ -34,10 +34,9 @@ function Calendar() {
     const [authUi, setAuthUi] = useState<string | null>(null);
     const [reservingAppointment, setReservingAppointment] = useState(false);
     const [appointment, setAppointment] = useState<Appointment | null>(null);
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [mousePosition, setMousePosition] = useState({x: 0, y: 0});
     const userObject = useRef(user);
     const [loaded, setLoaded] = useState(false);
-
 
 
     // Functions
@@ -71,6 +70,8 @@ function Calendar() {
             // Get local session
             const localSessionResult = UserService.getLocalSession();
             if (!localSessionResult.success || !localSessionResult.data) {
+                console.log("E3")
+
                 HelperFunctions.clearLocalUserSession();
                 userObject.current = null;
                 setUser(userObject.current);
@@ -85,7 +86,10 @@ function Calendar() {
                 return;
             }
 
-            if (!userResult.success) HelperFunctions.clearLocalUserSession();
+            if (!userResult.success) {
+                console.log("E4")
+                HelperFunctions.clearLocalUserSession();
+            }
             userObject.current = userResult.data;
             setUser(userObject.current);
         }
@@ -105,13 +109,7 @@ function Calendar() {
         async function getUserPets() {
             if (!userObject.current) return;
 
-            // Validations
-            if (!userObject.current.sessionToken) return;
-
-            const petsResult = await PetService.getPetsByOwnerApi(
-                userObject.current.sessionToken,
-                userObject.current.id
-            );
+            const petsResult = await PetService.getPetsByOwnerApi(userObject.current.id);
             if (!petsResult.success) return;
             if (userObject.current && petsResult.data) userObject.current.pets = petsResult.data;
             setUser(userObject.current);
@@ -132,9 +130,7 @@ function Calendar() {
             setPushMessages(pushMessages);
 
             // Get appointments from API
-            isFetchingApi.current = true;
             const result = await AppointmentsService.getAvailableAppointmentsApi(selectedDate);
-            isFetchingApi.current = false;
 
             // Show errors up
             showErrorsAsPushMessages(result);
@@ -189,11 +185,14 @@ function Calendar() {
             // Change page name
             document.title = "PAWS 🐾 - Mi Perfil";
 
+            if (isFetchingApi.current) return;
+            isFetchingApi.current = true;
             await loadUser();
             await loadTranslation();
             await getUserPets();
             await getAppointmentsApi();
             finalizeLoading();
+            isFetchingApi.current = false;
         }
 
         loadAllData();
@@ -341,7 +340,7 @@ function Calendar() {
         }
 
         // Validations
-        setMousePosition({ x: e.clientX, y: e.clientY });
+        setMousePosition({x: e.clientX, y: e.clientY});
         setReservingAppointment(true);
     }
 

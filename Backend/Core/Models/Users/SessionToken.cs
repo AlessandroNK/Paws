@@ -22,7 +22,7 @@ public class SessionToken : IEncryptable
     /// user will be logged out from the device, if the status is active, the session token is valid and the user will be
     /// able to access the app from the device.
     /// </summary>
-    public EntityStatus Status { get; set; }
+    public EntityStatus Status { get; set; } = EntityStatus.Active;
 
     /// <summary>
     /// The id of the user in the database
@@ -59,17 +59,19 @@ public class SessionToken : IEncryptable
     /// The date when the session token was created, this is used to invalidate the session token after a certain amount
     /// of time
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// The date when the session token will expire, this is used to invalidate the session token after a certain amount
     /// </summary>
-    public DateTime ExpiresAt { get; set; }
+    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow;
 
     // -----------------------------------------------------------------------------------------------------------------
-    public void Renew()
+    public void Renew(string deviceId)
     {
+        Status = EntityStatus.Active;
         Token = $"{UserId}::{DeviceId}::{Guid.NewGuid().ToString()}";
+        DeviceId = deviceId;
         ExpiresAt = DateTime.UtcNow.AddDays(7);
     }
 

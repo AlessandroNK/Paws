@@ -75,12 +75,14 @@ public interface IUserRepository
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includePets">Whether to include the user's pets in the result</param>
     /// <param name="includeSessionToken">Whether to include the session token in the result</param>
+    /// <param name="includeAppointments">Whether to include the user's appointments in the result</param>
     /// <returns>A <see cref="Result{User}"/> indicating the result of the operation and including the user if it was found</returns>
     public Task<Result<User?>> GetByIdAsync(
         int id,
         StatusFilters? filters = null,
         bool includePets = false,
-        bool includeSessionToken = false
+        bool includeSessionToken = false,
+        bool includeAppointments = false
     );
 
     // -----------------------------------------------------------------------------------------------------------------

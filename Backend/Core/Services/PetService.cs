@@ -1640,8 +1640,10 @@ public class PetService(
                 request.OwnerId,
                 StatusFilters.ExcludeAll().ThenIncludeActive(),
                 true,
+                true,
                 true
             );
+
             if (!userResult || userResult.Data is null)
                 return new Result<User?>
                 {
@@ -1667,7 +1669,6 @@ public class PetService(
             // TODO Implement Auth service as a new layer
             var tokenResult = SecurityService.IsSessionTokenValid(deviceId, user.SessionToken);
             if (!tokenResult.Success)
-            {
                 return new Result<User?>
                 {
                     Success = false,
@@ -1675,16 +1676,15 @@ public class PetService(
                     Status = 401,
                     Title = "Invalid session token"
                 };
-            }
 
             // Renew token
-            user.SessionToken.Renew();
+            user.SessionToken.Renew(deviceId);
             var updateResult = await UpdateUserAsync(user);
             if (!updateResult) return updateResult.ConvertTo<User?>();
 
             // Check for pets
-            return user.UserPets.Count > 0
-                ? new Result<User?>
+            if (user.UserPets.Count > 0)
+                return new Result<User?>
                 {
                     Success = true,
                     Code = "PETS_FOUND",
@@ -1693,16 +1693,17 @@ public class PetService(
                     Data = user,
                     TraceCode = FileCodes.CallerIC(),
                     Returnable = true
-                }
-                : new Result<User?>
-                {
-                    Success = true,
-                    Code = "NO_PETS_FOUND",
-                    Status = 200,
-                    Title = "No pets found for this user",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
                 };
+
+            return new Result<User?>
+            {
+                Success = true,
+                Code = "NO_PETS_FOUND",
+                Status = 200,
+                Title = "No pets found for this user",
+                TraceCode = FileCodes.CallerIC(),
+                Returnable = true
+            };
         }
         catch (Exception e)
         {

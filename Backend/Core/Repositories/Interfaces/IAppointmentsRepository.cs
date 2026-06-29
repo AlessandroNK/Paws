@@ -76,14 +76,12 @@ public interface IAppointmentsRepository
     /// <param name="id">The ID of the appointment to retrieve</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includeVet">Whether to include the vet data in the query</param>
-    /// <param name="includeUser">Whether to include the user pet data in the query</param>
     /// <param name="includePet">Whether to include the pet data in the query</param>
     /// <returns>A <see cref="Result{Appointment}"/> indicating the result of the operation and including the appointment if it was found</returns>
     public Task<Result<Appointment?>> GetByIdAsync(
         int id,
         StatusFilters? filters = null,
         bool includeVet = false,
-        bool includeUser = false,
         bool includePet = false
     );
 
@@ -92,7 +90,6 @@ public interface IAppointmentsRepository
         TimeRange range,
         StatusFilters? filters = null,
         bool includeVet = false,
-        bool includeUser = false,
         bool includePet = false
     );
 

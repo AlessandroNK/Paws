@@ -113,6 +113,7 @@ public class User : IDtoConvertible<UserResponse>,
     /// </summary>
     public SessionToken? SessionToken { get; set; }
 
+
     //                                                                                                         Operators
     // -----------------------------------------------------------------------------------------------------------------
 

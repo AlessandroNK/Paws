@@ -13,7 +13,7 @@ import LoadingScreen from "../component/LoadingScreen.tsx";
 function Profile() {
     // Variables
     // -----------------------------------------------------------------------------------------------------------------
-    const isFetchingRef = useRef(false);
+    const isFetchingApi = useRef(false);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
     const [user, setUser] = useState<User | null>(null);
     const userObject = useRef(user);
@@ -51,6 +51,8 @@ function Profile() {
             // Get local session
             const localSessionResult = UserService.getLocalSession();
             if (!localSessionResult.success || !localSessionResult.data) {
+                console.log("E5")
+
                 HelperFunctions.clearLocalUserSession();
                 userObject.current = null;
                 setUser(userObject.current);
@@ -65,7 +67,10 @@ function Profile() {
                 return;
             }
 
-            if (!userResult.success) HelperFunctions.clearLocalUserSession();
+            if (!userResult.success) {
+                console.log("E6")
+                HelperFunctions.clearLocalUserSession();
+            }
             userObject.current = userResult.data;
             setUser(userObject.current);
         }
@@ -78,16 +83,12 @@ function Profile() {
         async function getUserPets() {
             if (!userObject.current) return;
 
-            // Validations
-            if (!userObject.current.sessionToken) return;
-
-            const petsResult = await PetService.getPetsByOwnerApi(
-                userObject.current.sessionToken,
-                userObject.current.id
-            );
+            const petsResult = await PetService.getPetsByOwnerApi(userObject.current.id);
             if (!petsResult.success) return;
             if (userObject.current && petsResult.data) userObject.current.pets = petsResult.data;
             setUser(userObject.current);
+
+            console.log(userObject.current);
         }
 
         function finalizeLoading() {
@@ -98,10 +99,14 @@ function Profile() {
             // Change page name
             document.title = "PAWS 🐾 - Mi Perfil";
 
+            if (isFetchingApi.current) return;
+            isFetchingApi.current = true;
+
             await loadUser();
             await loadTranslation();
             await getUserPets();
             finalizeLoading();
+            isFetchingApi.current = false;
         }
 
         loadAllData();

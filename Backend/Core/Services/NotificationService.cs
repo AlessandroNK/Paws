@@ -385,7 +385,7 @@ public class NotificationService(
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    public async Task<Result> SendAppointmentConfirmationEmailAsync(Appointment appointment)
+    public async Task<Result> SendAppointmentConfirmationEmailAsync(Appointment appointment, User user)
     {
         try
         {
@@ -397,30 +397,7 @@ public class NotificationService(
             var apiKey = variables.Data.ApiKey;
             var senderEmail = variables.Data.SenderEmail;
 
-            // Extract first name from full name
-            if (appointment.UserPet is null)
-                return new Result
-                {
-                    Success = false,
-                    Status = 400,
-                    Title = "Invalid appointment: UserPet is null.",
-                    Code = "INVALID_APPOINTMENT_USERPET_NULL",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            if (appointment.UserPet.User is null)
-                return new Result
-                {
-                    Success = false,
-                    Status = 400,
-                    Title = "Invalid appointment: User is null.",
-                    Code = "INVALID_APPOINTMENT_USER_NULL",
-                    TraceCode = FileCodes.CallerIC(),
-                    Returnable = true
-                };
-
-            if (appointment.UserPet.Pet is null)
+            if (appointment.Pet is null)
                 return new Result
                 {
                     Success = false,
@@ -431,7 +408,7 @@ public class NotificationService(
                     Returnable = true
                 };
 
-            var firstName = appointment.UserPet.User.Name.Split(' ').FirstOrDefault() ?? "Usuario";
+            var firstName = user.Name.Split(' ').FirstOrDefault() ?? "Usuario";
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("api-key", apiKey);
 
@@ -439,11 +416,11 @@ public class NotificationService(
             var requestBody = new
             {
                 sender = new { email = senderEmail, name = "🐾 Paws acá 🐶" },
-                to = new[] { new { email = appointment.UserPet.User.Email, name = firstName } },
-                subject = $"La cita de {appointment.UserPet.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada",
+                to = new[] { new { email = user.Email, name = firstName } },
+                subject = $"La cita de {appointment.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada",
                 htmlContent = $@"
                             <h2 style='color:#7060f7;'>¡Hola!</h2>
-                            <p>{firstName}, tu cita para {appointment.UserPet.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada.</p>
+                            <p>{firstName}, tu cita para {appointment.Pet.Name} con {appointment.Vet?.Name} ha sido confirmada.</p>
                             <p>Detalles de la cita:</p>
                             <ul>
                                 <li style='color:#7060f7;'><strong>Fecha y hora:</strong> {Env.ToClinicLocal(appointment.StartTime).ToString("f")}</li>
@@ -461,7 +438,7 @@ public class NotificationService(
 
             if (response.IsSuccessStatusCode)
             {
-                LogHelpers.LogInfo(_logger, $"Login code sent to {appointment.UserPet.User.Email}");
+                LogHelpers.LogInfo(_logger, $"Login code sent to {user.Email}");
                 return new Result
                 {
                     Success = true,
@@ -475,7 +452,7 @@ public class NotificationService(
 
             LogHelpers.LogError(
                 _logger,
-                $"Failed to send verification code to {appointment.UserPet.User.Email}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}"
+                $"Failed to send verification code to {user.Email}. Status: {response.StatusCode} Error: {response.ReasonPhrase} {response.Content.ReadAsStringAsync().Result}"
             );
             return new Result
             {

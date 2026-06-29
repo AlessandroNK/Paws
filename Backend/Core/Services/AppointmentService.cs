@@ -187,7 +187,7 @@ public class AppointmentService(
                         Env.GetClinicTimeZone()
                     ),
                     Status = AppointmentStatus.Available,
-                    UserPetId = null,
+                    PetId = null,
                     VetId = vet.Id,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
@@ -410,14 +410,12 @@ public class AppointmentService(
     /// <param name="appointmentId">The appointment ID to search for</param>
     /// <param name="filters">The filters to apply to the query</param>
     /// <param name="includeVet">Whether to include the vet in the response</param>
-    /// <param name="includeUser">Whether to include the user in the response</param>
     /// <param name="includePet">Whether to include the pet in the response</param>
     /// <returns></returns>
     public async Task<Result<Appointment?>> GetByIdAsync(
         int appointmentId,
         StatusFilters? filters = null,
         bool includeVet = false,
-        bool includeUser = false,
         bool includePet = false
     )
     {
@@ -425,7 +423,7 @@ public class AppointmentService(
         {
             return await DbRetry.ExecuteWithRetry(
                 operation: () =>
-                    _appointmentsRepo.GetByIdAsync(appointmentId, filters, includeVet, includeUser, includePet),
+                    _appointmentsRepo.GetByIdAsync(appointmentId, filters, includeVet, includePet),
                 operationName: "getting appointment by id",
                 logger: _logger
             );
@@ -608,7 +606,6 @@ public class AppointmentService(
         AppointmetDayRequest request,
         StatusFilters? filters = null,
         bool includeVet = false,
-        bool includeUser = false,
         bool includePet = false
     )
     {
@@ -657,7 +654,6 @@ public class AppointmentService(
                         rage,
                         filters,
                         includeVet,
-                        includeUser,
                         includePet
                     ),
                 operationName: "Getting all vets",
@@ -954,7 +950,7 @@ public class AppointmentService(
             }
 
             // Update appointment
-            appointment.UserPetId = userPet.Data.Id;
+            appointment.PetId = pet.Id;
             appointment.Status = AppointmentStatus.Scheduled;
             appointment.UpdatedAt = DateTime.UtcNow;
             var result = await UpdateAsync(appointment);
@@ -973,8 +969,8 @@ public class AppointmentService(
             }
 
             // Appointment reserved, so send the email confirming the appointment
-            appointment.UserPet = userPet.Data;
-            var emailResult = await _notificationService.SendAppointmentConfirmationEmailAsync(appointment);
+            appointment.Pet = pet;
+            var emailResult = await _notificationService.SendAppointmentConfirmationEmailAsync(appointment, user);
             if (!emailResult)
                 return new Result<Appointment?>
                 {

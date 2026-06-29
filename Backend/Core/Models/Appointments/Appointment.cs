@@ -1,5 +1,6 @@
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
+using Backend.Core.Models.Pets;
 using Backend.Core.Models.Relationships;
 using Backend.Core.Models.Vets;
 
@@ -25,11 +26,13 @@ public class Appointment : IDtoConvertible<AppointmentResponse>
     /// <summary>Gets or sets the associated veterinarian.</summary>
     public Vet? Vet { get; set; }
 
-    /// <summary>Gets or sets the user's pet identifier.</summary>
-    public int? UserPetId { get; set; } = null;
+    /// <summary>Gets or sets the pet identifier.</summary>
+    public int? PetId { get; set; } = null;
 
-    /// <summary>Gets or sets the associated user pet.</summary>
-    public UserPet? UserPet { get; set; }
+    /// <summary>
+    /// This pet object is optional and can be null.
+    /// </summary>
+    public Pet? Pet { get; set; }
 
     /// <summary>Gets or sets the appointment start date and time.</summary>
     public DateTime StartTime { get; set; }
@@ -72,7 +75,7 @@ public class Appointment : IDtoConvertible<AppointmentResponse>
             Id = Id,
             VetId = VetId,
             Vet = Vet?.ToDto(),
-            UserPetId = UserPetId,
+            PetId = PetId,
             StartTime = StartTime,
             EndTime = EndTime,
             CreatedAt = CreatedAt,
@@ -88,7 +91,7 @@ public class Appointment : IDtoConvertible<AppointmentResponse>
             Id = Id,
             VetId = VetId,
             Vet = Vet?.ToDto(),
-            UserPetId = UserPetId,
+            PetId = PetId,
             StartTime = StartTime,
             EndTime = EndTime,
             CreatedAt = CreatedAt,

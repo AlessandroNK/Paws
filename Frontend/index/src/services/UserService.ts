@@ -30,14 +30,14 @@ export async function getApiSessionAsync(user: User): Promise<Result<User>> {
         if (!deviceIdResult.success || !deviceIdResult.data)
             return deviceIdResult.convertTo<User>();
 
-        if (!user.sessionToken) {
+        const tokenResult = HelperFunctions.getSessionToken();
+        if (!tokenResult.success || !tokenResult.data)
             return Result.fail<User>(
                 "No session token found for the user",
                 401,
                 Components.USER_SERVICE,
                 "USER_SESSION_TOKEN_MISSING"
             ).log();
-        }
 
         const accessPoint = "user/validate-session-token";
         const url = HelperFunctions.createUrlRequest(accessPoint);
@@ -45,7 +45,7 @@ export async function getApiSessionAsync(user: User): Promise<Result<User>> {
             method: "GET",
             headers: {
                 "Device-Id": deviceIdResult.data,
-                "Session-Token": user.sessionToken,
+                "Session-Token": tokenResult.data,
                 "Content-Type": "application/json"
             },
         }
@@ -54,15 +54,15 @@ export async function getApiSessionAsync(user: User): Promise<Result<User>> {
         if (!result.success || !result.data) return result.convertTo<User>();
 
         // Process response
+        const responseData = result.data;
         user = new User(
-            result.data.id,
-            result.data.name,
-            result.data.email,
-            result.data.documentType,
-            result.data.documentNumber,
-            result.data.sessionToken
+            responseData.id,
+            responseData.name,
+            responseData.email,
+            responseData.documentType,
+            responseData.documentNumber
         );
-        user.pets = result.data.pets.map((petData: object) => new Pet(
+        user.pets = responseData.pets.map((petData: object) => new Pet(
             petData.id,
             petData.name,
             petData.species,
@@ -70,6 +70,7 @@ export async function getApiSessionAsync(user: User): Promise<Result<User>> {
             petData.age,
             petData.ownerId
         ));
+        HelperFunctions.updateSessionToken(responseData.sessionToken);
         return Result.ok(user);
     } catch (err) {
         const error = err as Error;
@@ -138,24 +139,19 @@ export async function loginWithCodeRequest(request: LoginRequest): Promise<Resul
         if (result.code) result.component = Components.USER_SERVICE;
         if (!result.success || !result.data) return result.convertTo<User>();
 
+
+        console.log("Login successful, user data:", result.data);
+
         // Process response
-        const userData = result.data;
+        const responseData = result.data;
         const user = new User(
-            userData.id,
-            userData.name,
-            userData.email,
-            userData.documentType,
-            userData.documentNumber,
-            userData.sessionToken
+            responseData.id,
+            responseData.name,
+            responseData.email,
+            responseData.documentType,
+            responseData.documentNumber
         );
-        user.pets = result.data.pets.map((petData: object) => new Pet(
-            petData.id,
-            petData.name,
-            petData.species,
-            petData.breed,
-            petData.age,
-            petData.ownerId
-        ));
+        HelperFunctions.updateSessionToken(responseData.sessionToken);
         HelperFunctions.saveLocalUserSession(user);
         return Result.ok(user, null, Components.USER_SERVICE, result.code);
     } catch (err) {

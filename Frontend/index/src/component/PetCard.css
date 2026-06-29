@@ -1,5 +1,4 @@
 .pet-card {
-    /*min-width: 350px;*/
     border: 1px solid #c1c1c1;
     border-radius: 8px;
     padding: 16px;
@@ -12,10 +11,15 @@
     height: 80px;
     border-radius: 4px;
     object-fit: cover;
-    background: #f1f1f1;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.pet-details {
+    display: flex;
+    flex-direction: column;
+    margin: 16px 0;
 }
 
 .pet-name {
@@ -26,10 +30,3 @@
     height: 40%;
     fill: #b1b1b1;
 }
-
-.pet-details {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-

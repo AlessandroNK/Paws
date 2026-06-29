@@ -13,29 +13,28 @@
 
 .reserve-appointment-menu {
     background: white;
-    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 160px;
     animation: fadeInRight 0.3s ease-in-out;
-    gap: 10px;
+}
+
+.reserve-title {
+    margin: 10px 0;
 }
 
 .pet-item {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
     padding: 10px;
-    margin: 10px 0;
     cursor: pointer;
-    border-radius: 8px;
     transition: background-color 0.2s ease-in-out;
-    font-size: 1.2em;
+    gap: 10px;
 }
 
 .pet-item:hover {
@@ -59,4 +58,8 @@
 .disabled {
     opacity: 0.5;
     cursor: auto;
+}
+
+.reserve-action {
+    margin: 10px 0;
 }

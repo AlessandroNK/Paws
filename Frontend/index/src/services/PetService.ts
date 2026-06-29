@@ -1,24 +1,24 @@
 //                                                                                                             FUNCTIONS
 // ---------------------------------------------------------------------------------------------------------------------
 import {Components, FetchOptions, Result} from "../types/CommonTypes.ts";
-import {Pet, User} from "../types/SystemTypes.ts";
+import {Pet} from "../types/SystemTypes.ts";
 import * as HelperFunctions from "../resources/HelperFunctions.ts";
 
-export async function getPetsByOwnerApi(sessionToken: string, ownerId: number): Promise<Result<Pet[]>> {
+export async function getPetsByOwnerApi(ownerId: number): Promise<Result<Pet[]>> {
     try {
         // API request
         const deviceIdResult = HelperFunctions.getDeviceId();
         if (!deviceIdResult.success || !deviceIdResult.data)
             return deviceIdResult.convertTo<Pet[]>();
 
-        if (!sessionToken) {
+        const tokenResult = HelperFunctions.getSessionToken();
+        if (!tokenResult.success || !tokenResult.data)
             return Result.fail<Pet[]>(
                 "No session token found for the user",
                 401,
                 Components.USER_SERVICE,
                 "USER_SESSION_TOKEN_MISSING"
             ).log();
-        }
 
         if (!ownerId || isNaN(Number(ownerId)) || Number(ownerId) <= 0) {
             return Result.fail<Pet[]>(
@@ -35,12 +35,13 @@ export async function getPetsByOwnerApi(sessionToken: string, ownerId: number): 
             method: "POST",
             headers: {
                 "Device-Id": deviceIdResult.data,
-                "Session-Token": sessionToken,
+                "Session-Token": tokenResult.data,
                 "Content-Type": "application/json"
             },
                 body: JSON.stringify({ ownerId })
         }
         const result = await HelperFunctions.executeFetchWithTimeout(url, options);
+
         if (result.code) result.component = Components.PET_SERVICE;
         if (!result.success || !result.data) return result.convertTo<Pet[]>();
         if (result.data.pets.length === 0) {
@@ -53,7 +54,8 @@ export async function getPetsByOwnerApi(sessionToken: string, ownerId: number): 
         }
 
         // Process response
-        const pets: Pet[] = result.data.pets.map((petData: object) => new Pet(
+        const responseData = result.data;
+        const pets: Pet[] = responseData.pets.map((petData: object) => new Pet(
             petData.id,
             petData.name,
             petData.species,
@@ -61,6 +63,8 @@ export async function getPetsByOwnerApi(sessionToken: string, ownerId: number): 
             petData.age,
             petData.ownerId
         ));
+        HelperFunctions.updateSessionToken(responseData.sessionToken);
+
         return Result.ok(pets);
     } catch (err) {
         const error = err as Error;
@@ -75,21 +79,21 @@ export async function getPetsByOwnerApi(sessionToken: string, ownerId: number): 
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-export async function addPetApi(sessionToken: string, userId: number, pet: Pet): Promise<Result<Pet>> {
+export async function addPetApi(userId: number, pet: Pet): Promise<Result<Pet>> {
     try {
         // API request
         const deviceIdResult = HelperFunctions.getDeviceId();
         if (!deviceIdResult.success || !deviceIdResult.data)
             return deviceIdResult.convertTo<Pet>();
 
-        if (!sessionToken) {
+        const tokenResult = HelperFunctions.getSessionToken();
+        if (!tokenResult.success || !tokenResult.data)
             return Result.fail<Pet>(
                 "No session token found for the user",
                 401,
                 Components.USER_SERVICE,
                 "USER_SESSION_TOKEN_MISSING"
             ).log();
-        }
 
         if (!userId || isNaN(Number(userId)) || Number(userId) <= 0) {
             return Result.fail<Pet>(
@@ -115,7 +119,7 @@ export async function addPetApi(sessionToken: string, userId: number, pet: Pet):
             method: "POST",
             headers: {
                 "Device-Id": deviceIdResult.data,
-                "Session-Token": sessionToken,
+                "Session-Token": tokenResult.data,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({

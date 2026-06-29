@@ -1,4 +1,5 @@
 using Backend.Core.Internal;
+using Backend.Core.Models.Appointments;
 using Backend.Core.Models.CustomAttributes;
 using Backend.Core.Models.Enums;
 using Backend.Core.Models.Interfaces;
@@ -66,6 +67,11 @@ public class Pet : IDtoConvertible<PetResponse>, IEncryptable
     /// </summary>
     public List<UserPet> UserPets { get; set; } = new List<UserPet>();
 
+    /// <summary>
+    /// A list with appointments daaahhhh
+    /// </summary>
+    public List<Appointment> Appointments { get; set; } = new List<Appointment>();
+
 
     //                                                                                                 Public Properties
     // -----------------------------------------------------------------------------------------------------------------
@@ -91,6 +97,12 @@ public class Pet : IDtoConvertible<PetResponse>, IEncryptable
     // -----------------------------------------------------------------------------------------------------------------
     PetResponse IDtoConvertible<PetResponse>.ToDto()
     {
+        var AppointmentsDto = new List<AppointmentResponse>();
+        foreach (var appointment in Appointments)
+        {
+            AppointmentsDto.Add(appointment.ToDto());
+        }
+
         return new PetResponse
         {
             Id = Id,
@@ -99,6 +111,7 @@ public class Pet : IDtoConvertible<PetResponse>, IEncryptable
             Breed = Breed,
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,
+            Appointments = AppointmentsDto
         };
     }
 

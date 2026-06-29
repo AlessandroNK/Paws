@@ -10,7 +10,6 @@ import * as PetService from "../services/PetService.ts";
 import {MessageDuration, MessageMood, MessageType, UiMessage} from "../types/MessageTypes.ts";
 import type {Result} from "../types/CommonTypes.ts";
 import PushMessagesUi from "../component/PushMessagesUi.tsx";
-import * as React from "react";
 
 function AddPet() {
     // Variables
@@ -18,13 +17,11 @@ function AddPet() {
     const [user, setUser] = useState<User | null>(null);
     const [loaded, setLoaded] = useState(false);
     const userObject = useRef(user);
-    const isFetching = useRef(false);
+    const isFetchingApi = useRef(false);
     const [loginMessage, setLoginMessage] = useState<string>("");
     const [loginClass, setLoginClass] = useState<string>("");
 
     // -----------------------------------------------------------------------------------------------------------------
-    const [pet, setPet] = useState<Pet | null>(null);
-    const petObject = useRef(pet);
     const [pushMessages, setPushMessages] = useState([] as UiMessage[])
     const [petName, setPetName] = useState<string>("");
     const [petSpecies, setPetSpecies] = useState<PetSpecies>(PetSpecies.Dog);
@@ -40,6 +37,7 @@ function AddPet() {
             // Get local session
             const localSessionResult = UserService.getLocalSession();
             if (!localSessionResult.success || !localSessionResult.data) {
+                console.log("E1")
                 HelperFunctions.clearLocalUserSession();
                 userObject.current = null;
                 setUser(userObject.current);
@@ -56,7 +54,11 @@ function AddPet() {
                 return;
             }
 
-            if (!userResult.success) HelperFunctions.clearLocalUserSession();
+            if (!userResult.success) {
+                console.log("E2")
+
+                HelperFunctions.clearLocalUserSession();
+            }
             userObject.current = userResult.data;
             setUser(userObject.current);
             setLoaded(true);
@@ -74,9 +76,13 @@ function AddPet() {
             // Change page name
             document.title = "PAWS 🐾 - Agregar Mascota";
 
+            if (isFetchingApi.current) return;
+            isFetchingApi.current = true;
+
             await loadUser();
             await loadTranslation();
             finalizeLoading();
+            isFetchingApi.current = false;
         }
 
         loadAllData();
@@ -107,7 +113,7 @@ function AddPet() {
 
     // -----------------------------------------------------------------------------------------------------------------
     async function handleAddPet() {
-        if (isFetching.current) return;
+        if (isFetchingApi.current) return;
 
         if (!userObject.current) {
             setLoginMessage("Usuario no autenticado. Por favor, inicia sesión.");
@@ -131,14 +137,13 @@ function AddPet() {
         // Add pet
         setLoginMessage("");
         setIsLoading(true);
-        isFetching.current = true;
+        isFetchingApi.current = true;
         const result = await PetService.addPetApi(
-            userObject.current.sessionToken || "",
             userObject.current.id,
             newPet
         );
         setIsLoading(false);
-        isFetching.current = false;
+        isFetchingApi.current = false;
 
         // Show errors up
         showErrorsAsPushMessages(result);

@@ -19,8 +19,8 @@ public class AppointmentResponse
     /// <summary>Gets or sets the associated veterinarian.</summary>
     public VetResponse? Vet { get; set; }
 
-    /// <summary>Gets or sets the user's pet identifier.</summary>
-    public int? UserPetId { get; set; } = null;
+    /// <summary>Gets or sets the pet identifier.</summary>
+    public int? PetId { get; set; } = null;
 
     /// <summary>Gets or sets the appointment start date and time.</summary>
     public DateTime StartTime { get; set; }
